@@ -11,9 +11,10 @@ import a from '../constants/image/oo.png';
 import { useFonts, Ledger_400Regular } from '@expo-google-fonts/ledger';
 import { LexendDeca_400Regular } from '@expo-google-fonts/lexend-deca';
 import { AntDesign } from '@expo/vector-icons';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 
 export default function Onboarding() {
+  const router = useRouter();
   // Capitalize the function name to follow convention
   const [fontsLoaded, fontError] = useFonts({
     Ledger_400Regular,
@@ -23,37 +24,41 @@ export default function Onboarding() {
   if (!fontsLoaded || fontError) {
     return null;
   }
-
+  const gotocreataccount = () => {
+    router.push('/createaccount');
+  };
+  const gotologin = () => {
+    router.push('/login');
+  };
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
       <View style={styles.main}>
         <View style={styles.imageHolder}>
-          <Image style={styles.image} source={a} resizeMode="cover" />{' '}
-          {/* Adjust resizeMode */}
+          <Image style={styles.image} source={a} resizeMode="cover" />
         </View>
         <View style={styles.okok}>
           <Text style={styles.welcome}>Welcome to Original</Text>
           <Text style={styles.welcome}>Aso Ebi</Text>
         </View>
+
         <View style={{ marginTop: 18 }}>
-          {' '}
-          {/* Adjust marginTop */}
           <Text style={styles.long}>
             Welcome to OAE – Where style meets elegance! Explore curated
             collections and the latest trendy fabrics.
           </Text>
         </View>
         <View style={{ marginTop: 18 }}>
-          <Link href="/createaccount">
-            <TouchableOpacity style={styles.create}>
-              Create Account
+          <View style={{ width: '100%' }}>
+            <TouchableOpacity style={styles.create} onPress={gotocreataccount}>
+              <Text style={{ color: 'white' }}>Create Account</Text>
             </TouchableOpacity>
-          </Link>
-          <Link href="/">
-            <TouchableOpacity style={styles.already}>
-              Already have an account? Login
+          </View>
+
+          <View style={{ width: '100%' }}>
+            <TouchableOpacity style={styles.already} onPress={gotologin}>
+              <Text>Already have an account? Login</Text>
             </TouchableOpacity>
-          </Link>
+          </View>
         </View>
         <View>
           <TouchableOpacity style={styles.footer}>
@@ -64,6 +69,12 @@ export default function Onboarding() {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* 
+        
+        
+        
+        </View> */}
     </ScrollView>
   );
 }
@@ -74,15 +85,14 @@ const styles = StyleSheet.create({
   },
   main: {
     padding: 15,
-    
   },
   imageHolder: {
     height: 433,
     width: '100%',
     borderTopLeftRadius: 18,
     borderTopRightRadius: 18,
-    borderBottomLeftRadius: '50%',
-    borderBottomRightRadius: '50%',
+    borderBottomLeftRadius: 60,
+    borderBottomRightRadius: 60,
     overflow: 'hidden',
   },
   image: {
@@ -94,14 +104,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   welcome: {
-    fontWeight: '400',
     fontSize: 28,
     fontFamily: 'Ledger_400Regular',
     textAlign: 'center',
   },
   long: {
     fontSize: 18,
-    fontWeight: '400',
     textAlign: 'center',
     fontFamily: 'Ledger_400Regular',
   },
@@ -116,7 +124,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 15,
     fontSize: 16,
-    fontWeight: '400',
   },
   already: {
     fontFamily: 'LexendDeca_400Regular',
@@ -131,20 +138,19 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 13,
     fontSize: 16,
-    fontWeight: '400',
   },
   footer: {
     flexDirection: 'row',
     marginLeft: 'auto',
-    marginTop: '18px',
+    marginTop: 18,
   },
   skip: {
     fontSize: 18,
-    fontWeight: '500',
+
     // marginLeft: 'auto',
     fontFamily: 'LexendDeca_400Regular',
   },
   arrowIcon: {
-    marginLeft: '10px',
+    marginLeft: 10,
   },
 });

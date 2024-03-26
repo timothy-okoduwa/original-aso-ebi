@@ -7,7 +7,7 @@ import {
   ScrollView,
 } from 'react-native';
 import React, { useState } from 'react';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { AntDesign } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 // import { Feather } from '@expo/vector-icons';
@@ -37,23 +37,26 @@ import {
   Lora_700Bold_Italic,
 } from '@expo-google-fonts/lora';
 
-export default function createaccount() {
+export default function login() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [showPassword2, setShowPassword2] = useState(false);
+
   const [isInputFocused, setIsInputFocused] = useState(false);
-  const [isInputFocused2, setIsInputFocused2] = useState(false);
-  const [isChecked, setIsChecked] = useState(false);
 
   // State variables to store input values and corresponding error messages
-  const [fullName, setFullName] = useState('');
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [fullNameError, setFullNameError] = useState('');
+
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const [confirmPasswordError, setConfirmPasswordError] = useState('');
-  const [checkError, setCheckError] = useState('');
+  const gotocreateaccount = () => {
+    router.push('/createaccount');
+  };
+  const gotoforgetpassword = () => {
+    router.push('/forgetpassword');
+  };
+
   const handleFocus = () => {
     setIsInputFocused(true);
   };
@@ -61,36 +64,8 @@ export default function createaccount() {
   const handleBlur = () => {
     setIsInputFocused(false);
   };
-  const handleFocus2 = () => {
-    setIsInputFocused2(true);
-  };
 
-  const handleBlur2 = () => {
-    setIsInputFocused2(false);
-  };
-
-  const toggleCheckbox = () => {
-    setIsChecked(!isChecked);
-  };
   // Validation functions
-  const checkesit = () => {
-    if (!isChecked) {
-      setCheckError(
-        'Please agree to the Terms and Conditions and Privacy Policy'
-      );
-      return false;
-    }
-    setCheckError('');
-    return true;
-  };
-  const validateFullName = () => {
-    if (fullName.trim() === '') {
-      setFullNameError('Full name is required');
-      return false;
-    }
-    setFullNameError('');
-    return true;
-  };
 
   const validateEmail = () => {
     if (email.trim() === '') {
@@ -144,34 +119,13 @@ export default function createaccount() {
     return true;
   };
 
-  const validateConfirmPassword = () => {
-    if (confirmPassword.trim() === '') {
-      setConfirmPasswordError('confirm password is required');
-      return false;
-    }
-    if (confirmPassword !== password) {
-      setConfirmPasswordError('Passwords do not match');
-      return false;
-    }
-    setConfirmPasswordError('');
-    return true;
-  };
-
   // Handle submit button press
   const handleCreateAccount = () => {
-    const isFullNameValid = validateFullName();
     const isEmailValid = validateEmail();
     const isPasswordValid = validatePassword();
-    const isConfirmPasswordValid = validateConfirmPassword();
-    const eww = checkesit();
+
     // If all fields are valid, submit the form
-    if (
-      isFullNameValid &&
-      isEmailValid &&
-      eww &&
-      isPasswordValid &&
-      isConfirmPasswordValid
-    ) {
+    if (isEmailValid && isPasswordValid) {
       // Submit the form or navigate to the next screen
       console.log('Form submitted successfully');
     }
@@ -206,12 +160,11 @@ export default function createaccount() {
       <View style={styles.main}>
         <View style={styles.flex}>
           <Link href="/onboarding">
-            {' '}
             <View>
               <AntDesign name="arrowleft" size={24} color="black" />
             </View>
             <View style={styles.testx}>
-              <Text style={styles.reegister}>Register</Text>
+              <Text style={styles.reegister}>Welcome Back</Text>
             </View>
           </Link>
         </View>
@@ -226,20 +179,6 @@ export default function createaccount() {
             </Text>
           </View>
           <View style={styles.inputs}>
-            <View style={{ marginTop: '20px' }}>
-              <Text style={styles.labell}>Full Name</Text>
-              <View style={{ marginTop: '16px' }}>
-                <TextInput
-                  style={styles.inputt}
-                  placeholder="John Doe"
-                  keyboardType="default"
-                  value={fullName}
-                  onChangeText={(text) => setFullName(text)}
-                  placeholderTextColor="#999"
-                />
-              </View>
-              <Text style={styles.error}>{fullNameError}</Text>
-            </View>
             <View style={{ marginTop: '20px' }}>
               <Text style={styles.labell}>Email</Text>
               <View style={{ marginTop: '16px' }}>
@@ -294,79 +233,28 @@ export default function createaccount() {
               </View>
               <Text style={styles.error}>{passwordError}</Text>
             </View>
-            <View style={{ marginTop: '20px' }}>
-              <Text style={styles.labell}>Confirm Password</Text>
-              <View style={{ marginTop: '16px' }}>
-                <View
-                  style={[
-                    styles.scares,
-                    {
-                      borderColor: isInputFocused2 ? 'black' : 'gray',
-                      borderWidth: isInputFocused2 ? 2 : 1,
-                    },
-                  ]}
-                >
-                  <View style={styles.inputContainer}>
-                    <TextInput
-                      style={styles.inpu2}
-                      placeholder="*********"
-                      secureTextEntry={!showPassword2}
-                      placeholderTextColor="#999"
-                      underlineColorAndroid="transparent"
-                      value={confirmPassword}
-                      onChangeText={(text) => setConfirmPassword(text)}
-                      onFocus={handleFocus2}
-                      onBlur={handleBlur2}
-                    />
-                  </View>
-                  <View>
-                    <TouchableOpacity
-                      onPress={() => setShowPassword2(!showPassword2)}
-                    >
-                      <Feather
-                        name={showPassword2 ? 'eye' : 'eye-off'}
-                        size={20}
-                        color="black"
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-              <Text style={styles.error}>{confirmPasswordError}</Text>
-            </View>
-            <View style={{ marginTop: '20px' }}>
+            <View style={styles.forget}>
               <TouchableOpacity
-                onPress={toggleCheckbox}
-                style={styles.checkboxContainer}
+                style={styles.clckforget}
+                onPress={gotoforgetpassword}
               >
-                <View style={[styles.checkbox, isChecked && styles.checked]}>
-                  {isChecked && (
-                    <Feather name="check" size={13} color="white" />
-                  )}
-                </View>
-                <Text style={styles.label}>
-                  I have read and agree to the{' '}
-                  <Text style={styles.others}>Terms and Conditions</Text> and{' '}
-                  <Text style={styles.others}>Privacy Policy</Text>
-                </Text>
+                <Text>Forgot Password?</Text>
               </TouchableOpacity>
-              <Text style={styles.error}>{checkError}</Text>
             </View>
             <View style={{ marginTop: '30px', marginBottom: '30px' }}>
               <TouchableOpacity
                 style={styles.create}
                 onPress={handleCreateAccount}
               >
-                <Text style={{ color: 'white' }}>Create Account</Text>
+                <Text style={{ color: 'white' }}>Log in</Text>
               </TouchableOpacity>
 
-              <View>
-                <TouchableOpacity style={styles.already}>
-                  <Link href="/login">
-                    <Text>Already have an account? Login</Text>
-                  </Link>
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity
+                style={styles.already}
+                onPress={gotocreateaccount}
+              >
+                <Text>Don’t have an account? Sign up</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -526,5 +414,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
 
     marginTop: 9,
+  },
+  forget: {
+    flex: 1,
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
+    width: '100%',
+    marginTop: 2,
+    marginBottom: 40,
+  },
+  clckforget: {
+    fontFamily: '  KumbhSans_500Medium',
+    fontSize: 16,
+
+    lineHeight: 18,
+    color: '#1D1D1D',
   },
 });
