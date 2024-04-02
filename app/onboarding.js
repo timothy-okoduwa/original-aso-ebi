@@ -30,6 +30,9 @@ export default function Onboarding() {
   const gotologin = () => {
     router.push('/login');
   };
+  const skip = () => {
+    router.push('/mainhome');
+  };
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
       <View style={styles.main}>
@@ -61,7 +64,7 @@ export default function Onboarding() {
           </View>
         </View>
         <View>
-          <TouchableOpacity style={styles.footer}>
+          <TouchableOpacity style={styles.footer} onPress={skip}>
             <Text style={styles.skip}>Skip</Text>
             <View style={styles.arrowIcon}>
               <AntDesign name="arrowright" size={24} color="black" />

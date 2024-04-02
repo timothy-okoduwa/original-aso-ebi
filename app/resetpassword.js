@@ -10,7 +10,6 @@ import React, { useState } from 'react';
 import { Link, useRouter } from 'expo-router';
 import { AntDesign } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
-// import { Feather } from '@expo/vector-icons';
 import {
   useFonts,
   LexendDeca_400Regular,
@@ -37,26 +36,16 @@ import {
   Lora_700Bold_Italic,
 } from '@expo-google-fonts/lora';
 
-export default function login() {
+export default function resetpassword() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-
+  const [showPassword2, setShowPassword2] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
-
-  // State variables to store input values and corresponding error messages
-
-  const [email, setEmail] = useState('');
+  const [isInputFocused2, setIsInputFocused2] = useState(false);
   const [password, setPassword] = useState('');
-
-  const [emailError, setEmailError] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const gotocreateaccount = () => {
-    router.push('/createaccount');
-  };
-  const gotoforgetpassword = () => {
-    router.push('/forgetpassword');
-  };
-
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const handleFocus = () => {
     setIsInputFocused(true);
   };
@@ -64,36 +53,16 @@ export default function login() {
   const handleBlur = () => {
     setIsInputFocused(false);
   };
+  const handleFocus2 = () => {
+    setIsInputFocused2(true);
+  };
 
-  // Validation functions
+  const handleBlur2 = () => {
+    setIsInputFocused2(false);
+  };
 
-  const validateEmail = () => {
-    if (email.trim() === '') {
-      setEmailError('Email is required');
-      return false;
-    }
-
-    const hasAtSymbol = email.includes('@');
-    const hasDotCom = email.endsWith('.com');
-
-    if (!hasAtSymbol) {
-      setEmailError('Email is missing "@" symbol');
-      return false;
-    }
-
-    if (!hasDotCom) {
-      setEmailError('Email is missing ".com"');
-      return false;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setEmailError('Invalid email address');
-      return false;
-    }
-
-    setEmailError('');
-    return true;
+  const toggleCheckbox = () => {
+    setIsChecked(!isChecked);
   };
 
   const validatePassword = () => {
@@ -119,19 +88,29 @@ export default function login() {
     return true;
   };
 
-  // Handle submit button press
+  const validateConfirmPassword = () => {
+    if (confirmPassword.trim() === '') {
+      setConfirmPasswordError('confirm password is required');
+      return false;
+    }
+    if (confirmPassword !== password) {
+      setConfirmPasswordError('Passwords do not match');
+      return false;
+    }
+    setConfirmPasswordError('');
+    return true;
+  };
   const handleCreateAccount = () => {
-    const isEmailValid = validateEmail();
     const isPasswordValid = validatePassword();
+    const isConfirmPasswordValid = validateConfirmPassword();
 
     // If all fields are valid, submit the form
-    if (isEmailValid && isPasswordValid) {
+    if (isPasswordValid && isConfirmPasswordValid) {
       // Submit the form or navigate to the next screen
       console.log('Form submitted successfully');
-      router.push('/mainhome');
+      router.push('/passwordresetsuccessful');
     }
   };
-
   const [fontsLoaded, fontError] = useFonts({
     LexendDeca_400Regular,
     KumbhSans_100Thin,
@@ -161,17 +140,18 @@ export default function login() {
       <View style={styles.main}>
         <View style={styles.flex}>
           <Link href="/onboarding">
+            {' '}
             <View>
               <AntDesign name="arrowleft" size={24} color="black" />
             </View>
             <View style={styles.testx}>
-              <Text style={styles.reegister}>Welcome Back</Text>
+              <Text style={styles.reegister}>Reset Password</Text>
             </View>
           </Link>
         </View>
         <View style={styles.createups}>
           <View>
-            <Text style={styles.enadp}>Email and Password</Text>
+            <Text style={styles.enadp}>Create a new password</Text>
           </View>
           <View style={{ marginTop: '20px' }}>
             <Text style={styles.greetings}>
@@ -180,20 +160,6 @@ export default function login() {
             </Text>
           </View>
           <View style={styles.inputs}>
-            <View style={{ marginTop: '20px' }}>
-              <Text style={styles.labell}>Email</Text>
-              <View style={{ marginTop: '16px' }}>
-                <TextInput
-                  style={styles.inputt}
-                  value={email}
-                  onChangeText={(text) => setEmail(text)}
-                  placeholder="youremail@here.com"
-                  keyboardType="email-address" // Change this to 'password' or 'default' for different types
-                  placeholderTextColor="#999" // Change placeholder text color here
-                />
-              </View>
-              <Text style={styles.error}>{emailError}</Text>
-            </View>
             <View style={{ marginTop: '20px' }}>
               <Text style={styles.labell}>Password</Text>
               <View style={{ marginTop: '16px' }}>
@@ -234,27 +200,53 @@ export default function login() {
               </View>
               <Text style={styles.error}>{passwordError}</Text>
             </View>
-            <View style={styles.forget}>
-              <TouchableOpacity
-                style={styles.clckforget}
-                onPress={gotoforgetpassword}
-              >
-                <Text>Forgot Password?</Text>
-              </TouchableOpacity>
+            <View style={{ marginTop: '20px' }}>
+              <Text style={styles.labell}>Confirm Password</Text>
+              <View style={{ marginTop: '16px' }}>
+                <View
+                  style={[
+                    styles.scares,
+                    {
+                      borderColor: isInputFocused2 ? 'black' : 'gray',
+                      borderWidth: isInputFocused2 ? 2 : 1,
+                    },
+                  ]}
+                >
+                  <View style={styles.inputContainer}>
+                    <TextInput
+                      style={styles.inpu2}
+                      placeholder="*********"
+                      secureTextEntry={!showPassword2}
+                      placeholderTextColor="#999"
+                      underlineColorAndroid="transparent"
+                      value={confirmPassword}
+                      onChangeText={(text) => setConfirmPassword(text)}
+                      onFocus={handleFocus2}
+                      onBlur={handleBlur2}
+                    />
+                  </View>
+                  <View>
+                    <TouchableOpacity
+                      onPress={() => setShowPassword2(!showPassword2)}
+                    >
+                      <Feather
+                        name={showPassword2 ? 'eye' : 'eye-off'}
+                        size={20}
+                        color="black"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+              <Text style={styles.error}>{confirmPasswordError}</Text>
             </View>
-            <View style={{ marginTop: '30px', marginBottom: '30px' }}>
+
+            <View style={{ marginTop: '70px', marginBottom: '30px' }}>
               <TouchableOpacity
                 style={styles.create}
                 onPress={handleCreateAccount}
               >
-                <Text style={{ color: 'white' }}>Log in</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.already}
-                onPress={gotocreateaccount}
-              >
-                <Text>Don’t have an account? Sign up</Text>
+                <Text style={{ color: 'white' }}>Done</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -263,6 +255,7 @@ export default function login() {
     </ScrollView>
   );
 }
+
 const styles = StyleSheet.create({
   scrollViewContent: {
     flexGrow: 1,
@@ -422,8 +415,8 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'flex-end',
     width: '100%',
-    marginTop: 2,
-    marginBottom: 40,
+    marginTop: 17,
+    marginBottom: '80px',
   },
   clckforget: {
     fontFamily: '  KumbhSans_500Medium',

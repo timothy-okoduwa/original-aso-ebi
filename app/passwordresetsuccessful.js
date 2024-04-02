@@ -10,7 +10,7 @@ import React from 'react';
 import { Link, useRouter } from 'expo-router';
 import { Image } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
-import a from '../constants/image/check.png';
+import a from '../constants/image/phonev.png';
 // import { Feather } from '@expo/vector-icons';
 // import { Feather } from '@expo/vector-icons';
 import {
@@ -38,10 +38,10 @@ import {
   Lora_600SemiBold_Italic,
   Lora_700Bold_Italic,
 } from '@expo-google-fonts/lora';
-export default function resetlinksent() {
+export default function passwordresetsuccessful() {
   const router = useRouter();
   const gotoreresetpassword = () => {
-    router.push('/resetpassword');
+    router.push('/login');
   };
   const [fontsLoaded, fontError] = useFonts({
     LexendDeca_400Regular,
@@ -77,10 +77,10 @@ export default function resetlinksent() {
             </View>
           </View>
           <View style={{ marginTop: '20px' }}>
-            <Text style={styles.reserr}>Reset Link Sent</Text>
+            <Text style={styles.reserr}>Password Reset Successful</Text>
             <Text style={styles.password}>
-              A password reset link has been sent to de**********h@gmal.com.
-              Check your mailbox.
+              Your password has been reset successfully. Click to to login with
+              your new password.
             </Text>
           </View>
           <View style={{ marginTop: 50, marginBottom: '30px' }}>
