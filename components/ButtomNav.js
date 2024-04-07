@@ -9,7 +9,7 @@ import React from 'react';
 import { AntDesign } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
-import { usePathname } from 'expo-router';
+import { Link, usePathname } from 'expo-router';
 import {
   useFonts,
   KumbhSans_400Regular,
@@ -33,24 +33,26 @@ export default function ButtomNav() {
     <View style={styles.main}>
       <View style={styles.flexes}>
         <View>
-          <TouchableOpacity
-            style={{ justifyContent: 'center', alignItems: 'center' }}
-          >
-            <View>
-              <AntDesign
-                name="home"
-                size={24}
-                color={pathname === '/mainhome' ? '#000000' : '#b3b3b3'}
-              />
-            </View>
-            <Text
-              style={{
-                color: pathname === '/mainhome' ? '#000000' : '#b3b3b3',
-              }}
+          <Link href="/mainhome">
+            <TouchableOpacity
+              style={{ justifyContent: 'center', alignItems: 'center' }}
             >
-              Home
-            </Text>
-          </TouchableOpacity>
+              <View>
+                <AntDesign
+                  name="home"
+                  size={24}
+                  color={pathname === '/mainhome' ? '#000000' : '#b3b3b3'}
+                />
+              </View>
+              <Text
+                style={{
+                  color: pathname === '/mainhome' ? '#000000' : '#b3b3b3',
+                }}
+              >
+                Home
+              </Text>
+            </TouchableOpacity>
+          </Link>
         </View>
         <View>
           <TouchableOpacity

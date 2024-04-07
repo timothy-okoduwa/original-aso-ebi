@@ -6,6 +6,7 @@ import {
   KumbhSans_500Medium,
 } from '@expo-google-fonts/kumbh-sans';
 import { Ionicons } from '@expo/vector-icons';
+import { Link } from 'expo-router';
 // import fabricData from './data'; // Import the fabric data
 
 export default function FabricData({ activeCategory, data }) {
@@ -48,20 +49,28 @@ const FabricCard = ({ fabric }) => {
 
   return (
     <View style={styles.card}>
-      <View style={styles.imageHolder}>
-        <Image style={styles.image} source={fabric.image} resizeMode="cover" />
-      </View>
-      <View style={styles.negetive}>
-        <Text style={styles.name}>{fabric.name}</Text>
-        <TouchableOpacity onPress={toggleFavorite}>
-          {!isFavorite ? (
-            <Ionicons name="heart-outline" size={18} color="black" />
-          ) : (
-            <Ionicons name="heart-sharp" size={18} color="black" />
-          )}
-        </TouchableOpacity>
-      </View>
-      <Text style={styles.price}>{fabric.price}</Text>
+      <Link href={`/${fabric.name}`}>
+        <View style={styles.imageHolder}>
+          <Image
+            style={styles.image}
+            source={fabric.image}
+            resizeMode="cover"
+          />
+        </View>
+        <View style={styles.negetive}>
+          <Text style={styles.name}>{fabric.name.replace(/-/g, ' ')}</Text>
+          <TouchableOpacity onPress={toggleFavorite}>
+            {!isFavorite ? (
+              <Ionicons name="heart-outline" size={18} color="black" />
+            ) : (
+              <Ionicons name="heart-sharp" size={18} color="black" />
+            )}
+          </TouchableOpacity>
+        </View>
+        <View>
+          <Text style={styles.price}>{fabric.price}</Text>
+        </View>
+      </Link>
     </View>
   );
 };
@@ -115,6 +124,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 7,
+
+    width: '100%',
   },
   name: {
     fontFamily: 'KumbhSans_400Regular',
