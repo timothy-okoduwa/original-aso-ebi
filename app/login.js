@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   reegister: {
-    fontFamily: ' KumbhSans_500Medium',
+    fontFamily: 'KumbhSans_500Medium',
     fontSize: 20,
 
     lineHeight: 24,
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     marginTop: 50,
   },
   enadp: {
-    fontFamily: '  Lora_500Medium',
+    fontFamily: 'Lora_500Medium',
     fontSize: 20,
 
     lineHeight: 24,
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
     color: '#1D1D1D',
   },
   greetings: {
-    fontFamily: ' KumbhSans_400Regular',
+    fontFamily: 'KumbhSans_400Regular',
     fontSize: 18,
 
     lineHeight: 24,
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
   },
   labell: {
     // marginBottom: ,
-    fontFamily: ' LexendDeca_400Regular',
+    fontFamily: 'LexendDeca_400Regular',
     fontSize: 16,
 
     lineHeight: 20,
@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
   label: {
     marginLeft: 15,
     width: '80%',
-    fontFamily: ' KumbhSans_400Regular',
+    fontFamily: 'KumbhSans_400Regular',
     fontSize: 14,
 
     lineHeight: 18,
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
   },
   error: {
     color: 'red',
-    fontFamily: ' KumbhSans_400Regular',
+    fontFamily: 'KumbhSans_400Regular',
     fontSize: 14,
 
     marginTop: 9,
@@ -426,7 +426,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   clckforget: {
-    fontFamily: '  KumbhSans_500Medium',
+    fontFamily: 'KumbhSans_500Medium',
     fontSize: 16,
 
     lineHeight: 18,

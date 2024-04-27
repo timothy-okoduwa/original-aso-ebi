@@ -56,11 +56,16 @@ export default function DetailsImage({ partName }) {
 }
 const styles = StyleSheet.create({
   main: {
-    height: 400,
+    height: 440,
     borderBottomRightRadius: 20,
     borderBottomLeftRadius: 20,
     position: 'relative',
     overflow: 'hidden',
+  },
+  slide: {
+    height: 440,
+    borderBottomRightRadius: 20,
+    borderBottomLeftRadius: 20,
   },
   image: {
     width: '100%',
@@ -69,7 +74,7 @@ const styles = StyleSheet.create({
   abs: {
     position: 'absolute',
     zIndex: 999,
-    padding: 30,
+    padding: 13,
   },
   backButton: {
     width: 40,

@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     color: '#1D1D1D',
   },
   greetings: {
-    fontFamily: ' KumbhSans_400Regular',
+    fontFamily: 'KumbhSans_400Regular',
     fontSize: 18,
 
     lineHeight: 24,
@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
   label: {
     marginLeft: 15,
     width: '80%',
-    fontFamily: ' KumbhSans_400Regular',
+    fontFamily: 'KumbhSans_400Regular',
     fontSize: 14,
 
     lineHeight: 18,
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   },
   error: {
     color: 'red',
-    fontFamily: ' KumbhSans_400Regular',
+    fontFamily: 'KumbhSans_400Regular',
     fontSize: 14,
 
     marginTop: 9,
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
   },
   password: {
     marginTop: '17px',
-    fontFamily: ' KumbhSans_400Regular',
+    fontFamily: 'KumbhSans_400Regular',
     fontSize: 16,
 
     marginTop: 17,

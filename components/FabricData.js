@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import {
   useFonts,
   KumbhSans_400Regular,
   KumbhSans_500Medium,
 } from '@expo-google-fonts/kumbh-sans';
+import { Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 // import fabricData from './data'; // Import the fabric data
-
+import a from '../constants/image/oo.png';
 export default function FabricData({ activeCategory, data }) {
   const [fontsLoaded, fontError] = useFonts({
     KumbhSans_400Regular,
@@ -28,7 +29,7 @@ export default function FabricData({ activeCategory, data }) {
             <Text style={styles.noResultsText}>No results found</Text>
           ) : (
             <View style={styles.cardContainer}>
-              {data.map((fabric, index) => (
+              {data?.map((fabric, index) => (
                 <FabricCard key={index} fabric={fabric} />
               ))}
             </View>
@@ -41,37 +42,41 @@ export default function FabricData({ activeCategory, data }) {
 
 const FabricCard = ({ fabric }) => {
   const [isFavorite, setIsFavorite] = useState(fabric.favorite || false);
-
+  const router = useRouter();
   const toggleFavorite = () => {
     setIsFavorite(!isFavorite);
     fabric.favorite = !isFavorite;
   };
-
+  const gotocreataccount = () => {
+    router.push(`/${fabric?.name}`);
+  };
   return (
-    <View style={styles.card}>
-      <Link href={`/${fabric.name}`}>
-        <View style={styles.imageHolder}>
-          <Image
-            style={styles.image}
-            source={fabric.image}
-            resizeMode="cover"
-          />
-        </View>
-        <View style={styles.negetive}>
-          <Text style={styles.name}>{fabric.name.replace(/-/g, ' ')}</Text>
-          <TouchableOpacity onPress={toggleFavorite}>
-            {!isFavorite ? (
-              <Ionicons name="heart-outline" size={18} color="black" />
-            ) : (
-              <Ionicons name="heart-sharp" size={18} color="black" />
-            )}
-          </TouchableOpacity>
-        </View>
+    <TouchableOpacity onPress={gotocreataccount} style={styles.card}>
+      <View style={styles.imageHolder}>
+        <Image
+          style={styles.image}
+          source={fabric?.image || a}
+          resizeMode="cover"
+        />
+      </View>
+
+      <View style={styles.negetive}>
         <View>
-          <Text style={styles.price}>{fabric.price}</Text>
+          <Text style={styles.name}>{fabric?.name?.replace(/-/g, ' ')}</Text>
         </View>
-      </Link>
-    </View>
+
+        <TouchableOpacity onPress={toggleFavorite}>
+          {!isFavorite ? (
+            <Ionicons name="heart-outline" size={18} color="black" />
+          ) : (
+            <Ionicons name="heart-sharp" size={18} color="black" />
+          )}
+        </TouchableOpacity>
+      </View>
+      <View>
+        <Text style={styles.price}>{fabric.price}</Text>
+      </View>
+    </TouchableOpacity>
   );
 };
 
@@ -107,9 +112,9 @@ const styles = StyleSheet.create({
     // Adjust card height as needed
     width: '48%', // Set width to 48% to accommodate two cards in a row with some space between them
     borderRadius: 10,
+    // height: '100%',
   },
   imageHolder: {
-    backgroundColor: 'white',
     height: 180, // Adjust card height as needed
     width: '100%', // Set width to 48% to accommodate two cards in a row with some space between them
     borderRadius: 10,
@@ -124,8 +129,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 7,
-
-    width: '100%',
   },
   name: {
     fontFamily: 'KumbhSans_400Regular',

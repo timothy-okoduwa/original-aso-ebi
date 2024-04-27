@@ -219,16 +219,16 @@ export default function createaccount() {
           <View>
             <Text style={styles.enadp}>Email and Password</Text>
           </View>
-          <View style={{ marginTop: '20px' }}>
+          <View style={{ marginTop: 4 }}>
             <Text style={styles.greetings}>
               Welcome to Original Aso-Ebi! Please provide your email address and
               create a password to create your account.
             </Text>
           </View>
           <View style={styles.inputs}>
-            <View style={{ marginTop: '20px' }}>
+            <View style={{ marginTop: 4 }}>
               <Text style={styles.labell}>Full Name</Text>
-              <View style={{ marginTop: '16px' }}>
+              <View style={{ marginTop: 8 }}>
                 <TextInput
                   style={styles.inputt}
                   placeholder="John Doe"
@@ -240,9 +240,9 @@ export default function createaccount() {
               </View>
               <Text style={styles.error}>{fullNameError}</Text>
             </View>
-            <View style={{ marginTop: '20px' }}>
+            <View style={{ marginTop: 4 }}>
               <Text style={styles.labell}>Email</Text>
-              <View style={{ marginTop: '16px' }}>
+              <View style={{ marginTop: 8 }}>
                 <TextInput
                   style={styles.inputt}
                   value={email}
@@ -254,9 +254,9 @@ export default function createaccount() {
               </View>
               <Text style={styles.error}>{emailError}</Text>
             </View>
-            <View style={{ marginTop: '20px' }}>
+            <View style={{ marginTop: 4 }}>
               <Text style={styles.labell}>Password</Text>
-              <View style={{ marginTop: '16px' }}>
+              <View style={{ marginTop: 8 }}>
                 <View
                   style={[
                     styles.scares,
@@ -294,9 +294,9 @@ export default function createaccount() {
               </View>
               <Text style={styles.error}>{passwordError}</Text>
             </View>
-            <View style={{ marginTop: '20px' }}>
+            <View style={{ marginTop: 4 }}>
               <Text style={styles.labell}>Confirm Password</Text>
-              <View style={{ marginTop: '16px' }}>
+              <View style={{ marginTop: 8 }}>
                 <View
                   style={[
                     styles.scares,
@@ -334,7 +334,7 @@ export default function createaccount() {
               </View>
               <Text style={styles.error}>{confirmPasswordError}</Text>
             </View>
-            <View style={{ marginTop: '20px' }}>
+            <View style={{ marginTop: 18 }}>
               <TouchableOpacity
                 onPress={toggleCheckbox}
                 style={styles.checkboxContainer}
@@ -352,7 +352,7 @@ export default function createaccount() {
               </TouchableOpacity>
               <Text style={styles.error}>{checkError}</Text>
             </View>
-            <View style={{ marginTop: '30px', marginBottom: '30px' }}>
+            <View style={{ marginTop: 20, marginBottom: 30 }}>
               <TouchableOpacity
                 style={styles.create}
                 onPress={handleCreateAccount}
@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   reegister: {
-    fontFamily: ' KumbhSans_500Medium',
+    fontFamily: 'KumbhSans_500Medium',
     fontSize: 20,
 
     lineHeight: 24,
@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
     marginTop: 50,
   },
   enadp: {
-    fontFamily: '  Lora_500Medium',
+    fontFamily: 'Lora_500Medium',
     fontSize: 20,
 
     lineHeight: 24,
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
     color: '#1D1D1D',
   },
   greetings: {
-    fontFamily: ' KumbhSans_400Regular',
+    fontFamily: 'KumbhSans_400Regular',
     fontSize: 18,
 
     lineHeight: 24,
@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
   },
   labell: {
     // marginBottom: ,
-    fontFamily: ' LexendDeca_400Regular',
+    fontFamily: 'LexendDeca_400Regular',
     fontSize: 16,
 
     lineHeight: 20,
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
   label: {
     marginLeft: 15,
     width: '80%',
-    fontFamily: ' KumbhSans_400Regular',
+    fontFamily: 'KumbhSans_400Regular',
     fontSize: 14,
 
     lineHeight: 18,
@@ -517,14 +517,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 10,
-    marginBottom: 13,
+    // marginBottom: 13,
     fontSize: 16,
   },
   error: {
     color: 'red',
-    fontFamily: ' KumbhSans_400Regular',
+    fontFamily: 'KumbhSans_400Regular',
     fontSize: 14,
 
-    marginTop: 9,
+    marginTop: 4,
+    marginBottom: 8,
   },
 });

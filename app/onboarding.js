@@ -12,7 +12,7 @@ import { useFonts, Ledger_400Regular } from '@expo-google-fonts/ledger';
 import { LexendDeca_400Regular } from '@expo-google-fonts/lexend-deca';
 import { AntDesign } from '@expo/vector-icons';
 import { Link, useRouter } from 'expo-router';
-
+import data from '../components/data';
 export default function Onboarding() {
   const router = useRouter();
   // Capitalize the function name to follow convention

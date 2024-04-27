@@ -1,21 +1,22 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import React, { useState } from 'react';
 
+import { useFonts, Ledger_400Regular } from '@expo-google-fonts/ledger';
 import {
-  useFonts,
-  Ledger_400Regular,
   KumbhSans_400Regular,
-  KumbhSans_500Regular,
-} from '@expo-google-fonts/ledger';
-import { Octicons, Entypo } from '@expo/vector-icons';
+  KumbhSans_500Medium,
+} from '@expo-google-fonts/kumbh-sans';
+import { Octicons, Entypo, MaterialIcons } from '@expo/vector-icons';
+
 // import {  } from '@expo/vector-icons';
 import data from './data';
 export default function DetailsDescription({ partName }) {
   const [quantity, setQuantity] = useState(5);
+  const [addedToCart, setAddedToCart] = useState(false);
   const [fontsLoaded, fontError] = useFonts({
     Ledger_400Regular,
     KumbhSans_400Regular,
-    KumbhSans_500Regular,
+    KumbhSans_500Medium,
   });
 
   //   if (!fontsLoaded || fontError) {
@@ -36,6 +37,10 @@ export default function DetailsDescription({ partName }) {
     } else if (quantity > 1) {
       setQuantity((prevQuantity) => prevQuantity - 1); // Decrement by 1 until reaching 1 from 5
     }
+  };
+
+  const handleAddToCart = () => {
+    setAddedToCart(true); // Set addedToCart to true when added to cart
   };
 
   if (fabric) {
@@ -67,14 +72,26 @@ export default function DetailsDescription({ partName }) {
           </TouchableOpacity>
         </View>
         <View style={styles.addtoc}>
-          <TouchableOpacity style={styles.create}>
-            <Text style={{ color: 'white' }}>Add To Cart</Text>
-          </TouchableOpacity>
+          {addedToCart ? (
+            <TouchableOpacity style={styles.added}>
+              <Text style={{ color: '#767676' }}>Added to Cart </Text>
+              <Text>
+                <MaterialIcons
+                  name="check-circle-outline"
+                  size={20}
+                  color="#767676"
+                />
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={styles.create} onPress={handleAddToCart}>
+              <Text style={{ color: 'white' }}>Add to Cart</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     );
   } else {
-    // If fabric is not found, render an appropriate message or fallback component
     return <Text>Fabric not found</Text>;
   }
 }
@@ -143,13 +160,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1, // Add border width
+    borderColor: '#DCDCDC', // Add border color
   },
   incone: {
-    fontFamily: 'KumbhSans_500Regular',
+    fontFamily: 'KumbhSans_500Medium',
     fontSize: 20,
   },
   mount: {
-    fontFamily: 'KumbhSans_500Regular',
+    fontFamily: 'KumbhSans_500Medium',
     fontSize: 20,
     color: '#000000',
   },
@@ -157,7 +176,7 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   create: {
-    fontFamily: 'KumbhSans_500Regular',
+    fontFamily: 'KumbhSans_500Medium',
     width: '100%',
     height: 55,
     backgroundColor: '#000000',
@@ -167,5 +186,20 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 15,
     fontSize: 16,
+  },
+  added: {
+    fontFamily: 'KumbhSans_500Medium',
+    width: '100%',
+    height: 55,
+    backgroundColor: '#ffffff',
+    color: '#767676',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+    marginBottom: 15,
+    fontSize: 16,
+    borderWidth: 1, // Add border width
+    borderColor: '#767676', // Add border color
   },
 });

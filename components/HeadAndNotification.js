@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   oae: {
-    fontFamily: ' KumbhSans_400Regular',
+    fontFamily: 'KumbhSans_400Regular',
     fontSize: 20,
     lineHeight: 24,
     textAlign: 'left',

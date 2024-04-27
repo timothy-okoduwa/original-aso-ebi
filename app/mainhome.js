@@ -38,6 +38,7 @@ export default function mainhome() {
             setActiveCategory={setActiveCategory}
             activeCategory={activeCategory}
           />
+
           <FabricData activeCategory={activeCategory} data={filteredData} />
         </View>
       </ScrollView>
