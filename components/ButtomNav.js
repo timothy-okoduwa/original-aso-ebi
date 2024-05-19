@@ -9,7 +9,7 @@ import React from 'react';
 import { AntDesign } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
-import { Link, usePathname } from 'expo-router';
+import { Link, usePathname, useRouter } from 'expo-router';
 import {
   useFonts,
   KumbhSans_400Regular,
@@ -18,6 +18,7 @@ import {
 
 export default function ButtomNav() {
   const pathname = usePathname();
+  const router = useRouter();
   //   console.log(pathname);
 
   const [fontsLoaded, fontError] = useFonts({
@@ -28,45 +29,59 @@ export default function ButtomNav() {
   if (!fontsLoaded || fontError) {
     return null;
   }
-
+  const mainhome = () => {
+    router.push('/mainhome');
+  };
+  const shop = () => {
+    router.push('/shop');
+  };
   return (
     <View style={styles.main}>
       <View style={styles.flexes}>
         <View>
-          <Link href="/mainhome">
-            <TouchableOpacity
-              style={{ justifyContent: 'center', alignItems: 'center' }}
+          <TouchableOpacity
+            style={{ justifyContent: 'center', alignItems: 'center' }}
+            onPress={mainhome}
+          >
+            <View>
+              <AntDesign
+                name="home"
+                size={24}
+                color={pathname === '/mainhome' ? '#000000' : '#b3b3b3'}
+              />
+            </View>
+            <Text
+              style={{
+                color: pathname === '/mainhome' ? '#000000' : '#b3b3b3',
+              }}
             >
-              <View>
-                <AntDesign
-                  name="home"
-                  size={24}
-                  color={pathname === '/mainhome' ? '#000000' : '#b3b3b3'}
-                />
-              </View>
-              <Text
-                style={{
-                  color: pathname === '/mainhome' ? '#000000' : '#b3b3b3',
-                }}
-              >
-                Home
-              </Text>
-            </TouchableOpacity>
-          </Link>
+              Home
+            </Text>
+          </TouchableOpacity>
         </View>
         <View>
           <TouchableOpacity
             style={{ justifyContent: 'center', alignItems: 'center' }}
+            onPress={shop}
           >
             <View>
               <Feather
                 name="shopping-bag"
                 size={24}
-                color={pathname === '/shop' ? '#000000' : '#b3b3b3'}
+                color={
+                  pathname === '/shop' || pathname === '/storeresult'
+                    ? '#000000'
+                    : '#b3b3b3'
+                }
               />
             </View>
             <Text
-              style={{ color: pathname === '/shop' ? '#000000' : '#b3b3b3' }}
+              style={{
+                color:
+                  pathname === '/shop' || pathname === '/storeresult'
+                    ? '#000000'
+                    : '#b3b3b3',
+              }}
             >
               Shop
             </Text>

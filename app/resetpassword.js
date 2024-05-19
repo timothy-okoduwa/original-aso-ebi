@@ -14,6 +14,7 @@ import {
   useFonts,
   LexendDeca_400Regular,
 } from '@expo-google-fonts/lexend-deca';
+import { StatusBar } from 'expo-status-bar';
 import {
   KumbhSans_100Thin,
   KumbhSans_200ExtraLight,
@@ -137,6 +138,7 @@ export default function resetpassword() {
   }
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
+      <StatusBar style="dark" />
       <View style={styles.main}>
         <View style={styles.flex}>
           <Link href="/onboarding">

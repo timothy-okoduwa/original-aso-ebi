@@ -19,8 +19,9 @@ import {
   KumbhSans_800ExtraBold,
   KumbhSans_900Black,
 } from '@expo-google-fonts/kumbh-sans';
-
+import { useRouter } from 'expo-router';
 export default function SearchComponent({ setSearchQuery }) {
+  const router = useRouter();
   const [searchText, setSearchText] = useState('');
 
   useEffect(() => {
@@ -48,6 +49,9 @@ export default function SearchComponent({ setSearchQuery }) {
   if (!fontsLoaded || fontError) {
     return null;
   }
+  const gotofavs = () => {
+    router.push('/favourite');
+  };
 
   return (
     <View style={styles.mainhead}>
@@ -60,6 +64,7 @@ export default function SearchComponent({ setSearchQuery }) {
             onChangeText={setSearchText}
             keyboardType="default"
             placeholderTextColor="#999"
+            onSubmitEditing={handleSearch}
           />
         </View>
         <View style={styles.hanging}>
@@ -68,7 +73,7 @@ export default function SearchComponent({ setSearchQuery }) {
           </TouchableOpacity>
         </View>
         <View style={styles.love}>
-          <TouchableOpacity style={styles.create2}>
+          <TouchableOpacity style={styles.create2} onPress={gotofavs}>
             <Text>
               <Feather name="heart" size={24} color="black" />
             </Text>

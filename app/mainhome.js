@@ -6,7 +6,7 @@ import Categories from '../components/Categories';
 import FabricData from '../components/FabricData';
 import data from '../components/data';
 import ButtomNav from '../components/ButtomNav';
-
+import { StatusBar } from 'expo-status-bar';
 export default function mainhome() {
   const [activeCategory, setActiveCategory] = useState('New Arrival');
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,6 +27,7 @@ export default function mainhome() {
 
   return (
     <View style={styles.container}>
+      <StatusBar style="dark" />
       <ScrollView
         contentContainerStyle={styles.scrollViewContent}
         showsVerticalScrollIndicator={false}

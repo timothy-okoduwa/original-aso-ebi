@@ -10,8 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import a from '../constants/image/oo.png';
 
-export default function FabricData({ activeCategory, data }) {
-  const [fabrics, setFabrics] = useState(data);
+export default function FabricDataStore({ activeCategory, data }) {
   const [fontsLoaded, fontError] = useFonts({
     KumbhSans_400Regular,
     KumbhSans_500Medium,
@@ -21,22 +20,7 @@ export default function FabricData({ activeCategory, data }) {
     return null;
   }
 
-  let filteredFabrics = fabrics;
-
-  if (activeCategory !== 'New Arrival') {
-    // Filter fabrics based on active category if it's not "New Arrival"
-    filteredFabrics = fabrics.filter(
-      (fabric) => fabric.category === activeCategory
-    );
-  }
-
-  const noResults = filteredFabrics.length === 0;
-
-  const toggleFavorite = (index) => {
-    const updatedFabrics = [...fabrics];
-    updatedFabrics[index].favorite = !updatedFabrics[index].favorite;
-    setFabrics(updatedFabrics);
-  };
+  const noResults = data.length === 0;
 
   return (
     <View style={styles.container}>
@@ -47,13 +31,8 @@ export default function FabricData({ activeCategory, data }) {
             <Text style={styles.noResultsText}>No results found</Text>
           ) : (
             <View style={styles.cardContainer}>
-              {filteredFabrics.map((fabric, index) => (
-                <FabricCard
-                  key={index}
-                  fabric={fabric}
-                  index={index}
-                  toggleFavorite={() => toggleFavorite(index)} // Pass toggleFavorite function with index
-                />
+              {data.map((fabric, index) => (
+                <FabricCard key={index} fabric={fabric} />
               ))}
             </View>
           )}
@@ -63,11 +42,13 @@ export default function FabricData({ activeCategory, data }) {
   );
 }
 
-const FabricCard = ({ fabric, index, toggleFavorite }) => {
+const FabricCard = ({ fabric }) => {
+  const [isFavorite, setIsFavorite] = useState(fabric.favorite || false);
   const router = useRouter();
 
-  const handleFavoriteToggle = () => {
-    toggleFavorite(index);
+  const toggleFavorite = () => {
+    setIsFavorite(!isFavorite);
+    fabric.favorite = !isFavorite;
   };
 
   const gotocreataccount = () => {
@@ -87,11 +68,11 @@ const FabricCard = ({ fabric, index, toggleFavorite }) => {
         <View>
           <Text style={styles.name}>{fabric.name.replace(/-/g, ' ')}</Text>
         </View>
-        <TouchableOpacity onPress={handleFavoriteToggle}>
-          {fabric.favorite ? (
-            <Ionicons name="heart-sharp" size={18} color="black" />
-          ) : (
+        <TouchableOpacity onPress={toggleFavorite}>
+          {!isFavorite ? (
             <Ionicons name="heart-outline" size={18} color="black" />
+          ) : (
+            <Ionicons name="heart-sharp" size={18} color="black" />
           )}
         </TouchableOpacity>
       </View>

@@ -6,8 +6,6 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import React, { useState } from 'react';
-import { Image } from 'react-native';
-import a from '../constants/image/graf.png';
 import {
   useFonts,
   KumbhSans_100Thin,
@@ -21,9 +19,7 @@ import {
   KumbhSans_900Black,
 } from '@expo-google-fonts/kumbh-sans';
 import { Ledger_400Regular } from '@expo-google-fonts/ledger';
-import { useRouter } from 'expo-router';
-export default function Categories({ setActiveCategory, activeCategory }) {
-  const router = useRouter();
+export default function CategoriesStore({ setActiveCategory, activeCategory }) {
   const categories = [
     'New Arrival',
     'Lace',
@@ -85,10 +81,6 @@ export default function Categories({ setActiveCategory, activeCategory }) {
   if (!fontsLoaded || fontError) {
     return null;
   }
-  const goToCategory = () => {
-    router.push('/shop');
-  };
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Categories</Text>
@@ -100,22 +92,6 @@ export default function Categories({ setActiveCategory, activeCategory }) {
         contentContainerStyle={styles.categoryList}
         showsHorizontalScrollIndicator={false}
       />
-      <View style={styles.banner}>
-        <Image style={styles.backgroundImage} source={a} resizeMode="cover" />
-        <View style={styles.bannerContent}>
-          <View>
-            <Text style={styles.omoh}>Checkout</Text>
-            <Text style={styles.omoh}> New Arrivals</Text>
-          </View>
-          <View>
-            <View>
-              <TouchableOpacity style={styles.create} onPress={goToCategory}>
-                <Text style={{ color: 'white' }}>🔥Shop Now</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </View>
     </View>
   );
 }
@@ -142,6 +118,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 15,
     marginRight: 10,
+    alignItems: 'center',
     height: 43,
   },
   categoryText: {

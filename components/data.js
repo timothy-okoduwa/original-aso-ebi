@@ -16,6 +16,22 @@ const data = [
     category: 'Lace',
   },
   {
+    image: require('../constants/image/royal.png'),
+    carouselImages: [
+      require('../constants/image/royal.png'),
+      require('../constants/image/green.png'),
+      require('../constants/image/sen1.png'),
+      require('../constants/image/sen2.png'),
+    ],
+    colors: ['#4169E1', '#000000', '#d5d5d5'],
+    name: 'Green-Blue-Lace',
+    details:
+      'Green lace fabric in royal blue color. Perfect for elegant dresses and evening gowns.',
+    price: '$15',
+    favorite: false,
+    category: 'Lace',
+  },
+  {
     image: require('../constants/image/green.png'),
     carouselImages: [
       require('../constants/image/royal.png'),

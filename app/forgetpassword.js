@@ -6,6 +6,7 @@ import {
   TextInput,
   ScrollView,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { Link, useRouter } from 'expo-router';
 import { AntDesign } from '@expo/vector-icons';
@@ -115,6 +116,7 @@ export default function forgetpassword() {
   }
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
+      <StatusBar style="dark" />
       <View style={styles.main}>
         <View style={styles.flex}>
           <Link href="/onboarding">
@@ -131,16 +133,16 @@ export default function forgetpassword() {
           <View>
             <Text style={styles.enadp}>Email and Password</Text>
           </View>
-          <View style={{ marginTop: '20px' }}>
+          <View style={{ marginTop: 20 }}>
             <Text style={styles.greetings}>
               Welcome to Original Aso-Ebi! Please provide your email address and
               create a password to create your account.
             </Text>
           </View>
           <View style={styles.inputs}>
-            <View style={{ marginTop: '20px' }}>
+            <View style={{ marginTop: 20 }}>
               <Text style={styles.labell}>Email</Text>
-              <View style={{ marginTop: '16px' }}>
+              <View style={{ marginTop: 16 }}>
                 <TextInput
                   style={styles.inputt}
                   value={email}
@@ -153,7 +155,7 @@ export default function forgetpassword() {
               <Text style={styles.error}>{emailError}</Text>
             </View>
 
-            <View style={{ marginTop: '70px', marginBottom: '30px' }}>
+            <View style={{ marginBottom: 30 }}>
               <TouchableOpacity
                 style={styles.create}
                 onPress={handleCreateAccount}

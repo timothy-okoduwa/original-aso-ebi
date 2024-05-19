@@ -10,6 +10,7 @@ import React, { useState } from 'react';
 import { Link, useRouter } from 'expo-router';
 import { AntDesign } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
+
 // import { Feather } from '@expo/vector-icons';
 import {
   useFonts,
@@ -36,7 +37,7 @@ import {
   Lora_600SemiBold_Italic,
   Lora_700Bold_Italic,
 } from '@expo-google-fonts/lora';
-
+import { StatusBar } from 'expo-status-bar';
 export default function login() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
@@ -158,6 +159,7 @@ export default function login() {
   }
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
+      <StatusBar style="dark" />
       <View style={styles.main}>
         <View style={styles.flex}>
           <Link href="/onboarding">
@@ -173,16 +175,16 @@ export default function login() {
           <View>
             <Text style={styles.enadp}>Email and Password</Text>
           </View>
-          <View style={{ marginTop: '20px' }}>
+          <View style={{ marginTop: 20 }}>
             <Text style={styles.greetings}>
               Welcome to Original Aso-Ebi! Please provide your email address and
               create a password to create your account.
             </Text>
           </View>
           <View style={styles.inputs}>
-            <View style={{ marginTop: '20px' }}>
+            <View style={{ marginTop: 20 }}>
               <Text style={styles.labell}>Email</Text>
-              <View style={{ marginTop: '16px' }}>
+              <View style={{ marginTop: 16 }}>
                 <TextInput
                   style={styles.inputt}
                   value={email}
@@ -194,9 +196,9 @@ export default function login() {
               </View>
               <Text style={styles.error}>{emailError}</Text>
             </View>
-            <View style={{ marginTop: '20px' }}>
+            <View style={{ marginTop: 20 }}>
               <Text style={styles.labell}>Password</Text>
-              <View style={{ marginTop: '16px' }}>
+              <View style={{ marginTop: 16 }}>
                 <View
                   style={[
                     styles.scares,
@@ -242,7 +244,7 @@ export default function login() {
                 <Text>Forgot Password?</Text>
               </TouchableOpacity>
             </View>
-            <View style={{ marginTop: '30px', marginBottom: '30px' }}>
+            <View style={{ marginTop: 30, marginBottom: 30 }}>
               <TouchableOpacity
                 style={styles.create}
                 onPress={handleCreateAccount}
@@ -273,7 +275,7 @@ const styles = StyleSheet.create({
   flex: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: '30px',
+    marginTop: 30,
   },
   testx: {
     marginLeft: 10,

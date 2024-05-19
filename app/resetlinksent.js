@@ -11,6 +11,7 @@ import { Link, useRouter } from 'expo-router';
 import { Image } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import a from '../constants/image/check.png';
+import { StatusBar } from 'expo-status-bar';
 // import { Feather } from '@expo/vector-icons';
 // import { Feather } from '@expo/vector-icons';
 import {
@@ -69,6 +70,7 @@ export default function resetlinksent() {
   }
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
+      <StatusBar style="dark" />
       <View style={styles.main}>
         <View style={styles.createups}>
           <View style={styles.inputs}>

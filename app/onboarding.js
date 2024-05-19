@@ -13,6 +13,7 @@ import { LexendDeca_400Regular } from '@expo-google-fonts/lexend-deca';
 import { AntDesign } from '@expo/vector-icons';
 import { Link, useRouter } from 'expo-router';
 import data from '../components/data';
+import { StatusBar } from 'expo-status-bar';
 export default function Onboarding() {
   const router = useRouter();
   // Capitalize the function name to follow convention
@@ -35,6 +36,7 @@ export default function Onboarding() {
   };
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
+      <StatusBar style="dark" />
       <View style={styles.main}>
         <View style={styles.imageHolder}>
           <Image style={styles.image} source={a} resizeMode="cover" />
@@ -72,12 +74,6 @@ export default function Onboarding() {
           </TouchableOpacity>
         </View>
       </View>
-
-      {/* 
-        
-        
-        
-        </View> */}
     </ScrollView>
   );
 }

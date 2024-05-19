@@ -11,6 +11,7 @@ import { Link } from 'expo-router';
 import { AntDesign } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 // import { Feather } from '@expo/vector-icons';
+import { StatusBar } from 'expo-status-bar';
 import {
   useFonts,
   LexendDeca_400Regular,
@@ -203,6 +204,7 @@ export default function createaccount() {
   }
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
+      <StatusBar style="dark" />
       <View style={styles.main}>
         <View style={styles.flex}>
           <Link href="/onboarding">

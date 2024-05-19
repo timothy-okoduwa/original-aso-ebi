@@ -8,7 +8,13 @@ import data from './data';
 export default function DetailsImage({ partName }) {
   const router = useRouter();
   const gobckhome = () => {
-    router.push('/mainhome');
+    router.back();
+  };
+  const openFullScreenImage = (images, initialIndex) => {
+    router.push({
+      pathname: '/fullScreenImage',
+      params: { images: JSON.stringify(images), initialIndex },
+    });
   };
   // Find the object in the data array with the same name as partName
   const fabric = data?.find((item) => item?.name === partName);
@@ -32,20 +38,29 @@ export default function DetailsImage({ partName }) {
               </Text>
             </TouchableOpacity>
           </View>
-          <Swiper
-            style={styles.wrapper}
-            showsButtons={false} // Example of a carousel option
-            autoplay={true} // Example of a carousel option
-            autoplayTimeout={3} // Example of a carousel option
-            dot={<View style={styles.dot} />}
-            activeDot={<View style={styles.activeDot} />}
+          <TouchableOpacity
+            style={styles.slide}
+            onPress={() => openFullScreenImage(fabric.carouselImages)}
           >
-            {fabric.carouselImages.map((image, index) => (
-              <View style={styles.slide} key={index}>
-                <Image style={styles.image} source={image} resizeMode="cover" />
-              </View>
-            ))}
-          </Swiper>
+            <Swiper
+              style={styles.wrapper}
+              showsButtons={false} // Example of a carousel option
+              autoplay={true} // Example of a carousel option
+              autoplayTimeout={3} // Example of a carousel option
+              dot={<View style={styles.dot} />}
+              activeDot={<View style={styles.activeDot} />}
+            >
+              {fabric.carouselImages.map((image, index) => (
+                <View style={styles.slide} key={index}>
+                  <Image
+                    style={styles.image}
+                    source={image}
+                    resizeMode="cover"
+                  />
+                </View>
+              ))}
+            </Swiper>
+          </TouchableOpacity>
         </View>
       </View>
     );
