@@ -5,13 +5,21 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
-import React, { useState } from 'react';
-import { Link } from 'expo-router';
+import React, { useState, useEffect } from 'react';
+import { Link, useRouter } from 'expo-router';
 import { AntDesign } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 // import { Feather } from '@expo/vector-icons';
+import { useDispatch, useSelector } from 'react-redux';
+import { registerUser } from '../components/features/auth/authSlice';
 import { StatusBar } from 'expo-status-bar';
+import Toast from 'react-native-toast-message';
+import { useLoading } from './LoadingContext';
+
+// ;
+
 import {
   useFonts,
   LexendDeca_400Regular,
@@ -39,22 +47,53 @@ import {
 } from '@expo-google-fonts/lora';
 
 export default function createaccount() {
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const authStatus = useSelector((state) => state.auth.status);
+  const authError = useSelector((state) => state.auth.error);
+  const successMessage = useSelector((state) => state.auth.successMessage);
   const [showPassword, setShowPassword] = useState(false);
   const [showPassword2, setShowPassword2] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isInputFocused2, setIsInputFocused2] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
-
+  const [loading, setLoading] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [message, setMessage] = useState('');
+  const { showLoading, hideLoading } = useLoading();
+  const role = 1;
   // State variables to store input values and corresponding error messages
-  const [fullName, setFullName] = useState('');
+
+  const [name, setname] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [fullNameError, setFullNameError] = useState('');
+  const [nameError, setnameError] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const [checkError, setCheckError] = useState('');
+
+  const handlePhoneChange = (text) => {
+    let formattedPhone = text;
+
+    // Remove the leading zero
+    if (formattedPhone.startsWith('0')) {
+      formattedPhone = formattedPhone.substring(1);
+    }
+
+    // Remove the +234 prefix
+    if (formattedPhone.startsWith('234')) {
+      formattedPhone = formattedPhone.substring(3);
+    } else if (formattedPhone.startsWith('+234')) {
+      formattedPhone = formattedPhone.substring(4);
+    }
+
+    setPhone(formattedPhone);
+  };
+
   const handleFocus = () => {
     setIsInputFocused(true);
   };
@@ -84,12 +123,20 @@ export default function createaccount() {
     setCheckError('');
     return true;
   };
-  const validateFullName = () => {
-    if (fullName.trim() === '') {
-      setFullNameError('Full name is required');
+  const validatename = () => {
+    if (name.trim() === '') {
+      setnameError('Full name is required');
       return false;
     }
-    setFullNameError('');
+    setnameError('');
+    return true;
+  };
+  const validatePhone = () => {
+    if (phone.trim() === '') {
+      setPhoneError('Phone number is required');
+      return false;
+    }
+    setnameError('');
     return true;
   };
 
@@ -159,26 +206,86 @@ export default function createaccount() {
   };
 
   // Handle submit button press
-  const handleCreateAccount = () => {
-    const isFullNameValid = validateFullName();
+  const handleCreateAccount = async () => {
+    // Run all validations
+    const isNameValid = validatename();
+    const isPhoneValidated = validatePhone();
     const isEmailValid = validateEmail();
     const isPasswordValid = validatePassword();
     const isConfirmPasswordValid = validateConfirmPassword();
     const eww = checkesit();
-    // If all fields are valid, submit the form
+
+    // If any validation fails, return early and do not proceed further
     if (
-      isFullNameValid &&
-      isEmailValid &&
-      eww &&
-      isPasswordValid &&
-      isConfirmPasswordValid
+      !isNameValid ||
+      !isPhoneValidated ||
+      !isEmailValid ||
+      !eww ||
+      !isPasswordValid ||
+      !isConfirmPasswordValid
     ) {
-      // Submit the form or navigate to the next screen
-      console.log('Form submitted successfully');
+      setLoading(false); // Ensure loading is set to false if there is an error
+      return; // Exit the function early
+    }
+
+    setLoading(true); // Only set loading to true if all validations pass
+    showLoading(); // Show loading indicator before starting async operation
+
+    try {
+      // Dispatch the registerUser thunk with the form data
+      await dispatch(registerUser({ name, email, phone, password, role: 1 }));
+    } finally {
+      hideLoading(); // Always hide loading indicator after async operation
     }
   };
 
-  const [fontsLoaded, fontError] = useFonts({
+  // Use useEffect to handle side effects based on Redux state
+  useEffect(() => {
+    if (authStatus === 'succeeded') {
+      Toast.show({
+        type: 'success',
+        position: 'top',
+        text1: successMessage || 'Registration successful!',
+        text2: successMessage ? 'You have successfully registered.' : '', // Additional message
+        visibilityTime: 10000, // Increase visibility time for longer messages
+        autoHide: true,
+        topOffset: 60, // Adjust topOffset for better positioning
+        style: {
+          paddingVertical: 20, // Add padding for better spacing
+          paddingHorizontal: 20,
+        },
+        textStyle: {
+          fontSize: 16, // Adjust font size for readability
+          textAlign: 'left', // Ensure text alignment
+        },
+      });
+      setLoading(false);
+      hideLoading(); // Hide loading indicator after successful registration
+      router.push('/otpverification');
+    } else if (authStatus === 'failed') {
+      Toast.show({
+        type: 'error',
+        position: 'top',
+        text1: 'Registration failed.',
+        text2: authError || 'Please try again or check your input.', // Additional details
+        visibilityTime: 10000, // Increase visibility time for longer messages
+        autoHide: true,
+        topOffset: 60, // Adjust topOffset for better positioning
+        style: {
+          paddingVertical: 20, // Add padding for better spacing
+          paddingHorizontal: 20,
+        },
+        textStyle: {
+          fontSize: 16, // Adjust font size for readability
+          textAlign: 'left', // Ensure text alignment
+        },
+      });
+      setLoading(false);
+      hideLoading(); // Hide loading indicator after failed registration
+    }
+  }, [authStatus, successMessage, authError]);
+
+  const [fontsLoaded] = useFonts({
     LexendDeca_400Regular,
     KumbhSans_100Thin,
     KumbhSans_200ExtraLight,
@@ -199,181 +306,219 @@ export default function createaccount() {
     Lora_700Bold_Italic,
   });
 
-  if (!fontsLoaded || fontError) {
-    return null;
-  }
+  useEffect(() => {
+    // If fonts are not loaded, show loading indicator
+    if (!fontsLoaded) {
+      showLoading(); // Show loading indicator until fonts are loaded
+    } else {
+      hideLoading(); // Hide loading indicator after fonts are loaded
+      setLoading(false); // Set loading to false after fonts are loaded
+    }
+  }, [fontsLoaded]);
+  const isDisabled =
+    loading || !name || !email || !password || !confirmPassword || !isChecked;
   return (
-    <ScrollView contentContainerStyle={styles.scrollViewContent}>
-      <StatusBar style="dark" />
-      <View style={styles.main}>
-        <View style={styles.flex}>
-          <Link href="/onboarding">
-            {' '}
-            <View>
-              <AntDesign name="arrowleft" size={24} color="black" />
-            </View>
-            <View style={styles.testx}>
-              <Text style={styles.reegister}>Register</Text>
-            </View>
-          </Link>
-        </View>
-        <View style={styles.createups}>
-          <View>
-            <Text style={styles.enadp}>Email and Password</Text>
-          </View>
-          <View style={{ marginTop: 4 }}>
-            <Text style={styles.greetings}>
-              Welcome to Original Aso-Ebi! Please provide your email address and
-              create a password to create your account.
-            </Text>
-          </View>
-          <View style={styles.inputs}>
-            <View style={{ marginTop: 4 }}>
-              <Text style={styles.labell}>Full Name</Text>
-              <View style={{ marginTop: 8 }}>
-                <TextInput
-                  style={styles.inputt}
-                  placeholder="John Doe"
-                  keyboardType="default"
-                  value={fullName}
-                  onChangeText={(text) => setFullName(text)}
-                  placeholderTextColor="#999"
-                />
-              </View>
-              <Text style={styles.error}>{fullNameError}</Text>
-            </View>
-            <View style={{ marginTop: 4 }}>
-              <Text style={styles.labell}>Email</Text>
-              <View style={{ marginTop: 8 }}>
-                <TextInput
-                  style={styles.inputt}
-                  value={email}
-                  onChangeText={(text) => setEmail(text)}
-                  placeholder="youremail@here.com"
-                  keyboardType="email-address" // Change this to 'password' or 'default' for different types
-                  placeholderTextColor="#999" // Change placeholder text color here
-                />
-              </View>
-              <Text style={styles.error}>{emailError}</Text>
-            </View>
-            <View style={{ marginTop: 4 }}>
-              <Text style={styles.labell}>Password</Text>
-              <View style={{ marginTop: 8 }}>
-                <View
-                  style={[
-                    styles.scares,
-                    {
-                      borderColor: isInputFocused ? 'black' : 'gray',
-                      borderWidth: isInputFocused ? 2 : 1,
-                    },
-                  ]}
-                >
-                  <View style={styles.inputContainer}>
-                    <TextInput
-                      style={styles.inpu2}
-                      placeholder="*********"
-                      secureTextEntry={!showPassword}
-                      placeholderTextColor="#999"
-                      underlineColorAndroid="transparent"
-                      value={password}
-                      onChangeText={(text) => setPassword(text)}
-                      onFocus={handleFocus}
-                      onBlur={handleBlur}
-                    />
-                  </View>
-                  <View>
-                    <TouchableOpacity
-                      onPress={() => setShowPassword(!showPassword)}
-                    >
-                      <Feather
-                        name={showPassword ? 'eye' : 'eye-off'}
-                        size={20}
-                        color="black"
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-              <Text style={styles.error}>{passwordError}</Text>
-            </View>
-            <View style={{ marginTop: 4 }}>
-              <Text style={styles.labell}>Confirm Password</Text>
-              <View style={{ marginTop: 8 }}>
-                <View
-                  style={[
-                    styles.scares,
-                    {
-                      borderColor: isInputFocused2 ? 'black' : 'gray',
-                      borderWidth: isInputFocused2 ? 2 : 1,
-                    },
-                  ]}
-                >
-                  <View style={styles.inputContainer}>
-                    <TextInput
-                      style={styles.inpu2}
-                      placeholder="*********"
-                      secureTextEntry={!showPassword2}
-                      placeholderTextColor="#999"
-                      underlineColorAndroid="transparent"
-                      value={confirmPassword}
-                      onChangeText={(text) => setConfirmPassword(text)}
-                      onFocus={handleFocus2}
-                      onBlur={handleBlur2}
-                    />
-                  </View>
-                  <View>
-                    <TouchableOpacity
-                      onPress={() => setShowPassword2(!showPassword2)}
-                    >
-                      <Feather
-                        name={showPassword2 ? 'eye' : 'eye-off'}
-                        size={20}
-                        color="black"
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-              <Text style={styles.error}>{confirmPasswordError}</Text>
-            </View>
-            <View style={{ marginTop: 18 }}>
-              <TouchableOpacity
-                onPress={toggleCheckbox}
-                style={styles.checkboxContainer}
-              >
-                <View style={[styles.checkbox, isChecked && styles.checked]}>
-                  {isChecked && (
-                    <Feather name="check" size={13} color="white" />
-                  )}
-                </View>
-                <Text style={styles.label}>
-                  I have read and agree to the{' '}
-                  <Text style={styles.others}>Terms and Conditions</Text> and{' '}
-                  <Text style={styles.others}>Privacy Policy</Text>
-                </Text>
-              </TouchableOpacity>
-              <Text style={styles.error}>{checkError}</Text>
-            </View>
-            <View style={{ marginTop: 20, marginBottom: 30 }}>
-              <TouchableOpacity
-                style={styles.create}
-                onPress={handleCreateAccount}
-              >
-                <Text style={{ color: 'white' }}>Create Account</Text>
-              </TouchableOpacity>
-
-              <View>
-                <TouchableOpacity style={styles.already}>
-                  <Link href="/login">
-                    <Text>Already have an account? Login</Text>
-                  </Link>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </View>
+    <View>
+      <View style={styles.toasr}>
+        <Toast style={{ backgroundColor: '#333', color: '#fff' }} />
       </View>
-    </ScrollView>
+
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <StatusBar style="dark" />
+
+        <View style={styles.main}>
+          <View style={styles.flex}>
+            <Link href="/onboarding">
+              {' '}
+              <View>
+                <AntDesign name="arrowleft" size={24} color="black" />
+              </View>
+              <View style={styles.testx}>
+                <Text style={styles.reegister}>Register</Text>
+              </View>
+            </Link>
+          </View>
+          <View style={styles.createups}>
+            <View>
+              <Text style={styles.enadp}>Email and Password</Text>
+            </View>
+            <View style={{ marginTop: 4 }}>
+              <Text style={styles.greetings}>
+                Welcome to Original Aso-Ebi! Please provide your email address
+                and create a password to create your account.
+              </Text>
+            </View>
+            <View style={styles.inputs}>
+              <View style={{ marginTop: 4 }}>
+                <Text style={styles.labell}>Full Name</Text>
+                <View style={{ marginTop: 8 }}>
+                  <TextInput
+                    style={styles.inputt}
+                    placeholder="John Doe"
+                    keyboardType="default"
+                    value={name}
+                    onChangeText={(text) => setname(text)}
+                    placeholderTextColor="#999"
+                  />
+                </View>
+                <Text style={styles.error}>{nameError}</Text>
+              </View>
+              <View style={{ marginTop: 4 }}>
+                <Text style={styles.labell}>Email</Text>
+                <View style={{ marginTop: 8 }}>
+                  <TextInput
+                    style={styles.inputt}
+                    value={email}
+                    onChangeText={(text) => setEmail(text)}
+                    placeholder="youremail@here.com"
+                    keyboardType="email-address" // Change this to 'password' or 'default' for different types
+                    placeholderTextColor="#999" // Change placeholder text color here
+                  />
+                </View>
+                <Text style={styles.error}>{emailError}</Text>
+              </View>
+              <View style={{ marginTop: 4 }}>
+                <Text style={styles.labell}>Phone Number</Text>
+                <View style={{ marginTop: 8 }}>
+                  <TextInput
+                    style={styles.inputt}
+                    value={phone}
+                    onChangeText={handlePhoneChange}
+                    placeholder="09074927137"
+                    keyboardType="phone-pad" // Use 'phone-pad' for phone number input
+                    placeholderTextColor="#999" // Change placeholder text color here
+                    maxLength={15} // Optional: Limit input length
+                  />
+                </View>
+                <Text style={styles.error}>{phoneError}</Text>
+              </View>
+
+              <View style={{ marginTop: 4 }}>
+                <Text style={styles.labell}>Password</Text>
+                <View style={{ marginTop: 8 }}>
+                  <View
+                    style={[
+                      styles.scares,
+                      {
+                        borderColor: isInputFocused ? 'black' : 'gray',
+                        borderWidth: isInputFocused ? 2 : 1,
+                      },
+                    ]}
+                  >
+                    <View style={styles.inputContainer}>
+                      <TextInput
+                        style={styles.inpu2}
+                        placeholder="*********"
+                        secureTextEntry={!showPassword}
+                        placeholderTextColor="#999"
+                        underlineColorAndroid="transparent"
+                        value={password}
+                        onChangeText={(text) => setPassword(text)}
+                        onFocus={handleFocus}
+                        onBlur={handleBlur}
+                      />
+                    </View>
+                    <View>
+                      <TouchableOpacity
+                        onPress={() => setShowPassword(!showPassword)}
+                      >
+                        <Feather
+                          name={showPassword ? 'eye' : 'eye-off'}
+                          size={20}
+                          color="black"
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+                <Text style={styles.error}>{passwordError}</Text>
+              </View>
+              <View style={{ marginTop: 4 }}>
+                <Text style={styles.labell}>Confirm Password</Text>
+                <View style={{ marginTop: 8 }}>
+                  <View
+                    style={[
+                      styles.scares,
+                      {
+                        borderColor: isInputFocused2 ? 'black' : 'gray',
+                        borderWidth: isInputFocused2 ? 2 : 1,
+                      },
+                    ]}
+                  >
+                    <View style={styles.inputContainer}>
+                      <TextInput
+                        style={styles.inpu2}
+                        placeholder="*********"
+                        secureTextEntry={!showPassword2}
+                        placeholderTextColor="#999"
+                        underlineColorAndroid="transparent"
+                        value={confirmPassword}
+                        onChangeText={(text) => setConfirmPassword(text)}
+                        onFocus={handleFocus2}
+                        onBlur={handleBlur2}
+                      />
+                    </View>
+                    <View>
+                      <TouchableOpacity
+                        onPress={() => setShowPassword2(!showPassword2)}
+                      >
+                        <Feather
+                          name={showPassword2 ? 'eye' : 'eye-off'}
+                          size={20}
+                          color="black"
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+                <Text style={styles.error}>{confirmPasswordError}</Text>
+              </View>
+              <View style={{ marginTop: 18 }}>
+                <TouchableOpacity
+                  onPress={toggleCheckbox}
+                  style={styles.checkboxContainer}
+                >
+                  <View style={[styles.checkbox, isChecked && styles.checked]}>
+                    {isChecked && (
+                      <Feather name="check" size={13} color="white" />
+                    )}
+                  </View>
+                  <Text style={styles.label}>
+                    I have read and agree to the{' '}
+                    <Text style={styles.others}>Terms and Conditions</Text> and{' '}
+                    <Text style={styles.others}>Privacy Policy</Text>
+                  </Text>
+                </TouchableOpacity>
+                <Text style={styles.error}>{checkError}</Text>
+              </View>
+              <View style={{ marginTop: 20, marginBottom: 30 }}>
+                <TouchableOpacity
+                  style={[styles.create, { opacity: isDisabled ? 0.5 : 1 }]} // Apply faded style based on the combined disabled state
+                  onPress={handleCreateAccount}
+                  disabled={isDisabled} // Disable button based on combined conditions
+                >
+                  <Text style={{ color: 'white' }}>
+                    {loading ? (
+                      <ActivityIndicator color="white" size="small" />
+                    ) : (
+                      <Text style={{ color: 'white' }}>Create Account</Text>
+                    )}
+                  </Text>
+                </TouchableOpacity>
+
+                <View>
+                  <TouchableOpacity style={styles.already}>
+                    <Link href="/login">
+                      <Text>Already have an account? Login</Text>
+                    </Link>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 const styles = StyleSheet.create({
@@ -409,7 +554,7 @@ const styles = StyleSheet.create({
     color: '#1D1D1D',
   },
   greetings: {
-    fontFamily: 'KumbhSans_400Regular',
+    fontFamily: 'Lora_400Regular',
     fontSize: 18,
 
     lineHeight: 24,
@@ -484,7 +629,7 @@ const styles = StyleSheet.create({
   label: {
     marginLeft: 15,
     width: '80%',
-    fontFamily: 'KumbhSans_400Regular',
+    fontFamily: 'Lora_400Regular',
     fontSize: 14,
 
     lineHeight: 18,
@@ -524,10 +669,20 @@ const styles = StyleSheet.create({
   },
   error: {
     color: 'red',
-    fontFamily: 'KumbhSans_400Regular',
+    fontFamily: 'Lora_400Regular',
     fontSize: 14,
 
     marginTop: 4,
     marginBottom: 8,
+  },
+  toasr: {
+    position: 'absolute', // Make sure the toast is positioned absolutely
+    top: 0, // Adjust the top position if needed
+    left: 0, // Align with the left edge
+    right: 0, // Align with the right edge
+    zIndex: 1000, // Bring the toast to the front
+
+    padding: 10, // Add padding for a better appearance
+    borderRadius: 10, // Optional: add border-radius for rounded corners
   },
 });

@@ -5,8 +5,9 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useRouter } from 'expo-router';
 import { AntDesign } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
@@ -38,19 +39,27 @@ import {
   Lora_700Bold_Italic,
 } from '@expo-google-fonts/lora';
 import { StatusBar } from 'expo-status-bar';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginUser } from '../components/features/auth/authSlice';
+import Toast from 'react-native-toast-message';
+import { useLoading } from './LoadingContext';
 export default function login() {
   const router = useRouter();
+  const dispatch = useDispatch();
+
   const [showPassword, setShowPassword] = useState(false);
 
   const [isInputFocused, setIsInputFocused] = useState(false);
 
   // State variables to store input values and corresponding error messages
-
+  const { showLoading, hideLoading } = useLoading();
+  const authStatus = useSelector((state) => state.auth.status);
+  const authError = useSelector((state) => state.auth.error);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [loading, setLoading] = useState(false);
   const gotocreateaccount = () => {
     router.push('/createaccount');
   };
@@ -121,17 +130,62 @@ export default function login() {
   };
 
   // Handle submit button press
-  const handleCreateAccount = () => {
+  const handleLogin = async () => {
+    setLoading(true);
     const isEmailValid = validateEmail();
     const isPasswordValid = validatePassword();
+    if (!isEmailValid || !isPasswordValid) {
+      setLoading(false); // Ensure loading is set to false if there is an error
+      return; // Exit the function early
+    }
+    setLoading(true); // Only set loading to true if all validations pass
+    showLoading(); // Show loading indicator before starting async operation
 
-    // If all fields are valid, submit the form
     if (isEmailValid && isPasswordValid) {
-      // Submit the form or navigate to the next screen
-      console.log('Form submitted successfully');
-      router.push('/mainhome');
+      await dispatch(loginUser({ email, password }));
+    } else {
+      setLoading(false);
+      hideLoading();
     }
   };
+
+  useEffect(() => {
+    if (authStatus === 'succeeded') {
+      Toast.show({
+        type: 'success',
+        position: 'top',
+        text1: 'Login successful!',
+        text2: 'You have successfully logged in. Welcome back!', // Add more text if needed
+        visibilityTime: 15000, // Increase time if needed
+        autoHide: true,
+        topOffset: 60,
+      });
+      setLoading(false);
+      hideLoading();
+      router.push('/dashboard');
+    } else if (authStatus === 'failed') {
+      Toast.show({
+        type: 'error',
+        position: 'top',
+        text1: 'Login failed.',
+        text2: authError || 'Please try again or check your credentials.', // Use text2 for more details
+        visibilityTime: 15000, // Increase time for readability
+        autoHide: true,
+        topOffset: 60,
+        style: {
+          paddingVertical: 20, // Add padding to ensure space for the text
+          paddingHorizontal: 20,
+          fontSize: 22,
+        },
+        textStyle: {
+          fontSize: 22, // Adjust font size if necessary
+          textAlign: 'left', // Ensure the text is left-aligned for readability
+        },
+      });
+      setLoading(false);
+      hideLoading();
+    }
+  }, [authStatus, authError]);
 
   const [fontsLoaded, fontError] = useFonts({
     LexendDeca_400Regular,
@@ -154,118 +208,147 @@ export default function login() {
     Lora_700Bold_Italic,
   });
 
-  if (!fontsLoaded || fontError) {
-    return null;
-  }
+  useEffect(() => {
+    // If fonts are not loaded, show loading indicator
+    if (!fontsLoaded) {
+      showLoading(); // Show loading indicator until fonts are loaded
+    } else {
+      hideLoading(); // Hide loading indicator after fonts are loaded
+      setLoading(false); // Set loading to false after fonts are loaded
+    }
+  }, [fontsLoaded]);
+  const isDisabled = loading || !email || !password;
   return (
-    <ScrollView contentContainerStyle={styles.scrollViewContent}>
-      <StatusBar style="dark" />
-      <View style={styles.main}>
-        <View style={styles.flex}>
-          <Link href="/onboarding">
-            <View>
-              <AntDesign name="arrowleft" size={24} color="black" />
-            </View>
-            <View style={styles.testx}>
-              <Text style={styles.reegister}>Welcome Back</Text>
-            </View>
-          </Link>
-        </View>
-        <View style={styles.createups}>
-          <View>
-            <Text style={styles.enadp}>Email and Password</Text>
-          </View>
-          <View style={{ marginTop: 20 }}>
-            <Text style={styles.greetings}>
-              Welcome to Original Aso-Ebi! Please provide your email address and
-              create a password to create your account.
-            </Text>
-          </View>
-          <View style={styles.inputs}>
-            <View style={{ marginTop: 20 }}>
-              <Text style={styles.labell}>Email</Text>
-              <View style={{ marginTop: 16 }}>
-                <TextInput
-                  style={styles.inputt}
-                  value={email}
-                  onChangeText={(text) => setEmail(text)}
-                  placeholder="youremail@here.com"
-                  keyboardType="email-address" // Change this to 'password' or 'default' for different types
-                  placeholderTextColor="#999" // Change placeholder text color here
-                />
+    <View>
+      <View style={styles.toasr}>
+        <Toast
+          style={{ backgroundColor: '#333', color: '#fff', fontSize: 22 }}
+        />
+      </View>
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <StatusBar style="dark" />
+        <View style={styles.main}>
+          <View style={styles.flex}>
+            <Link href="/onboarding">
+              <View>
+                <AntDesign name="arrowleft" size={24} color="black" />
               </View>
-              <Text style={styles.error}>{emailError}</Text>
+              <View style={styles.testx}>
+                <Text style={styles.reegister}>Welcome Back</Text>
+              </View>
+            </Link>
+          </View>
+          <View style={styles.createups}>
+            <View>
+              <Text style={styles.enadp}>Email and Password</Text>
             </View>
             <View style={{ marginTop: 20 }}>
-              <Text style={styles.labell}>Password</Text>
-              <View style={{ marginTop: 16 }}>
-                <View
-                  style={[
-                    styles.scares,
-                    {
-                      borderColor: isInputFocused ? 'black' : 'gray',
-                      borderWidth: isInputFocused ? 2 : 1,
-                    },
-                  ]}
-                >
-                  <View style={styles.inputContainer}>
-                    <TextInput
-                      style={styles.inpu2}
-                      placeholder="*********"
-                      secureTextEntry={!showPassword}
-                      placeholderTextColor="#999"
-                      underlineColorAndroid="transparent"
-                      value={password}
-                      onChangeText={(text) => setPassword(text)}
-                      onFocus={handleFocus}
-                      onBlur={handleBlur}
-                    />
-                  </View>
-                  <View>
-                    <TouchableOpacity
-                      onPress={() => setShowPassword(!showPassword)}
-                    >
-                      <Feather
-                        name={showPassword ? 'eye' : 'eye-off'}
-                        size={20}
-                        color="black"
+              <Text style={styles.greetings}>
+                Welcome to Original Aso-Ebi! Please provide your email address
+                and password to log into your account.
+              </Text>
+            </View>
+            <View style={styles.inputs}>
+              <View style={{ marginTop: 20 }}>
+                <Text style={styles.labell}>Email</Text>
+                <View style={{ marginTop: 16 }}>
+                  <TextInput
+                    style={styles.inputt}
+                    value={email}
+                    onChangeText={(text) => setEmail(text)}
+                    placeholder="youremail@here.com"
+                    keyboardType="email-address" // Change this to 'password' or 'default' for different types
+                    placeholderTextColor="#999" // Change placeholder text color here
+                  />
+                </View>
+                <Text style={styles.error}>{emailError}</Text>
+              </View>
+              <View style={{ marginTop: 20 }}>
+                <Text style={styles.labell}>Password</Text>
+                <View style={{ marginTop: 16 }}>
+                  <View
+                    style={[
+                      styles.scares,
+                      {
+                        borderColor: isInputFocused ? 'black' : 'gray',
+                        borderWidth: isInputFocused ? 2 : 1,
+                      },
+                    ]}
+                  >
+                    <View style={styles.inputContainer}>
+                      <TextInput
+                        style={styles.inpu2}
+                        placeholder="*********"
+                        secureTextEntry={!showPassword}
+                        placeholderTextColor="#999"
+                        underlineColorAndroid="transparent"
+                        value={password}
+                        onChangeText={(text) => setPassword(text)}
+                        onFocus={handleFocus}
+                        onBlur={handleBlur}
                       />
-                    </TouchableOpacity>
+                    </View>
+                    <View>
+                      <TouchableOpacity
+                        onPress={() => setShowPassword(!showPassword)}
+                      >
+                        <Feather
+                          name={showPassword ? 'eye' : 'eye-off'}
+                          size={20}
+                          color="black"
+                        />
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 </View>
+                <Text style={styles.error}>{passwordError}</Text>
               </View>
-              <Text style={styles.error}>{passwordError}</Text>
-            </View>
-            <View style={styles.forget}>
-              <TouchableOpacity
-                style={styles.clckforget}
-                onPress={gotoforgetpassword}
-              >
-                <Text>Forgot Password?</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={{ marginTop: 30, marginBottom: 30 }}>
-              <TouchableOpacity
-                style={styles.create}
-                onPress={handleCreateAccount}
-              >
-                <Text style={{ color: 'white' }}>Log in</Text>
-              </TouchableOpacity>
+              <View style={styles.forget}>
+                <TouchableOpacity
+                  style={styles.clckforget}
+                  onPress={gotoforgetpassword}
+                >
+                  <Text>Forgot Password?</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={{ marginTop: 30, marginBottom: 30 }}>
+                <TouchableOpacity
+                  style={[styles.create, { opacity: isDisabled ? 0.5 : 1 }]}
+                  onPress={handleLogin}
+                  disabled={isDisabled}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="white" size="small" />
+                  ) : (
+                    <Text style={{ color: 'white' }}>Log in</Text>
+                  )}
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.already}
-                onPress={gotocreateaccount}
-              >
-                <Text>Don’t have an account? Sign up</Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.already}
+                  onPress={gotocreateaccount}
+                >
+                  <Text>Don’t have an account? Sign up</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 const styles = StyleSheet.create({
+  toasr: {
+    position: 'absolute', // Make sure the toast is positioned absolutely
+    top: 0, // Adjust the top position if needed
+    left: 0, // Align with the left edge
+    right: 0, // Align with the right edge
+    zIndex: 1000, // Bring the toast to the front
+
+    padding: 10, // Add padding for a better appearance
+    borderRadius: 10, // Optional: add border-radius for rounded corners
+  },
   scrollViewContent: {
     flexGrow: 1,
   },

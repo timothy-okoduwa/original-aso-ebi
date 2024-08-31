@@ -1,55 +1,77 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import React, { useState } from 'react';
-
+import React, { useState, useContext, useEffect } from 'react';
 import { useFonts, Ledger_400Regular } from '@expo-google-fonts/ledger';
 import {
   KumbhSans_400Regular,
   KumbhSans_500Medium,
 } from '@expo-google-fonts/kumbh-sans';
-import { Octicons, Entypo, MaterialIcons } from '@expo/vector-icons';
-
-// import {  } from '@expo/vector-icons';
+import { Octicons, Entypo } from '@expo/vector-icons';
 import data from './data';
+import { CartContext } from '../app/CartContext';
+
 export default function DetailsDescription({ partName }) {
   const [quantity, setQuantity] = useState(5);
-  const [addedToCart, setAddedToCart] = useState(false);
+  const [added, setAdded] = useState(false);
   const [fontsLoaded, fontError] = useFonts({
     Ledger_400Regular,
     KumbhSans_400Regular,
     KumbhSans_500Medium,
   });
 
-  //   if (!fontsLoaded || fontError) {
-  //     return null;
-  //   }
+  const { addToCart, cartItems } = useContext(CartContext);
+
   const fabric = data?.find((item) => item?.name === partName);
+
+  // Check if item is already in cart on mount or when cartItems/partName changes
+  useEffect(() => {
+    const isItemInCart = cartItems.some((item) => item.name === partName);
+    setAdded(isItemInCart);
+  }, [cartItems, partName]);
+
   const handleIncrement = () => {
-    if (quantity >= 5) {
-      setQuantity((prevQuantity) => prevQuantity + 5); // Increment by 5 from 5 onwards
-    } else {
-      setQuantity((prevQuantity) => prevQuantity + 1); // Increment by 1 until reaching 5
-    }
+    setQuantity((prevQuantity) =>
+      prevQuantity >= 5 ? prevQuantity + 5 : prevQuantity + 1
+    );
   };
 
   const handleDecrement = () => {
+    setQuantity((prevQuantity) =>
+      prevQuantity > 5 ? prevQuantity - 5 : Math.max(1, prevQuantity - 1)
+    );
+  };
+
+  const calculatePrice = (basePrice, quantity) => {
+    const priceNumber = parseFloat(basePrice.replace('$', ''));
     if (quantity > 5) {
-      setQuantity((prevQuantity) => prevQuantity - 5); // Decrement by 5 if quantity is greater than 5
-    } else if (quantity > 1) {
-      setQuantity((prevQuantity) => prevQuantity - 1); // Decrement by 1 until reaching 1 from 5
+      return `$${(priceNumber / 5) * quantity}`;
     }
+    return `$${priceNumber * (quantity / 5)}`;
   };
 
   const handleAddToCart = () => {
-    setAddedToCart(true); // Set addedToCart to true when added to cart
+    const updatedPrice = calculatePrice(fabric.price, quantity);
+    addToCart({
+      ...fabric,
+      quantity,
+      basePrice: fabric.price,
+      price: updatedPrice,
+    });
+    setAdded(true);
   };
+
+  if (fontError || !fontsLoaded) {
+    return null;
+  }
 
   if (fabric) {
     return (
       <View style={styles.main}>
-        <Text style={styles.fabname}>{fabric.name}</Text>
+        <Text style={styles.fabname}>{fabric.name.replace(/-/g, ' ')}</Text>
         <View>
           <Text style={styles.desc}>{fabric.details}</Text>
-          <Text style={styles.price}>{fabric.price}</Text>
+          <Text style={styles.price}>
+            {calculatePrice(fabric.price, quantity)}
+          </Text>
         </View>
         <View style={styles.nerd}>
           <Text style={styles.note}>
@@ -72,22 +94,15 @@ export default function DetailsDescription({ partName }) {
           </TouchableOpacity>
         </View>
         <View style={styles.addtoc}>
-          {addedToCart ? (
-            <TouchableOpacity style={styles.added}>
-              <Text style={{ color: '#767676' }}>Added to Cart </Text>
-              <Text>
-                <MaterialIcons
-                  name="check-circle-outline"
-                  size={20}
-                  color="#767676"
-                />
-              </Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity style={styles.create} onPress={handleAddToCart}>
-              <Text style={{ color: 'white' }}>Add to Cart</Text>
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity
+            style={[styles.create, added && styles.added]}
+            onPress={handleAddToCart}
+            disabled={added} // Disable button if item is already added
+          >
+            <Text style={[styles.first, added && styles.sec]}>
+              {added ? 'Added to Cart' : 'Add to Cart'}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -201,5 +216,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 1, // Add border width
     borderColor: '#767676', // Add border color
+  },
+  first: {
+    color: 'white',
+    fontSize: 16,
+    fontFamily: 'KumbhSans_500Medium',
+  },
+  sec: {
+    color: '#767676',
+    fontSize: 16,
+    fontFamily: 'KumbhSans_500Medium',
   },
 });

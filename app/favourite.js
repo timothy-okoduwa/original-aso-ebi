@@ -16,8 +16,9 @@ import {
   KumbhSans_500Medium,
 } from '@expo-google-fonts/kumbh-sans';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-export default function favourite() {
+import { Ionicons, Feather } from '@expo/vector-icons';
+
+export default function Favourite() {
   const router = useRouter();
   const [fontsLoaded, fontError] = useFonts({
     KumbhSans_400Regular,
@@ -45,6 +46,7 @@ export default function favourite() {
       });
     }
   });
+
   const gotocreataccount = (fabricName) => {
     router.push(`/${fabricName}`);
   };
@@ -63,36 +65,60 @@ export default function favourite() {
           <View style={styles.okay}>
             <View style={styles.pushdown}></View>
 
-            <View style={styles.cardContainer}>
-              {categories.map((category, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.card}
-                  onPress={() => gotocreataccount(category.name)}
-                >
-                  <View style={styles.imageHolder}>
-                    <Image
-                      style={styles.image}
-                      source={category.image}
-                      resizeMode="cover"
-                    />
-                  </View>
-                  <View style={styles.negetive}>
-                    <View>
-                      <Text style={styles.name}>
-                        {category.name.replace(/-/g, ' ')}
-                      </Text>
+            {/* Check if there are no favorites */}
+            {categories.length === 0 ? (
+              <View style={styles.cartt}>
+                <View style={styles.circle}>
+                  <Feather name="heart" size={74} color="#000000" />
+                </View>
+                <View>
+                  <Text style={styles.empty}>Favorites is Empty</Text>
+                </View>
+                <View>
+                  <Text style={styles.once}>
+                    Once you add items to your Favorites, you'll find them
+                    displayed here.
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <View style={styles.cardContainer}>
+                {categories.map((category, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.card}
+                    onPress={() => gotocreataccount(category.name)}
+                  >
+                    <View style={styles.imageHolder}>
+                      <Image
+                        style={styles.image}
+                        source={category.image}
+                        resizeMode="cover"
+                      />
                     </View>
-                    <TouchableOpacity>
-                      <Ionicons name="heart-sharp" size={18} color="black" />
-                    </TouchableOpacity>
-                  </View>
-                  <View>
-                    <Text style={styles.price}>{category.price}</Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
+                    <View style={styles.negetive}>
+                      <View>
+                        <Text style={styles.name}>
+                          {category.name.replace(/-/g, ' ')}
+                        </Text>
+                      </View>
+                      <TouchableOpacity>
+                        <View style={styles.holi}>
+                          <Ionicons
+                            name="heart-outline"
+                            size={18}
+                            color="#F11515"
+                          />
+                        </View>
+                      </TouchableOpacity>
+                    </View>
+                    <View>
+                      <Text style={styles.price}>{category.price}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
           </View>
         </View>
       </ScrollView>
@@ -111,6 +137,32 @@ const styles = StyleSheet.create({
     paddingBottom: 0, // Adjust this value to accommodate the height of your ButtomNav component
     paddingTop: 100, // Add enough padding to the top to avoid overlap
   },
+  cartt: {
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  circle: {
+    width: 146,
+    height: 146,
+    backgroundColor: '#F9F9F9',
+    borderRadius: 73,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  empty: {
+    marginTop: 20,
+    fontFamily: 'KumbhSans_500Medium',
+    fontSize: 20,
+    color: '#000000',
+  },
+  once: {
+    fontFamily: 'KumbhSans_400Regular',
+    fontSize: 18,
+    marginTop: 10,
+    width: 250,
+    textAlign: 'center',
+  },
   main: {
     padding: 15,
     flex: 1,
@@ -126,6 +178,15 @@ const styles = StyleSheet.create({
     paddingTop: 45,
     alignItems: 'center',
   },
+  holi: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#F115151A',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
   store: {
     fontFamily: 'KumbhSans_400Regular',
     color: '#000000',

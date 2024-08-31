@@ -5,7 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
-import React from 'react';
+import React, { useContext } from 'react';
 import { AntDesign } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,11 +15,12 @@ import {
   KumbhSans_400Regular,
   KumbhSans_500Medium,
 } from '@expo-google-fonts/kumbh-sans';
+import { CartContext } from '../app/CartContext';
 
-export default function ButtomNav() {
+export default function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
-  //   console.log(pathname);
+  const { cartItems } = useContext(CartContext);
 
   const [fontsLoaded, fontError] = useFonts({
     KumbhSans_400Regular,
@@ -29,12 +30,19 @@ export default function ButtomNav() {
   if (!fontsLoaded || fontError) {
     return null;
   }
+
   const mainhome = () => {
     router.push('/mainhome');
   };
   const shop = () => {
     router.push('/shop');
   };
+  const cart = () => {
+    router.push('/cart');
+  };
+
+  const isCartPopulated = cartItems.length > 0;
+
   return (
     <View style={styles.main}>
       <View style={styles.flexes}>
@@ -90,6 +98,7 @@ export default function ButtomNav() {
         <View>
           <TouchableOpacity
             style={{ justifyContent: 'center', alignItems: 'center' }}
+            onPress={cart}
           >
             <View>
               <Ionicons
@@ -97,6 +106,11 @@ export default function ButtomNav() {
                 size={24}
                 color={pathname === '/cart' ? '#000000' : '#b3b3b3'}
               />
+              {isCartPopulated && (
+                <View style={styles.dotContainer}>
+                  <View style={styles.redDot} />
+                </View>
+              )}
             </View>
             <Text
               style={{ color: pathname === '/cart' ? '#000000' : '#b3b3b3' }}
@@ -132,7 +146,6 @@ export default function ButtomNav() {
 
 const styles = StyleSheet.create({
   main: {
-    // padding: 15,
     backgroundColor: 'white',
     height: 66,
   },
@@ -149,5 +162,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#000000',
     marginTop: 15,
+  },
+  dotContainer: {
+    position: 'absolute',
+    top: -1,
+    right: -1,
+  },
+  redDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#F11515',
   },
 });

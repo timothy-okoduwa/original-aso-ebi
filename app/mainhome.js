@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import HeadAndNotification from '../components/HeadAndNotification';
 import SearchCompnent from '../components/SearchCompnent';
 import Categories from '../components/Categories';
@@ -7,24 +7,35 @@ import FabricData from '../components/FabricData';
 import data from '../components/data';
 import ButtomNav from '../components/ButtomNav';
 import { StatusBar } from 'expo-status-bar';
+import { useLoading } from './LoadingContext';
 export default function mainhome() {
   const [activeCategory, setActiveCategory] = useState('New Arrival');
   const [searchQuery, setSearchQuery] = useState('');
+  const { showLoading, hideLoading } = useLoading();
+  console.log('Active Category:', activeCategory); // Debugging
+  console.log('Search Query:', searchQuery); // Debugging
+  console.log('Data:', data); // Debugging
 
-  let filteredData = data;
+  let filteredData = data.filter((fabric) =>
+    fabric.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (activeCategory !== 'New Arrival') {
-    filteredData = data.filter(
-      (fabric) =>
-        fabric.category === activeCategory &&
-        fabric.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  } else {
-    filteredData = data.filter((fabric) =>
-      fabric.name.toLowerCase().includes(searchQuery.toLowerCase())
+    filteredData = filteredData.filter(
+      (fabric) => fabric.category === activeCategory
     );
   }
+  useEffect(() => {
+    // Simulate data loading
+    showLoading();
+    const timeout = setTimeout(() => {
+      hideLoading();
+    }, 1000); // Adjust the timeout to simulate data loading time
 
+    return () => clearTimeout(timeout);
+  }, []);
+
+  console.log('Filtered Data:', filteredData); // Debugging
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
@@ -39,8 +50,10 @@ export default function mainhome() {
             setActiveCategory={setActiveCategory}
             activeCategory={activeCategory}
           />
-
-          <FabricData activeCategory={activeCategory} data={filteredData} />
+          <FabricData
+            activeCategory={activeCategory}
+            initialData={filteredData}
+          />
         </View>
       </ScrollView>
       <ButtomNav />

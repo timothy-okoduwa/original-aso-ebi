@@ -69,10 +69,14 @@ const FabricCard = ({ fabric }) => {
           <Text style={styles.name}>{fabric.name.replace(/-/g, ' ')}</Text>
         </View>
         <TouchableOpacity onPress={toggleFavorite}>
-          {!isFavorite ? (
-            <Ionicons name="heart-outline" size={18} color="black" />
+          {fabric.favorite ? (
+            <View style={styles.holi}>
+              <Ionicons name="heart-outline" size={18} color="#F11515" />
+            </View>
           ) : (
-            <Ionicons name="heart-sharp" size={18} color="black" />
+            <View style={styles.holi2}>
+              <Ionicons name="heart-outline" size={18} color="black" />
+            </View>
           )}
         </TouchableOpacity>
       </View>
@@ -135,6 +139,22 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     textAlign: 'left',
     color: '#000000',
+  },
+  holi: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#F115151A',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  holi2: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   price: {
     fontFamily: 'KumbhSans_500Medium',

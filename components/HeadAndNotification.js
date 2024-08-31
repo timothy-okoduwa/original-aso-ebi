@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import {
   useFonts,
   KumbhSans_100Thin,
@@ -15,6 +16,7 @@ import {
   KumbhSans_900Black,
 } from '@expo-google-fonts/kumbh-sans';
 export default function HeadAndNotification() {
+  const router = useRouter();
   const [fontsLoaded, fontError] = useFonts({
     KumbhSans_100Thin,
     KumbhSans_200ExtraLight,
@@ -30,6 +32,9 @@ export default function HeadAndNotification() {
   if (!fontsLoaded || fontError) {
     return null;
   }
+  const goToNotifiation = () => {
+    router.push('/notification');
+  };
   return (
     <View style={styles.mainhold}>
       <View style={styles.flexes}>
@@ -40,7 +45,7 @@ export default function HeadAndNotification() {
           {/* <Text>
             <Ionicons name="notifications-outline" size={24} color="black" />
           </Text> */}
-          <TouchableOpacity>
+          <TouchableOpacity onPress={goToNotifiation}>
             <Text>
               <MaterialCommunityIcons
                 name="bell-badge-outline"

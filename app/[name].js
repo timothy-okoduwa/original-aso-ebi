@@ -6,6 +6,7 @@ import Colors from '../components/Colors';
 import { usePathname } from 'expo-router';
 import DetailsDescription from '../components/DetailsDescription';
 import { StatusBar } from 'expo-status-bar';
+
 export default function detailspage() {
   const pathname = usePathname();
   const partName = pathname.substring(1);

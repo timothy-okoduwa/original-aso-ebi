@@ -25,9 +25,7 @@ export default function SearchComponent({ setSearchQuery }) {
   const [searchText, setSearchText] = useState('');
 
   useEffect(() => {
-    if (searchText.trim() === '') {
-      setSearchQuery(''); // Set empty string as the search query if search text is empty
-    }
+    setSearchQuery(searchText);
   }, [searchText]);
 
   const handleSearch = () => {
@@ -61,8 +59,7 @@ export default function SearchComponent({ setSearchQuery }) {
             style={styles.inputt}
             placeholder="Search"
             value={searchText}
-            onChangeText={setSearchText}
-            keyboardType="default"
+            onChangeText={(text) => setSearchText(text)}
             placeholderTextColor="#999"
             onSubmitEditing={handleSearch}
           />

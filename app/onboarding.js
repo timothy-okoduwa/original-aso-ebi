@@ -35,7 +35,10 @@ export default function Onboarding() {
     router.push('/mainhome');
   };
   return (
-    <ScrollView contentContainerStyle={styles.scrollViewContent}>
+    <ScrollView
+      contentContainerStyle={styles.scrollViewContent}
+      showsVerticalScrollIndicator={false}
+    >
       <StatusBar style="dark" />
       <View style={styles.main}>
         <View style={styles.imageHolder}>
