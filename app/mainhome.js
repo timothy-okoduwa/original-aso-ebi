@@ -1,4 +1,10 @@
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  RefreshControl,
+} from 'react-native';
 import React, { useState, useEffect } from 'react';
 import HeadAndNotification from '../components/HeadAndNotification';
 import SearchCompnent from '../components/SearchCompnent';
@@ -9,6 +15,7 @@ import ButtomNav from '../components/ButtomNav';
 import { StatusBar } from 'expo-status-bar';
 import { useLoading } from './LoadingContext';
 export default function mainhome() {
+  const [refreshing, setRefreshing] = useState(false);
   const [activeCategory, setActiveCategory] = useState('New Arrival');
   const [searchQuery, setSearchQuery] = useState('');
   const { showLoading, hideLoading } = useLoading();
@@ -36,12 +43,31 @@ export default function mainhome() {
   }, []);
 
   console.log('Filtered Data:', filteredData); // Debugging
+  const onRefresh = () => {
+    setRefreshing(true);
+    // Simulate a network request
+    setTimeout(() => {
+      // After 2 seconds stop refreshing
+      setRefreshing(false);
+    }, 2000);
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
       <ScrollView
         contentContainerStyle={styles.scrollViewContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#F11515', '#000000', '#0000ff']}
+            tintColor="red"
+            title="Pull to refresh..."
+            titleColor="#00ff00"
+          />
+        }
       >
         <View style={styles.main}>
           <HeadAndNotification />

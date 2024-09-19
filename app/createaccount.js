@@ -6,6 +6,7 @@ import {
   TextInput,
   ScrollView,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { Link, useRouter } from 'expo-router';
@@ -61,6 +62,7 @@ export default function createaccount() {
   const [visible, setVisible] = useState(false);
   const [message, setMessage] = useState('');
   const { showLoading, hideLoading } = useLoading();
+  const [refreshing, setRefreshing] = useState(false);
   const role = 1;
   // State variables to store input values and corresponding error messages
 
@@ -307,23 +309,44 @@ export default function createaccount() {
   });
 
   useEffect(() => {
-    // If fonts are not loaded, show loading indicator
-    if (!fontsLoaded) {
-      showLoading(); // Show loading indicator until fonts are loaded
-    } else {
-      hideLoading(); // Hide loading indicator after fonts are loaded
-      setLoading(false); // Set loading to false after fonts are loaded
-    }
-  }, [fontsLoaded]);
+    // Simulate data loading
+    showLoading();
+    const timeout = setTimeout(() => {
+      hideLoading();
+    }, 1000); // Adjust the timeout to simulate data loading time
+
+    return () => clearTimeout(timeout);
+  }, []);
   const isDisabled =
     loading || !name || !email || !password || !confirmPassword || !isChecked;
+  const onRefresh = () => {
+    setRefreshing(true);
+    // Simulate a network request
+    setTimeout(() => {
+      // After 2 seconds stop refreshing
+      setRefreshing(false);
+    }, 2000);
+  };
   return (
     <View>
       <View style={styles.toasr}>
         <Toast style={{ backgroundColor: '#333', color: '#fff' }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollViewContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#F11515', '#000000', '#0000ff']}
+            tintColor="red"
+            title="Pull to refresh..."
+            titleColor="#00ff00"
+          />
+        }
+      >
         <StatusBar style="dark" />
 
         <View style={styles.main}>

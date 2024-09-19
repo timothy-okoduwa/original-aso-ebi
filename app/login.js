@@ -6,6 +6,7 @@ import {
   TextInput,
   ScrollView,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { Link, useRouter } from 'expo-router';
@@ -60,6 +61,7 @@ export default function login() {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const gotocreateaccount = () => {
     router.push('/createaccount');
   };
@@ -218,6 +220,14 @@ export default function login() {
     }
   }, [fontsLoaded]);
   const isDisabled = loading || !email || !password;
+  const onRefresh = () => {
+    setRefreshing(true);
+    // Simulate a network request
+    setTimeout(() => {
+      // After 2 seconds stop refreshing
+      setRefreshing(false);
+    }, 2000);
+  };
   return (
     <View>
       <View style={styles.toasr}>
@@ -225,7 +235,19 @@ export default function login() {
           style={{ backgroundColor: '#333', color: '#fff', fontSize: 22 }}
         />
       </View>
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollViewContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#F11515', '#000000', '#0000ff']}
+            tintColor="red"
+            title="Pull to refresh..."
+            titleColor="#00ff00"
+          />
+        }
+      >
         <StatusBar style="dark" />
         <View style={styles.main}>
           <View style={styles.flex}>

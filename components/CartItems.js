@@ -13,6 +13,7 @@ import {
 } from '@expo-google-fonts/kumbh-sans';
 import { Image } from 'react-native';
 import a from '../constants/image/sen2.png';
+import { useRouter } from 'expo-router';
 import {
   Octicons,
   Entypo,
@@ -22,6 +23,7 @@ import {
 import { CartContext } from '../app/CartContext';
 
 export default function CartItems() {
+  const router = useRouter();
   const {
     cartItems,
     updateItemQuantity,
@@ -75,7 +77,9 @@ export default function CartItems() {
   const handleClearCart = () => {
     clearCart();
   };
-
+  const handleCheckOut = () => {
+    router.push('/checkout');
+  };
   return (
     <View>
       <View>
@@ -146,7 +150,7 @@ export default function CartItems() {
         <Text style={styles.total}>Total: ${getTotalAmount().toFixed(2)}</Text>
       </View>
       <View style={styles.flux}>
-        <TouchableOpacity style={styles.create}>
+        <TouchableOpacity style={styles.create} onPress={handleCheckOut}>
           <Text style={styles.first}>Checkout</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.added} onPress={handleClearCart}>

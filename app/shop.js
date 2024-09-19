@@ -5,8 +5,9 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  RefreshControl,
 } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import ButtomNav from '../components/ButtomNav';
 import { StatusBar } from 'expo-status-bar';
 import data from '../components/data';
@@ -18,6 +19,7 @@ import {
 import { useRouter } from 'expo-router';
 
 export default function Shop() {
+  const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
   const [fontsLoaded, fontError] = useFonts({
     KumbhSans_400Regular,
@@ -45,7 +47,14 @@ export default function Shop() {
       params: { category },
     });
   };
-
+  const onRefresh = () => {
+    setRefreshing(true);
+    // Simulate a network request
+    setTimeout(() => {
+      // After 2 seconds stop refreshing
+      setRefreshing(false);
+    }, 2000);
+  };
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
@@ -55,6 +64,16 @@ export default function Shop() {
       <ScrollView
         contentContainerStyle={styles.scrollViewContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#F11515', '#000000', '#0000ff']}
+            tintColor="red"
+            title="Pull to refresh..."
+            titleColor="#00ff00"
+          />
+        }
       >
         <View style={styles.main}>
           <View style={styles.okay}>
