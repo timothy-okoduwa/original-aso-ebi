@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,12 +8,17 @@ import {
   ScrollView,
   ActivityIndicator,
   RefreshControl,
+  Animated,
 } from 'react-native';
-import React, { useState, useEffect } from 'react';
+
 import { Link, useRouter } from 'expo-router';
 import { AntDesign } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
-
+import { StatusBar } from 'expo-status-bar';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginUser } from '../components/features/auth/authSlice';
+import Toast from 'react-native-toast-message';
+import { useLoading } from './LoadingContext';
 // import { Feather } from '@expo/vector-icons';
 import {
   useFonts,
@@ -39,11 +45,41 @@ import {
   Lora_600SemiBold_Italic,
   Lora_700Bold_Italic,
 } from '@expo-google-fonts/lora';
-import { StatusBar } from 'expo-status-bar';
-import { useDispatch, useSelector } from 'react-redux';
-import { loginUser } from '../components/features/auth/authSlice';
-import Toast from 'react-native-toast-message';
-import { useLoading } from './LoadingContext';
+const CustomToast = ({ visible, message, type }) => {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (visible) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [visible, fadeAnim]);
+
+  if (!visible) return null;
+
+  return (
+    <Animated.View
+      style={[
+        styles.toast,
+        { opacity: fadeAnim },
+        type === 'success' ? styles.successToast : styles.errorToast,
+      ]}
+    >
+      <Text style={styles.toastText}>{message}</Text>
+    </Animated.View>
+  );
+};
+
+
 export default function login() {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -56,6 +92,8 @@ export default function login() {
   const { showLoading, hideLoading } = useLoading();
   const authStatus = useSelector((state) => state.auth.status);
   const authError = useSelector((state) => state.auth.error);
+    const successMessage = useSelector((state) => state.auth.successMessage);
+const [toast, setToast] = useState({ visible: false, message: '', type: '' });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -130,6 +168,18 @@ export default function login() {
     setPasswordError('');
     return true;
   };
+    const showToast = (message, type) => {
+    setToast({ visible: true, message, type });
+    setTimeout(() => {
+      setToast({ visible: false, message: '', type: '' });
+    }, 3000); // Hide toast after 3 seconds
+  };
+
+  useEffect(() => {
+    return () => {
+      setToast({ visible: false, message: '', type: '' });
+    };
+  }, []);
 
   // Handle submit button press
   const handleLogin = async () => {
@@ -144,7 +194,8 @@ export default function login() {
     showLoading(); // Show loading indicator before starting async operation
 
     if (isEmailValid && isPasswordValid) {
-      await dispatch(loginUser({ email, password }));
+     const response= await dispatch(loginUser({ email, password }));
+       console.log(response)
     } else {
       setLoading(false);
       hideLoading();
@@ -153,41 +204,16 @@ export default function login() {
 
   useEffect(() => {
     if (authStatus === 'succeeded') {
-      Toast.show({
-        type: 'success',
-        position: 'top',
-        text1: 'Login successful!',
-        text2: 'You have successfully logged in. Welcome back!', // Add more text if needed
-        visibilityTime: 15000, // Increase time if needed
-        autoHide: true,
-        topOffset: 60,
-      });
+         showToast(successMessage || 'Registration successful!', 'success');
       setLoading(false);
       hideLoading();
-      router.push('/dashboard');
+      router.push('/mainhome');
     } else if (authStatus === 'failed') {
-      Toast.show({
-        type: 'error',
-        position: 'top',
-        text1: 'Login failed.',
-        text2: authError || 'Please try again or check your credentials.', // Use text2 for more details
-        visibilityTime: 15000, // Increase time for readability
-        autoHide: true,
-        topOffset: 60,
-        style: {
-          paddingVertical: 20, // Add padding to ensure space for the text
-          paddingHorizontal: 20,
-          fontSize: 22,
-        },
-        textStyle: {
-          fontSize: 22, // Adjust font size if necessary
-          textAlign: 'left', // Ensure the text is left-aligned for readability
-        },
-      });
+ showToast(authError || 'Registration failed. Please try again.', 'error');
       setLoading(false);
       hideLoading();
     }
-  }, [authStatus, authError]);
+  }, [authStatus,successMessage, authError]);
 
   const [fontsLoaded, fontError] = useFonts({
     LexendDeca_400Regular,
@@ -231,9 +257,11 @@ export default function login() {
   return (
     <View>
       <View style={styles.toasr}>
-        <Toast
-          style={{ backgroundColor: '#333', color: '#fff', fontSize: 22 }}
-        />
+       <CustomToast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+      />
       </View>
       <ScrollView
         contentContainerStyle={styles.scrollViewContent}
@@ -538,5 +566,27 @@ const styles = StyleSheet.create({
 
     lineHeight: 18,
     color: '#1D1D1D',
+  },
+     toast: {
+    position: 'absolute',
+    top: 60, // Positioned at the top
+    left: 20,
+    right: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    zIndex: 9999, // Ensure it's above other elements
+  },
+  successToast: {
+    backgroundColor: 'rgba(0, 128, 0, 0.9)',
+  },
+  errorToast: {
+    backgroundColor: 'rgba(255, 0, 0, 0.9)',
+  },
+  toastText: {
+    color: 'white',
+    fontSize: 16,
+    textAlign: 'center',
   },
 });

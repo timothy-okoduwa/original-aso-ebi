@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CartProvider } from './CartContext';
 import {
   useFonts,
@@ -40,6 +41,24 @@ export default function Index() {
   useEffect(() => {
     if (!fontsLoaded || fontError) return;
 
+    // Function to check for user token in AsyncStorage
+    const checkUserToken = async () => {
+      try {
+        const token = await AsyncStorage.getItem('authToken');
+        if (token) {
+          // If a token is found, navigate to main home page
+          router.push('/mainhome');
+        } else {
+          // If no token, navigate to onboarding page
+          router.push('/onboarding');
+        }
+      } catch (error) {
+        console.error('Error fetching token from AsyncStorage', error);
+        router.push('/onboarding');
+      }
+    };
+
+    // Animation function
     const createAnimation = (scale, translateY) => {
       return Animated.parallel([
         Animated.timing(scale, {
@@ -65,21 +84,19 @@ export default function Index() {
       ).start();
     };
 
+    // Start the letter animation
     animateLetters();
 
+    // After 10 seconds, check for the user token
     const timer = setTimeout(() => {
-      router.push('/onboarding');
-    }, 10000); // Navigate after 10 seconds
+      checkUserToken(); // Check token after 10 seconds
+    }, 5000);
 
-    return () => clearTimeout(timer); // Clear the timeout if the component unmounts
+    return () => clearTimeout(timer); // Clear timeout if component unmounts
   }, [fontsLoaded, fontError, router]);
 
-  const handleNavigation = () => {
-    router.push('/onboarding');
-  };
-
   if (!fontsLoaded || fontError) {
-    return null;
+    return null; // Ensure fonts are loaded before rendering
   }
 
   const animatedStyles = {
@@ -106,10 +123,7 @@ export default function Index() {
   return (
     <CartProvider>
       <View style={styles.container}>
-        <TouchableOpacity
-          onPress={handleNavigation}
-          style={styles.textContainer}
-        >
+        <TouchableOpacity style={styles.textContainer}>
           <Animated.Text style={[styles.text, animatedStyles.O]}>
             O
           </Animated.Text>
@@ -146,122 +160,6 @@ const styles = StyleSheet.create({
   small: {
     color: 'white',
     fontSize: 16,
-
     fontFamily: 'LexendDeca_400Regular',
   },
 });
-
-// import React, { useEffect } from 'react';
-// import { View, StyleSheet, Animated } from 'react-native';
-// import { Svg, Path } from 'react-native-svg';
-// import { StatusBar } from 'expo-status-bar';
-// import { useRouter } from 'expo-router';
-// import {
-//   useFonts,
-//   LexendDeca_400Regular,
-// } from '@expo-google-fonts/lexend-deca';
-
-// export default function Index() {
-//   const [fontsLoaded, fontError] = useFonts({
-//     LexendDeca_400Regular,
-//   });
-
-//   const router = useRouter();
-
-//   const animatedValues = {
-//     O: new Animated.Value(0),
-//     A: new Animated.Value(0),
-//     E: new Animated.Value(0),
-//   };
-
-//   useEffect(() => {
-//     if (!fontsLoaded || fontError) return;
-
-//     const animateLetters = () => {
-//       Animated.stagger(500, [
-//         Animated.timing(animatedValues.O, {
-//           toValue: 1,
-//           duration: 2000,
-//           useNativeDriver: true,
-//         }),
-//         Animated.timing(animatedValues.A, {
-//           toValue: 1,
-//           duration: 2000,
-//           useNativeDriver: true,
-//         }),
-//         Animated.timing(animatedValues.E, {
-//           toValue: 1,
-//           duration: 2000,
-//           useNativeDriver: true,
-//         }),
-//       ]).start();
-//     };
-
-//     animateLetters();
-
-//     const timer = setTimeout(() => {
-//       router.push('/onboarding');
-//     }, 10000);
-
-//     return () => clearTimeout(timer);
-//   }, [fontsLoaded, fontError, router]);
-
-//   if (!fontsLoaded || fontError) {
-//     return null;
-//   }
-
-//   return (
-//     <View style={styles.container}>
-//       <Svg height="150" width="150" viewBox="0 0 100 100">
-//         <Path
-//           d="M 50,10 A 40,40 0 1,1 49,10"
-//           stroke="white"
-//           strokeWidth="2"
-//           fill="none"
-//           strokeDasharray="158"
-//           strokeDashoffset={animatedValues.O.interpolate({
-//             inputRange: [0, 1],
-//             outputRange: [158, 0],
-//           })}
-//         />
-//       </Svg>
-//       <Svg height="150" width="150" viewBox="0 0 100 100">
-//         <Path
-//           d="M 50,10 L 20,90 L 80,90 Z"
-//           stroke="white"
-//           strokeWidth="2"
-//           fill="none"
-//           strokeDasharray="180"
-//           strokeDashoffset={animatedValues.A.interpolate({
-//             inputRange: [0, 1],
-//             outputRange: [180, 0],
-//           })}
-//         />
-//       </Svg>
-//       <Svg height="150" width="150" viewBox="0 0 100 100">
-//         <Path
-//           d="M 20,10 L 80,10 L 20,50 L 80,50 L 20,90 L 80,90"
-//           stroke="white"
-//           strokeWidth="2"
-//           fill="none"
-//           strokeDasharray="128"
-//           strokeDashoffset={animatedValues.E.interpolate({
-//             inputRange: [0, 1],
-//             outputRange: [128, 0],
-//           })}
-//         />
-//       </Svg>
-//       <StatusBar style="light" backgroundColor="#000" />
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     backgroundColor: 'black',
-//     flexDirection: 'row',
-//   },
-// });
