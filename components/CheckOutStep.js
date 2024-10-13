@@ -1,12 +1,20 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import Billing from './Billing';
 import PaymentMethod from './PaymentMethod';
 
-export default function CheckOutStep({ currentStep, onStepChange }) {
+export default function CheckOutStep({
+  currentStep,
+  onStepChange,
+  totalAmount,
+  numberOfItems,
+  orderedItems,
+}) {
+  const [calculatedTotalAmount, setCalculatedTotalAmount] = useState(0);
   // Function to move to the next step
-  const handleNext = () => {
+  const handleNext = (amount) => {
     if (currentStep === 'Billing') {
+      setCalculatedTotalAmount(amount); // Set the calculated amount
       onStepChange('PaymentMethod');
     } else if (currentStep === 'PaymentMethod') {
       onStepChange('Review');
@@ -16,8 +24,20 @@ export default function CheckOutStep({ currentStep, onStepChange }) {
   return (
     <View style={styles.main}>
       {/* Conditionally render components based on the current step */}
-      {currentStep === 'Billing' && <Billing onNext={handleNext} />}
-      {currentStep === 'PaymentMethod' && <PaymentMethod onNext={handleNext} />}
+      {currentStep === 'Billing' && (
+        <Billing
+          onNext={handleNext}
+          totalAmount={totalAmount}
+          numberOfItems={numberOfItems}
+          orderedItems={orderedItems}
+        />
+      )}
+      {currentStep === 'PaymentMethod' && (
+        <PaymentMethod
+          onNext={handleNext}
+          totalAmount={calculatedTotalAmount}
+        />
+      )}
       {/* Add more steps if necessary */}
     </View>
   );

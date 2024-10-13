@@ -2,7 +2,7 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import React, { useState } from 'react';
 import CheckOutStep from './CheckOutStep';
 
-export default function CheckOutStepHolder() {
+export default function CheckOutStepHolder({ totalAmount, numberOfItems, orderedItems }) {
   // State to manage the current step
   const [currentStep, setCurrentStep] = useState('Billing');
 
@@ -61,7 +61,13 @@ export default function CheckOutStepHolder() {
 
       <View>
         {/* Pass currentStep and handleStepChange to CheckOutStep */}
-        <CheckOutStep currentStep={currentStep} onStepChange={setCurrentStep} />
+        <CheckOutStep
+          currentStep={currentStep}
+          onStepChange={setCurrentStep}
+          totalAmount={totalAmount}
+          numberOfItems={numberOfItems}
+          orderedItems={orderedItems}
+        />
       </View>
     </View>
   );

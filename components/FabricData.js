@@ -97,7 +97,9 @@ const FabricCard = ({ fabric, index, toggleFavorite }) => {
         </TouchableOpacity>
       </View>
       <View>
-        <Text style={styles.price}>{fabric.price}</Text>
+        <Text style={styles.price}>
+          ₦{Number(fabric.price).toLocaleString()}
+        </Text>
       </View>
     </TouchableOpacity>
   );

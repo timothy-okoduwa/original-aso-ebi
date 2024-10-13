@@ -78,8 +78,31 @@ export default function CartItems() {
     clearCart();
   };
   const handleCheckOut = () => {
-    router.push('/checkout');
+    const totalAmount = getTotalAmount(); // Get the total amount
+
+    // Calculate the total number of unique items
+    const numberOfItems = cartItems.length;
+
+    // Create an array of item names and quantities
+    const orderedItems = cartItems.map((item) => ({
+      name: item.name,
+      quantity: item.quantity,
+      price: item.price,
+    }));
+
+    router.push({
+      pathname: '/checkout',
+      params: {
+        totalAmount,
+        numberOfItems,
+        orderedItems: JSON.stringify(orderedItems), // Pass the ordered items
+      },
+    });
   };
+  const formatPrice = (price) => {
+    return `₦${price.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+  };
+
   return (
     <View>
       <View>
@@ -102,7 +125,12 @@ export default function CartItems() {
                 <Text style={styles.namez}>{item.name.replace(/-/g, ' ')}</Text>
               </View>
               <View>
-                <Text style={styles.amont}>{item.price}</Text>
+                <Text style={styles.amont}>
+                  ₦
+                  {item.price.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                  })}
+                </Text>
               </View>
               <View>
                 <Text style={styles.qty}>Qty: {item.quantity} yards</Text>
@@ -147,7 +175,7 @@ export default function CartItems() {
         </View>
       ))}
       <View style={styles.pop}>
-        <Text style={styles.total}>Total: ${getTotalAmount().toFixed(2)}</Text>
+        <Text style={styles.total}>Total: {formatPrice(getTotalAmount())}</Text>
       </View>
       <View style={styles.flux}>
         <TouchableOpacity style={styles.create} onPress={handleCheckOut}>

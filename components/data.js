@@ -11,7 +11,7 @@ const data = [
     name: 'Royal-Blue-Lace',
     details:
       'Beautiful lace fabric in royal blue color. Perfect for elegant dresses and evening gowns.',
-    price: '$95',
+    price: '9500',
     favorite: false,
     category: 'Lace',
   },
@@ -27,7 +27,7 @@ const data = [
     name: 'Green-Blue-Lace',
     details:
       'Green lace fabric in royal blue color. Perfect for elegant dresses and evening gowns.',
-    price: '$15',
+    price: '1500',
     favorite: false,
     category: 'Lace',
   },
@@ -43,7 +43,7 @@ const data = [
     name: 'Soft-Cotton-Fabric',
     details:
       'Soft and breathable cotton fabric. Ideal for making comfortable everyday wear.',
-    price: '$10',
+    price: '1000',
     favorite: false,
     category: 'Senator',
   },
@@ -59,7 +59,7 @@ const data = [
     name: 'Silk-Satin',
     details:
       'Luxurious silk satin fabric with a smooth and shiny surface. Great for formal attire and special occasions.',
-    price: '$120',
+    price: '12000',
     favorite: false,
     category: 'Guinea',
   },
@@ -75,7 +75,7 @@ const data = [
     name: 'Wool-Blend',
     details:
       'Warm and cozy wool blend fabric. Suitable for making winter coats and jackets.',
-    price: '$80',
+    price: '8000',
     favorite: false,
     category: 'Cotton',
   },
@@ -91,7 +91,7 @@ const data = [
     name: 'Natural-Linen',
     details:
       'Lightweight and breathable linen fabric. Perfect for summer clothing and home decor.',
-    price: '$60',
+    price: '6000',
     favorite: false,
     category: 'Polyester',
   },
@@ -107,7 +107,7 @@ const data = [
     name: 'Crushed-Velvet',
     details:
       'Sumptuous crushed velvet fabric with a luxurious texture. Ideal for evening wear and upholstery.',
-    price: '$150',
+    price: '15000',
     favorite: false,
     category: 'Silk',
   },
@@ -123,7 +123,7 @@ const data = [
     name: 'Classic-Denim',
     details:
       'Durable and versatile denim fabric. Great for making jeans, skirts, and jackets.',
-    price: '$25',
+    price: '2500',
     favorite: false,
     category: 'Linen',
   },
@@ -139,7 +139,7 @@ const data = [
     name: 'Silk-Chiffon',
     details:
       'Elegant silk chiffon fabric with a sheer and lightweight texture. Perfect for flowing dresses and scarves.',
-    price: '$100',
+    price: '10000',
     favorite: false,
     category: 'Wool',
   },
@@ -155,7 +155,7 @@ const data = [
     name: 'Soft-Suede',
     details:
       'Soft and luxurious suede fabric with a velvety texture. Ideal for making jackets, skirts, and accessories.',
-    price: '$70',
+    price: '7000',
     favorite: false,
     category: 'Denim',
   },
@@ -171,7 +171,7 @@ const data = [
     name: 'Polyester-Blend',
     details:
       'Durable polyester blend fabric with a smooth and wrinkle-resistant finish. Suitable for a variety of garments and projects.',
-    price: '$15',
+    price: '1500',
     favorite: false,
     category: 'Velvet',
   },

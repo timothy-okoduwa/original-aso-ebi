@@ -12,7 +12,6 @@ export const CartProvider = ({ children }) => {
       );
 
       if (existingItemIndex > -1) {
-        // Item already exists in the cart, increase quantity
         const updatedItems = [...prevItems];
         const existingItem = updatedItems[existingItemIndex];
         const newQuantity = existingItem.quantity + item.quantity;
@@ -20,27 +19,27 @@ export const CartProvider = ({ children }) => {
         updatedItems[existingItemIndex] = {
           ...existingItem,
           quantity: newQuantity,
-          price: calculatePrice(existingItem.basePrice, newQuantity),
+          price: calculatePrice(existingItem.basePrice, newQuantity), // Store as numeric
         };
         return updatedItems;
       } else {
-        // Item does not exist in the cart, add as new item
-        return [...prevItems, item];
+        return [
+          ...prevItems,
+          { ...item, price: calculatePrice(item.basePrice, item.quantity) },
+        ]; // Add numeric price
       }
     });
   };
 
   const updateItemQuantity = (itemName, newQuantity) => {
-    if (newQuantity < 1) {
-      return;
-    }
+    if (newQuantity < 1) return;
     setCartItems((prevItems) =>
       prevItems.map((item) =>
         item.name === itemName
           ? {
               ...item,
               quantity: newQuantity,
-              price: calculatePrice(item.basePrice, newQuantity),
+              price: calculatePrice(item.basePrice, newQuantity), // Store as numeric
             }
           : item
       )
@@ -58,16 +57,23 @@ export const CartProvider = ({ children }) => {
   };
 
   const calculatePrice = (basePrice, quantity) => {
-    const priceNumber = parseFloat(basePrice.replace('$', ''));
-    if (quantity > 5) {
-      return `$${(priceNumber / 5) * quantity}`;
-    }
-    return `$${priceNumber * (quantity / 5)}`;
+    const priceNumber = parseFloat(
+      basePrice.replace('₦', '').replace(/,/g, '')
+    );
+    const totalPrice =
+      quantity > 5
+        ? (priceNumber / 5) * quantity
+        : priceNumber * (quantity / 5);
+    return totalPrice; // Return numeric value
+  };
+
+  const formatPrice = (price) => {
+    return `₦${price.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
   };
 
   const getTotalAmount = () => {
     return cartItems.reduce((total, item) => {
-      return total + parseFloat(item.price.replace('$', ''));
+      return total + item.price; // Now this is numeric
     }, 0);
   };
 

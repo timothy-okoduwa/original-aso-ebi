@@ -16,12 +16,13 @@ import {
   KumbhSans_400Regular,
   KumbhSans_500Medium,
 } from '@expo-google-fonts/kumbh-sans';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import moment from 'moment';
 import CartItems from '../components/CartItems';
 import CheckOutStepHolder from '../components/CheckOutStepHolder';
 
 export default function cart() {
+  const { totalAmount, numberOfItems, orderedItems } = useLocalSearchParams();
   const router = useRouter();
   const { cartItems } = useContext(CartContext);
   const [fontsLoaded, fontError] = useFonts({
@@ -50,7 +51,11 @@ export default function cart() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.main}>
-          <CheckOutStepHolder />
+          <CheckOutStepHolder
+            totalAmount={totalAmount}
+            numberOfItems={numberOfItems}
+            orderedItems={orderedItems}
+          />
         </View>
       </ScrollView>
       {/* <ButtomNav /> */}

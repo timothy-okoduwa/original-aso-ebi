@@ -9,6 +9,7 @@ import React, { useContext } from 'react';
 import { AntDesign } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { Link, usePathname, useRouter } from 'expo-router';
 import {
   useFonts,
@@ -116,6 +117,25 @@ export default function BottomNav() {
               style={{ color: pathname === '/cart' ? '#000000' : '#b3b3b3' }}
             >
               Cart
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <View>
+          <TouchableOpacity
+            style={{ justifyContent: 'center', alignItems: 'center' }}
+            onPress={cart}
+          >
+            <View>
+              <FontAwesome6
+                name="box-open"
+                size={24}
+                color={pathname === '/cart' ? '#000000' : '#b3b3b3'}
+              />
+            </View>
+            <Text
+              style={{ color: pathname === '/cart' ? '#000000' : '#b3b3b3' }}
+            >
+              Order
             </Text>
           </TouchableOpacity>
         </View>

@@ -3,142 +3,242 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  TextInput,
-  ScrollView,
+  ActivityIndicator,
 } from 'react-native';
-import React, { useRef } from 'react';
+import React, { useState } from 'react';
+import { useRouter } from 'expo-router'; // Import useRouter
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import PaymentSuccessModal from '../components/PaymentSuccessModal';
 
 import {
   useFonts,
   LexendDeca_400Regular,
 } from '@expo-google-fonts/lexend-deca';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import AntDesign from '@expo/vector-icons/AntDesign';
-import { Paystack, paystackProps } from 'react-native-paystack-webview';
 import {
-  KumbhSans_100Thin,
-  KumbhSans_200ExtraLight,
-  KumbhSans_300Light,
   KumbhSans_400Regular,
   KumbhSans_500Medium,
-  KumbhSans_600SemiBold,
-  KumbhSans_700Bold,
-  KumbhSans_800ExtraBold,
-  KumbhSans_900Black,
 } from '@expo-google-fonts/kumbh-sans';
-import {
-  Lora_400Regular,
-  Lora_500Medium,
-  Lora_600SemiBold,
-  Lora_700Bold,
-  Lora_400Regular_Italic,
-  Lora_500Medium_Italic,
-  Lora_600SemiBold_Italic,
-  Lora_700Bold_Italic,
-} from '@expo-google-fonts/lora';
 
-export default function PaymentMethod({ onNext }) {
-  const paystackWebViewRef = useRef(paystackProps.PayStackRef);
+export default function PaymentMethod({ totalAmount }) {
+  const [isModalVisible, setModalVisible] = useState(false); // Modal state
+  const [loading, setLoading] = useState(false); // Loading state
+  const [selectedMethod, setSelectedMethod] = useState(null); // Track selected method
   const [fontsLoaded, fontError] = useFonts({
     LexendDeca_400Regular,
-    KumbhSans_100Thin,
-    KumbhSans_200ExtraLight,
-    KumbhSans_300Light,
     KumbhSans_400Regular,
     KumbhSans_500Medium,
-    KumbhSans_600SemiBold,
-    KumbhSans_700Bold,
-    KumbhSans_800ExtraBold,
-    KumbhSans_900Black,
-    Lora_400Regular,
-    Lora_500Medium,
-    Lora_600SemiBold,
-    Lora_700Bold,
-    Lora_400Regular_Italic,
-    Lora_500Medium_Italic,
-    Lora_600SemiBold_Italic,
-    Lora_700Bold_Italic,
   });
+
+  const router = useRouter(); // Initialize the router
 
   if (!fontsLoaded || fontError) {
     return null;
   }
+
+  const handlePaymentSelection = (paymentType) => {
+    setTimeout(() => {
+      router.push({
+        pathname: '/paystackWebview', // Your WebView route
+        params: { paymentType, totalAmount }, // Pass the paymentType to the next page
+      });
+      setLoading(false); // Stop loading after navigation
+    }, 5000); // 5 seconds delay
+  };
+
+  const payOnDelivery = () => {
+    setLoading(true); // Start loading
+    setSelectedMethod('delivery'); // Track selected method
+    setTimeout(() => {
+      setModalVisible(true); // Show the modal after 5 seconds
+      setLoading(false); // Stop loading
+    }, 5000);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+  };
+
+  const handlePress = (paymentType) => {
+    setLoading(true); // Start loading
+    setSelectedMethod(paymentType); // Track selected method
+    handlePaymentSelection(paymentType); // Delay before handling payment selection
+  };
+
   return (
     <View>
-      <Paystack
-        paystackKey="pk_live_dc0a46a8affdd06e7d7a9ce3bfd5c842c71d0511"
-        billingEmail="timothyokoduwa7@gmail.com"
-        billingMobile="09045339820"
-        billingName="timothy okoduwa"
-        currency="NGN"
-        amount={25000}
-        paymentChannels={['card', 'bank_transfer']} // Add 'bank_transfer' to include bank transfers
-        onCancel={(e) => {
-          console.log(e);
-        }}
-        onSuccess={(res) => {
-          console.log(res);
-        }}
-        ref={paystackWebViewRef}
-      />
       <View style={styles.mainn}>
         <Text style={styles.store}>Select payment method</Text>
+        <View>
+          <Text style={styles.store2}>
+            You will be paying a total of ₦
+            {Number(totalAmount).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+            })}
+          </Text>
+        </View>
       </View>
 
       <View style={styles.pushh}>
+        {/* Pay with Card */}
         <TouchableOpacity
-          style={styles.pettt}
-          onPress={() => paystackWebViewRef.current.startTransaction()}
+          style={[
+            styles.pettt,
+            loading && selectedMethod === 'card' && styles.disabledButton,
+          ]} // Disable the button when loading
+          onPress={() => handlePress('card')}
+          disabled={loading && selectedMethod === 'card'} // Disable the button while loading
         >
           <View>
-            <Text style={styles.plat}>Pay with Card or Bank transfer</Text>
+            <Text style={styles.plat}>Pay with Card</Text>
             <View style={styles.dealss}>
-              <View>
-                <FontAwesome name="cc-visa" size={26} color="#0E4595" />
-              </View>
-              <View style={styles.mcas}>
-                <FontAwesome name="cc-mastercard" size={26} color="#F79E1B" />
-              </View>
+              <FontAwesome name="cc-visa" size={18} color="black" />
             </View>
           </View>
-
-          <Text>
+          {loading && selectedMethod === 'card' ? (
+            <ActivityIndicator size="small" color="black" /> // Show loader while waiting
+          ) : (
             <AntDesign name="right" size={24} color="black" />
-          </Text>
+          )}
         </TouchableOpacity>
-        <TouchableOpacity style={styles.pettt}>
+
+        {/* Bank Transfer */}
+        <TouchableOpacity
+          style={[
+            styles.pettt,
+            loading &&
+              selectedMethod === 'bank_transfer' &&
+              styles.disabledButton,
+          ]} // Disable the button when loading
+          onPress={() => handlePress('bank_transfer')}
+          disabled={loading && selectedMethod === 'bank_transfer'} // Disable the button while loading
+        >
+          <View>
+            <Text style={styles.plat}>Bank Transfer</Text>
+            <View style={styles.dealss}>
+              <MaterialCommunityIcons
+                name="bank-transfer"
+                size={24}
+                color="black"
+              />
+            </View>
+          </View>
+          {loading && selectedMethod === 'bank_transfer' ? (
+            <ActivityIndicator size="small" color="black" /> // Show loader while waiting
+          ) : (
+            <AntDesign name="right" size={24} color="black" />
+          )}
+        </TouchableOpacity>
+
+        {/* Bank */}
+        <TouchableOpacity
+          style={[
+            styles.pettt,
+            loading && selectedMethod === 'bank' && styles.disabledButton,
+          ]} // Disable the button when loading
+          onPress={() => handlePress('bank')}
+          disabled={loading && selectedMethod === 'bank'} // Disable the button while loading
+        >
+          <View>
+            <Text style={styles.plat}>Bank</Text>
+            <View style={styles.dealss}>
+              <FontAwesome name="bank" size={18} color="black" />
+            </View>
+          </View>
+          {loading && selectedMethod === 'bank' ? (
+            <ActivityIndicator size="small" color="black" /> // Show loader while waiting
+          ) : (
+            <AntDesign name="right" size={24} color="black" />
+          )}
+        </TouchableOpacity>
+
+        {/* USSD */}
+        <TouchableOpacity
+          style={[
+            styles.pettt,
+            loading && selectedMethod === 'ussd' && styles.disabledButton,
+          ]} // Disable the button when loading
+          onPress={() => handlePress('ussd')}
+          disabled={loading && selectedMethod === 'ussd'} // Disable the button while loading
+        >
+          <View>
+            <Text style={styles.plat}>USSD</Text>
+            <View style={styles.dealss}>
+              <Ionicons name="phone-portrait-sharp" size={18} color="black" />
+            </View>
+          </View>
+          {loading && selectedMethod === 'ussd' ? (
+            <ActivityIndicator size="small" color="black" /> // Show loader while waiting
+          ) : (
+            <AntDesign name="right" size={24} color="black" />
+          )}
+        </TouchableOpacity>
+
+        {/* QR Code */}
+        <TouchableOpacity
+          style={[
+            styles.pettt,
+            loading && selectedMethod === 'qr' && styles.disabledButton,
+          ]} // Disable the button when loading
+          onPress={() => handlePress('qr')}
+          disabled={loading && selectedMethod === 'qr'} // Disable the button while loading
+        >
+          <View>
+            <Text style={styles.plat}>QR Code</Text>
+            <View style={styles.dealss}>
+              <Ionicons name="qr-code-outline" size={18} color="black" />
+            </View>
+          </View>
+          {loading && selectedMethod === 'qr' ? (
+            <ActivityIndicator size="small" color="black" /> // Show loader while waiting
+          ) : (
+            <AntDesign name="right" size={24} color="black" />
+          )}
+        </TouchableOpacity>
+
+        {/* Pay on Delivery */}
+        <TouchableOpacity
+          style={[
+            styles.pettt,
+            loading && selectedMethod === 'delivery' && styles.disabledButton,
+          ]} // Disable the button when loading
+          onPress={payOnDelivery}
+          disabled={loading && selectedMethod === 'delivery'} // Disable the button while loading
+        >
           <View>
             <Text style={styles.plat}>Pay on Delivery</Text>
             <View style={styles.dealss}>
               <Text style={styles.pori}>
-                Pay with cash when your order arives{' '}
+                Pay with cash when your order arrives
               </Text>
             </View>
           </View>
-
-          <Text>
+          {loading && selectedMethod === 'delivery' ? (
+            <ActivityIndicator size="small" color="black" /> // Show loader while waiting
+          ) : (
             <AntDesign name="right" size={24} color="black" />
-          </Text>
+          )}
         </TouchableOpacity>
       </View>
+      <PaymentSuccessModal visible={isModalVisible} onClose={closeModal} />
     </View>
   );
 }
+
 const styles = StyleSheet.create({
-  delivv: {
-    fontFamily: 'KumbhSans_400Regular',
-    color: '#000000',
-    fontSize: 16,
-  },
-  deliv2: {
-    fontFamily: 'KumbhSans_400Regular',
-    color: '#000000',
-    fontSize: 14,
-  },
   store: {
     fontFamily: 'KumbhSans_400Regular',
     color: '#000000',
     fontSize: 20,
+  },
+  store2: {
+    fontFamily: 'KumbhSans_500Medium',
+    color: '#000000',
+    fontSize: 16,
+    marginTop: 20,
   },
   mainn: {
     flex: 1,
@@ -167,12 +267,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 10,
   },
-  mcas: {
-    marginLeft: 10,
-  },
   pori: {
     fontFamily: 'KumbhSans_400Regular',
     color: '#000000',
     fontSize: 15,
+  },
+  disabledButton: {
+    opacity: 0.5, // Make the button appear disabled
   },
 });

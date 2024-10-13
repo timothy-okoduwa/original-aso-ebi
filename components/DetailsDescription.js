@@ -41,11 +41,18 @@ export default function DetailsDescription({ partName }) {
   };
 
   const calculatePrice = (basePrice, quantity) => {
-    const priceNumber = parseFloat(basePrice.replace('$', ''));
+    const priceNumber = parseFloat(
+      basePrice.replace('₦', '').replace(/,/g, '')
+    ); // Remove currency and commas
+    let totalPrice;
+
     if (quantity > 5) {
-      return `$${(priceNumber / 5) * quantity}`;
+      totalPrice = (priceNumber / 5) * quantity;
+    } else {
+      totalPrice = priceNumber * (quantity / 5);
     }
-    return `$${priceNumber * (quantity / 5)}`;
+
+    return `₦${totalPrice.toLocaleString()}`; // Format the total price with commas
   };
 
   const handleAddToCart = () => {
