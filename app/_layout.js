@@ -1,25 +1,58 @@
-import { useEffect } from 'react';
-
-import { Slot } from 'expo-router';
-import * as Notifications from 'expo-notifications';
+import React, { useEffect } from 'react';
+import { Slot, useRouter } from 'expo-router';
 import { CartProvider } from './CartContext';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { StyleSheet, Platform } from 'react-native';
-import { Provider } from 'react-redux';
+import { StyleSheet } from 'react-native';
+import { Provider, useDispatch } from 'react-redux';
+
 import { store } from './store';
-import { LoadingProvider } from './LoadingContext'; // Import LoadingProvider
-import LoadingIndicator from './LoadingIndicator'; // Import LoadingIndicator
-export default function Layout() {
+import { setToken } from '../components/features/auth/authSlice'; // Import setToken action
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LoadingProvider } from './LoadingContext';
+import LoadingIndicator from './LoadingIndicator';
+
+// MainComponent that will check for token inside the Provider
+const MainComponent = () => {
+  const router = useRouter();
+  const dispatch = useDispatch();
+
   useEffect(() => {
-    const getPermission = async () => {
-      const { status } = await Notifications.getPermissionsAsync();
-      if (status !== 'granted') {
-        await Notifications.requestPermissionsAsync();
+    const checkToken = async () => {
+      try {
+        const token = await AsyncStorage.getItem('authToken');
+        if (token) {
+          // If token exists, set it in Redux state
+          dispatch(setToken(token));
+          router.push('/');
+        }
+      } catch (error) {
+        console.error('Error loading token from AsyncStorage:', error);
       }
     };
-    getPermission();
-  }, []);
+
+    checkToken();
+  }, [dispatch, router]);
+
+  return (
+    <>
+      <Slot />
+      <LoadingIndicator />
+    </>
+  );
+};
+
+// Layout component remains the same, with Provider wrapping the whole structure
+export default function Layout() {
+  // useEffect(() => {
+  //   const getPermission = async () => {
+  //     const { status } = await Notifications.getPermissionsAsync();
+  //     if (status !== 'granted') {
+  //       await Notifications.requestPermissionsAsync();
+  //     }
+  //   };
+  //   getPermission();
+  // }, []);
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
@@ -31,8 +64,7 @@ export default function Layout() {
                 backgroundColor="#FFFFFF"
                 translucent={false}
               />
-              <Slot />
-              <LoadingIndicator />
+              <MainComponent />
             </LoadingProvider>
           </CartProvider>
         </Provider>
@@ -44,6 +76,6 @@ export default function Layout() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF', // ensure this matches your design
+    backgroundColor: '#FFFFFF',
   },
 });

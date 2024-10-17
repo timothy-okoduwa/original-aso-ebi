@@ -7,8 +7,9 @@ import {
   ScrollView,
   ActivityIndicator,
   RefreshControl,
+   Animated,
 } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import { Link, useRouter } from 'expo-router';
 import { AntDesign } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
@@ -46,6 +47,39 @@ import {
   Lora_600SemiBold_Italic,
   Lora_700Bold_Italic,
 } from '@expo-google-fonts/lora';
+const CustomToast = ({ visible, message, type }) => {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (visible) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [visible, fadeAnim]);
+
+  if (!visible) return null;
+
+  return (
+    <Animated.View
+      style={[
+        styles.toast,
+        { opacity: fadeAnim },
+        type === 'success' ? styles.successToast : styles.errorToast,
+      ]}
+    >
+      <Text style={styles.toastText}>{message}</Text>
+    </Animated.View>
+  );
+};
 
 export default function createaccount() {
   const router = useRouter();
@@ -63,6 +97,8 @@ export default function createaccount() {
   const [message, setMessage] = useState('');
   const { showLoading, hideLoading } = useLoading();
   const [refreshing, setRefreshing] = useState(false);
+  const [userId, setUserId] = useState(null); // New state for storing the user's ID
+ const [toast, setToast] = useState({ visible: false, message: '', type: '' });
   const role = 1;
   // State variables to store input values and corresponding error messages
 
@@ -207,6 +243,18 @@ export default function createaccount() {
     return true;
   };
 
+  const showToast = (message, type) => {
+    setToast({ visible: true, message, type });
+    setTimeout(() => {
+      setToast({ visible: false, message: '', type: '' });
+    }, 3000); // Hide toast after 3 seconds
+  };
+
+  useEffect(() => {
+    return () => {
+      setToast({ visible: false, message: '', type: '' });
+    };
+  }, []);
   // Handle submit button press
   const handleCreateAccount = async () => {
     // Run all validations
@@ -233,57 +281,33 @@ export default function createaccount() {
     setLoading(true); // Only set loading to true if all validations pass
     showLoading(); // Show loading indicator before starting async operation
 
-    try {
-      // Dispatch the registerUser thunk with the form data
-      await dispatch(registerUser({ name, email, phone, password, role: 1 }));
+   try {
+      const response = await dispatch(registerUser({ name, email, phone, password, role: 1 }));
+
+      if (response.meta.requestStatus === 'fulfilled') {
+        const newUserId = response.payload.data._id;
+        setUserId(newUserId);
+        console.log(response)
+        showToast('Registration successful!', 'success');
+        router.push({ pathname: '/otpverification', params: { userId: newUserId } });
+      } else {
+        showToast(response.error.message || 'Registration failed', 'error');
+      }
+    } catch (error) {
+      showToast('An unexpected error occurred', 'error');
     } finally {
-      hideLoading(); // Always hide loading indicator after async operation
+      setLoading(false);
+      hideLoading();
     }
   };
 
+console.log(userId)
   // Use useEffect to handle side effects based on Redux state
   useEffect(() => {
     if (authStatus === 'succeeded') {
-      Toast.show({
-        type: 'success',
-        position: 'top',
-        text1: successMessage || 'Registration successful!',
-        text2: successMessage ? 'You have successfully registered.' : '', // Additional message
-        visibilityTime: 10000, // Increase visibility time for longer messages
-        autoHide: true,
-        topOffset: 60, // Adjust topOffset for better positioning
-        style: {
-          paddingVertical: 20, // Add padding for better spacing
-          paddingHorizontal: 20,
-        },
-        textStyle: {
-          fontSize: 16, // Adjust font size for readability
-          textAlign: 'left', // Ensure text alignment
-        },
-      });
-      setLoading(false);
-      hideLoading(); // Hide loading indicator after successful registration
-      router.push('/otpverification');
+      showToast(successMessage || 'Registration successful!', 'success');
     } else if (authStatus === 'failed') {
-      Toast.show({
-        type: 'error',
-        position: 'top',
-        text1: 'Registration failed.',
-        text2: authError || 'Please try again or check your input.', // Additional details
-        visibilityTime: 10000, // Increase visibility time for longer messages
-        autoHide: true,
-        topOffset: 60, // Adjust topOffset for better positioning
-        style: {
-          paddingVertical: 20, // Add padding for better spacing
-          paddingHorizontal: 20,
-        },
-        textStyle: {
-          fontSize: 16, // Adjust font size for readability
-          textAlign: 'left', // Ensure text alignment
-        },
-      });
-      setLoading(false);
-      hideLoading(); // Hide loading indicator after failed registration
+      showToast(authError || 'Registration failed. Please try again.', 'error');
     }
   }, [authStatus, successMessage, authError]);
 
@@ -330,7 +354,11 @@ export default function createaccount() {
   return (
     <View>
       <View style={styles.toasr}>
-        <Toast style={{ backgroundColor: '#333', color: '#fff' }} />
+       <CustomToast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+      />
       </View>
 
       <ScrollView
@@ -536,6 +564,14 @@ export default function createaccount() {
                     </Link>
                   </TouchableOpacity>
                 </View>
+                {/* <View>
+                  <TouchableOpacity style={styles.already}>
+                    <Link href="/otpverification">
+                      <Text>otp</Text>
+                    </Link>
+                  </TouchableOpacity>
+                </View> */}
+               
               </View>
             </View>
           </View>
@@ -707,5 +743,27 @@ const styles = StyleSheet.create({
 
     padding: 10, // Add padding for a better appearance
     borderRadius: 10, // Optional: add border-radius for rounded corners
+  },
+   toast: {
+    position: 'absolute',
+    top: 60, // Positioned at the top
+    left: 20,
+    right: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    zIndex: 9999, // Ensure it's above other elements
+  },
+  successToast: {
+    backgroundColor: 'rgba(0, 128, 0, 0.9)',
+  },
+  errorToast: {
+    backgroundColor: 'rgba(255, 0, 0, 0.9)',
+  },
+  toastText: {
+    color: 'white',
+    fontSize: 16,
+    textAlign: 'center',
   },
 });

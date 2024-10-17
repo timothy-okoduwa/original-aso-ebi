@@ -41,6 +41,9 @@ export default function BottomNav() {
   const cart = () => {
     router.push('/cart');
   };
+  const order = () => {
+    router.push('/order');
+  };
 
   const isCartPopulated = cartItems.length > 0;
 
@@ -123,17 +126,17 @@ export default function BottomNav() {
         <View>
           <TouchableOpacity
             style={{ justifyContent: 'center', alignItems: 'center' }}
-            onPress={cart}
+            onPress={order}
           >
             <View>
               <FontAwesome6
                 name="box-open"
                 size={24}
-                color={pathname === '/cart' ? '#000000' : '#b3b3b3'}
+                color={pathname === '/order' ? '#000000' : '#b3b3b3'}
               />
             </View>
             <Text
-              style={{ color: pathname === '/cart' ? '#000000' : '#b3b3b3' }}
+              style={{ color: pathname === '/order' ? '#000000' : '#b3b3b3' }}
             >
               Order
             </Text>
