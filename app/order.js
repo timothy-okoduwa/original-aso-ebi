@@ -17,6 +17,7 @@ import {
   KumbhSans_500Medium,
 } from '@expo-google-fonts/kumbh-sans';
 import { useRouter } from 'expo-router';
+import Orders from '../components/Orders';
 
 export default function order() {
   const [refreshing, setRefreshing] = useState(false);
@@ -58,7 +59,7 @@ export default function order() {
         }
       >
         <View>
-          <Text>dhdh</Text>
+          <Orders/>
         </View>
       </ScrollView>
       <ButtomNav />
