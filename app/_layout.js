@@ -1,16 +1,18 @@
-import React, { useEffect } from 'react';
-import { Slot, useRouter } from 'expo-router';
-import { CartProvider } from './CartContext';
-import { StatusBar } from 'expo-status-bar';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { StyleSheet } from 'react-native';
-import { Provider, useDispatch } from 'react-redux';
+/** @format */
 
-import { store } from './store';
-import { setToken } from '../components/features/auth/authSlice'; // Import setToken action
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LoadingProvider } from './LoadingContext';
-import LoadingIndicator from './LoadingIndicator';
+import React, { useEffect } from "react";
+import { Slot, useRouter } from "expo-router";
+import { CartProvider } from "./CartContext";
+import { StatusBar } from "expo-status-bar";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { StyleSheet } from "react-native";
+import { Provider, useDispatch } from "react-redux";
+import { setUser } from "../components/features/auth/authSlice";
+import { store } from "./store";
+import { setToken } from "../components/features/auth/authSlice"; // Import setToken action
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LoadingProvider } from "./LoadingContext";
+import LoadingIndicator from "./LoadingIndicator";
 
 // MainComponent that will check for token inside the Provider
 const MainComponent = () => {
@@ -18,20 +20,20 @@ const MainComponent = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const checkToken = async () => {
+    const checkUserId = async () => {
       try {
-        const token = await AsyncStorage.getItem('authToken');
-        if (token) {
-          // If token exists, set it in Redux state
-          dispatch(setToken(token));
-          router.push('/');
+        const userId = await AsyncStorage.getItem("userId");
+        if (userId) {
+          // If userId exists, set the user in Redux state
+          dispatch(setUser({ _id: userId }));
+          router.push("/"); // Redirect after successful userId retrieval
         }
       } catch (error) {
-        console.error('Error loading token from AsyncStorage:', error);
+        console.error("Error loading userId from AsyncStorage:", error);
       }
     };
 
-    checkToken();
+    checkUserId();
   }, [dispatch, router]);
 
   return (
@@ -76,6 +78,6 @@ export default function Layout() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
   },
 });

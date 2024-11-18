@@ -1,19 +1,21 @@
-import React, { useState, useEffect } from 'react';
+/** @format */
+
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   Animated,
   TouchableOpacity,
-} from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { CartProvider } from './CartContext';
+} from "react-native";
+import { StatusBar } from "expo-status-bar";
+import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { CartProvider } from "./CartContext";
 import {
   useFonts,
   LexendDeca_400Regular,
-} from '@expo-google-fonts/lexend-deca';
+} from "@expo-google-fonts/lexend-deca";
 
 export default function Index() {
   const [fontsLoaded, fontError] = useFonts({
@@ -44,17 +46,17 @@ export default function Index() {
     // Function to check for user token in AsyncStorage
     const checkUserToken = async () => {
       try {
-        const token = await AsyncStorage.getItem('authToken');
-        if (token) {
+        const userId = await AsyncStorage.getItem("userId");
+        if (userId) {
           // If a token is found, navigate to main home page
-          router.push('/mainhome');
+          router.push("/mainhome");
         } else {
           // If no token, navigate to onboarding page
-          router.push('/onboarding');
+          router.push("/onboarding");
         }
       } catch (error) {
-        console.error('Error fetching token from AsyncStorage', error);
-        router.push('/onboarding');
+        console.error("Error fetching token from AsyncStorage", error);
+        router.push("/onboarding");
       }
     };
 
@@ -144,22 +146,22 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'black',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "black",
   },
   textContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   text: {
-    color: 'white',
+    color: "white",
     fontSize: 64,
-    fontWeight: '600',
-    fontFamily: 'LexendDeca_400Regular',
+    fontWeight: "600",
+    fontFamily: "LexendDeca_400Regular",
   },
   small: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontFamily: 'LexendDeca_400Regular',
+    fontFamily: "LexendDeca_400Regular",
   },
 });

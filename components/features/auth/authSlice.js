@@ -1,26 +1,29 @@
+/** @format */
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 // Define the initial state
 const initialState = {
   user: null,
-  status: 'idle',
+  status: "idle",
   error: null,
-  successMessage: '',
+  successMessage: "",
+  token: null,
+  userId: null,
 };
 
 // Create an async thunk for user registration
 export const registerUser = createAsyncThunk(
-  'auth/registerUser',
+  "auth/registerUser",
   async (userData, { rejectWithValue }) => {
     try {
       const response = await fetch(
-        'https://oae-be.onrender.com/api/oae/auth/register',
+        "https://oae-be.onrender.com/api/oae/auth/register",
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(userData),
         }
@@ -34,23 +37,23 @@ export const registerUser = createAsyncThunk(
 
       return responseData; // Return success data
     } catch (error) {
-      return rejectWithValue({ message: 'Network error, please try again.' });
+      return rejectWithValue({ message: "Network error, please try again." });
     }
   }
 );
 export const verifyOtp = createAsyncThunk(
-  'auth/verifyOtp',
+  "auth/verifyOtp",
   async ({ userId, otp }, { rejectWithValue }) => {
-    console.log('this is user id from authslice :',userId,otp)
+    console.log("this is user id from authslice :", userId, otp);
     try {
       const response = await fetch(
         `https://oae-be.onrender.com/api/oae/auth/${userId}/verify`,
         {
-          method: 'PATCH',
+          method: "PATCH",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
-     body: JSON.stringify({ otp }), 
+          body: JSON.stringify({ otp }),
         }
       );
 
@@ -67,41 +70,55 @@ export const verifyOtp = createAsyncThunk(
   }
 );
 
-
 // Create an async thunk for user login
 export const loginUser = createAsyncThunk(
-  'auth/loginUser',
+  "auth/loginUser",
   async (loginData, { rejectWithValue }) => {
     try {
       const response = await fetch(
-        'https://oae-be.onrender.com/api/oae/auth/login',
+        "https://oae-be.onrender.com/api/oae/auth/login",
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(loginData),
         }
       );
 
-      const responseData = await response.json(); // Get the JSON response
+      const responseData = await response.json();
 
-      if (!response.ok) {
-        return rejectWithValue(responseData); // Return the error data if the response is not ok
+      if (response.status !== 200) {
+        return rejectWithValue(responseData);
       }
-// Store the token in AsyncStorage
-      const token = responseData.data; // JWT token
-      await AsyncStorage.setItem('authToken', token);
-      return responseData; // Return success data
+
+      const { userId, token } = responseData.data;
+
+      // Store userId and token in AsyncStorage
+      try {
+        await AsyncStorage.setItem("userId", userId);
+        await AsyncStorage.setItem("token", token);
+        console.log(
+          "Token stored successfully:",
+          await AsyncStorage.getItem("token")
+        );
+      } catch (storageError) {
+        console.error("Failed to store token in AsyncStorage:", storageError);
+        return rejectWithValue({
+          message: "Error storing token, please try again.",
+        });
+      }
+
+      return responseData;
     } catch (error) {
-      return rejectWithValue({ message: 'Network error, please try again.' });
+      return rejectWithValue({ message: "Network error, please try again." });
     }
   }
 );
 
 // Create a slice
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     setUser: (state, action) => {
@@ -115,71 +132,61 @@ const authSlice = createSlice({
     builder
       // Handle registration cases
       .addCase(registerUser.pending, (state) => {
-        state.status = 'loading';
+        state.status = "loading";
         state.error = null;
-        state.successMessage = '';
+        state.successMessage = "";
       })
       .addCase(registerUser.fulfilled, (state, action) => {
-        state.status = 'succeeded';
+        state.status = "succeeded";
         state.user = action.payload.user;
         state.successMessage =
-          action.payload.message || 'Registration successful';
+          action.payload.message || "Registration successful";
         state.error = null;
       })
       .addCase(registerUser.rejected, (state, action) => {
-        state.status = 'failed';
+        state.status = "failed";
         state.error = action.payload.message || action.error.message;
-        state.successMessage = '';
+        state.successMessage = "";
       })
-        .addCase(verifyOtp.pending, (state) => {
-        state.status = 'loading';
+      .addCase(verifyOtp.pending, (state) => {
+        state.status = "loading";
         state.error = null;
-        state.successMessage = '';
+        state.successMessage = "";
       })
-         .addCase(verifyOtp.fulfilled, (state, action) => {
-        state.status = 'succeeded';
-        state.successMessage = action.payload.message || 'OTP verified successfully';
+      .addCase(verifyOtp.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.successMessage =
+          action.payload.message || "OTP verified successfully";
         state.error = null;
         // Optionally set state.user here if additional user info comes back
       })
-       .addCase(verifyOtp.rejected, (state, action) => {
-        state.status = 'failed';
+      .addCase(verifyOtp.rejected, (state, action) => {
+        state.status = "failed";
         state.error = action.payload.message || action.error.message;
-        state.successMessage = '';
+        state.successMessage = "";
       })
       // Handle login cases
       .addCase(loginUser.pending, (state) => {
-        state.status = 'loading';
+        state.status = "loading";
         state.error = null;
-        state.successMessage = '';
+        state.successMessage = "";
       })
       .addCase(loginUser.fulfilled, (state, action) => {
-        state.status = 'succeeded';
-        state.token = action.payload.data; // JWT token
+        state.status = "succeeded";
+        // state.token = action.payload.data;
         state.user = action.payload.user;
-        state.successMessage = action.payload.message || 'Login successful';
+        state.successMessage = action.payload.message || "Login successful";
         state.error = null;
       })
       .addCase(loginUser.rejected, (state, action) => {
-        state.status = 'failed';
+        state.status = "failed";
         state.error = action.payload.message || action.error.message;
-        state.successMessage = '';
+        state.successMessage = "";
       });
-      
   },
 });
 export const { setUser, setToken } = authSlice.actions;
 export default authSlice.reducer;
-
-
-
-
-
-
-
-
-
-
 
 // // features/auth/authSlice.js
 

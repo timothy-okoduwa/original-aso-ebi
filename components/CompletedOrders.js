@@ -17,11 +17,9 @@ import {
 import a from "../constants/image/sen2.png";
 import { useRouter } from "expo-router";
 
-export default function OnGoingOrders() {
+export default function CompletedOrders() {
   const router = useRouter();
-  const move = () => {
-    router.push("/orderdetails/ordernumber");
-  };
+
   const [fontsLoaded, fontError] = useFonts({
     KumbhSans_400Regular,
     KumbhSans_500Medium,
@@ -30,6 +28,9 @@ export default function OnGoingOrders() {
   if (!fontsLoaded || fontError) {
     return null;
   }
+  const move = () => {
+    router.push("/orderdetails/ordernumber");
+  };
   return (
     <View>
       <TouchableOpacity style={styles.holderr} onPress={move}>
@@ -50,8 +51,8 @@ export default function OnGoingOrders() {
               <Text style={styles.qty}>Qty: 5 yards</Text>
             </View>
           </View>
-          <View style={styles.pills}>
-            <Text style={styles.cnf}>Confirmed</Text>
+          <View style={styles.pillsCompleted}>
+            <Text style={styles.cnf}>Delivered</Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -73,8 +74,8 @@ export default function OnGoingOrders() {
               <Text style={styles.qty}>Qty: 5 yards</Text>
             </View>
           </View>
-          <View style={styles.pillsShipped}>
-            <Text style={styles.cnf}>Shipped</Text>
+          <View style={styles.pillsCompleted}>
+            <Text style={styles.cnf}>Delivered</Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -255,30 +256,19 @@ const styles = StyleSheet.create({
     width: 250,
     textAlign: "center",
   },
-  pills: {
+  pillsCompleted: {
     width: 90,
     height: 30,
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#3F70CF",
+    backgroundColor: "#52CA57",
     borderRadius: 4,
     fontFamily: "KumbhSans_400Regular",
     fontSize: 12,
     marginTop: 10,
   },
-  pillsShipped: {
-    width: 90,
-    height: 30,
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F79E1B",
-    borderRadius: 4,
-    fontFamily: "KumbhSans_400Regular",
-    fontSize: 12,
-    marginTop: 10,
-  },
+
   cnf: {
     color: "#FFFFFF",
   },

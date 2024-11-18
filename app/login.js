@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+/** @format */
+
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -9,21 +11,21 @@ import {
   ActivityIndicator,
   RefreshControl,
   Animated,
-} from 'react-native';
+} from "react-native";
 
-import { Link, useRouter } from 'expo-router';
-import { AntDesign } from '@expo/vector-icons';
-import { Feather } from '@expo/vector-icons';
-import { StatusBar } from 'expo-status-bar';
-import { useDispatch, useSelector } from 'react-redux';
-import { loginUser } from '../components/features/auth/authSlice';
-import Toast from 'react-native-toast-message';
-import { useLoading } from './LoadingContext';
+import { Link, useRouter } from "expo-router";
+import { AntDesign } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
+import { useDispatch, useSelector } from "react-redux";
+import { loginUser } from "../components/features/auth/authSlice";
+import Toast from "react-native-toast-message";
+import { useLoading } from "./LoadingContext";
 // import { Feather } from '@expo/vector-icons';
 import {
   useFonts,
   LexendDeca_400Regular,
-} from '@expo-google-fonts/lexend-deca';
+} from "@expo-google-fonts/lexend-deca";
 import {
   KumbhSans_100Thin,
   KumbhSans_200ExtraLight,
@@ -34,7 +36,7 @@ import {
   KumbhSans_700Bold,
   KumbhSans_800ExtraBold,
   KumbhSans_900Black,
-} from '@expo-google-fonts/kumbh-sans';
+} from "@expo-google-fonts/kumbh-sans";
 import {
   Lora_400Regular,
   Lora_500Medium,
@@ -44,7 +46,7 @@ import {
   Lora_500Medium_Italic,
   Lora_600SemiBold_Italic,
   Lora_700Bold_Italic,
-} from '@expo-google-fonts/lora';
+} from "@expo-google-fonts/lora";
 const CustomToast = ({ visible, message, type }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -71,14 +73,13 @@ const CustomToast = ({ visible, message, type }) => {
       style={[
         styles.toast,
         { opacity: fadeAnim },
-        type === 'success' ? styles.successToast : styles.errorToast,
+        type === "success" ? styles.successToast : styles.errorToast,
       ]}
     >
       <Text style={styles.toastText}>{message}</Text>
     </Animated.View>
   );
 };
-
 
 export default function login() {
   const router = useRouter();
@@ -92,19 +93,19 @@ export default function login() {
   const { showLoading, hideLoading } = useLoading();
   const authStatus = useSelector((state) => state.auth.status);
   const authError = useSelector((state) => state.auth.error);
-    const successMessage = useSelector((state) => state.auth.successMessage);
-const [toast, setToast] = useState({ visible: false, message: '', type: '' });
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
+  const successMessage = useSelector((state) => state.auth.successMessage);
+  const [toast, setToast] = useState({ visible: false, message: "", type: "" });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const gotocreateaccount = () => {
-    router.push('/createaccount');
+    router.push("/createaccount");
   };
   const gotoforgetpassword = () => {
-    router.push('/forgetpassword');
+    router.push("/forgetpassword");
   };
 
   const handleFocus = () => {
@@ -118,13 +119,13 @@ const [toast, setToast] = useState({ visible: false, message: '', type: '' });
   // Validation functions
 
   const validateEmail = () => {
-    if (email.trim() === '') {
-      setEmailError('Email is required');
+    if (email.trim() === "") {
+      setEmailError("Email is required");
       return false;
     }
 
-    const hasAtSymbol = email.includes('@');
-    const hasDotCom = email.endsWith('.com');
+    const hasAtSymbol = email.includes("@");
+    const hasDotCom = email.endsWith(".com");
 
     if (!hasAtSymbol) {
       setEmailError('Email is missing "@" symbol');
@@ -138,22 +139,22 @@ const [toast, setToast] = useState({ visible: false, message: '', type: '' });
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setEmailError('Invalid email address');
+      setEmailError("Invalid email address");
       return false;
     }
 
-    setEmailError('');
+    setEmailError("");
     return true;
   };
 
   const validatePassword = () => {
-    if (password.trim() === '') {
-      setPasswordError('Password is required');
+    if (password.trim() === "") {
+      setPasswordError("Password is required");
       return false;
     }
 
     if (password.length < 8) {
-      setPasswordError('Password must be at least 8 characters');
+      setPasswordError("Password must be at least 8 characters");
       return false;
     }
 
@@ -161,23 +162,23 @@ const [toast, setToast] = useState({ visible: false, message: '', type: '' });
     const containsNumbers = /\d/.test(password);
 
     if (!containsLetters || !containsNumbers) {
-      setPasswordError('Password must contain both letters and numbers');
+      setPasswordError("Password must contain both letters and numbers");
       return false;
     }
 
-    setPasswordError('');
+    setPasswordError("");
     return true;
   };
-    const showToast = (message, type) => {
+  const showToast = (message, type) => {
     setToast({ visible: true, message, type });
     setTimeout(() => {
-      setToast({ visible: false, message: '', type: '' });
+      setToast({ visible: false, message: "", type: "" });
     }, 3000); // Hide toast after 3 seconds
   };
 
   useEffect(() => {
     return () => {
-      setToast({ visible: false, message: '', type: '' });
+      setToast({ visible: false, message: "", type: "" });
     };
   }, []);
 
@@ -194,8 +195,8 @@ const [toast, setToast] = useState({ visible: false, message: '', type: '' });
     showLoading(); // Show loading indicator before starting async operation
 
     if (isEmailValid && isPasswordValid) {
-     const response= await dispatch(loginUser({ email, password }));
-       console.log(response)
+      const response = await dispatch(loginUser({ email, password }));
+      console.log(response);
     } else {
       setLoading(false);
       hideLoading();
@@ -203,17 +204,17 @@ const [toast, setToast] = useState({ visible: false, message: '', type: '' });
   };
 
   useEffect(() => {
-    if (authStatus === 'succeeded') {
-         showToast(successMessage || 'Registration successful!', 'success');
+    if (authStatus === "succeeded") {
+      showToast(successMessage || "Registration successful!", "success");
       setLoading(false);
       hideLoading();
-      router.push('/mainhome');
-    } else if (authStatus === 'failed') {
- showToast(authError || 'Registration failed. Please try again.', 'error');
+      router.push("/mainhome");
+    } else if (authStatus === "failed") {
+      showToast(authError || "Registration failed. Please try again.", "error");
       setLoading(false);
       hideLoading();
     }
-  }, [authStatus,successMessage, authError]);
+  }, [authStatus, successMessage, authError]);
 
   const [fontsLoaded, fontError] = useFonts({
     LexendDeca_400Regular,
@@ -257,11 +258,11 @@ const [toast, setToast] = useState({ visible: false, message: '', type: '' });
   return (
     <View>
       <View style={styles.toasr}>
-       <CustomToast
-        visible={toast.visible}
-        message={toast.message}
-        type={toast.type}
-      />
+        <CustomToast
+          visible={toast.visible}
+          message={toast.message}
+          type={toast.type}
+        />
       </View>
       <ScrollView
         contentContainerStyle={styles.scrollViewContent}
@@ -269,7 +270,7 @@ const [toast, setToast] = useState({ visible: false, message: '', type: '' });
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={['#F11515', '#000000', '#0000ff']}
+            colors={["#F11515", "#000000", "#0000ff"]}
             tintColor="red"
             title="Pull to refresh..."
             titleColor="#00ff00"
@@ -320,7 +321,7 @@ const [toast, setToast] = useState({ visible: false, message: '', type: '' });
                     style={[
                       styles.scares,
                       {
-                        borderColor: isInputFocused ? 'black' : 'gray',
+                        borderColor: isInputFocused ? "black" : "gray",
                         borderWidth: isInputFocused ? 2 : 1,
                       },
                     ]}
@@ -343,7 +344,7 @@ const [toast, setToast] = useState({ visible: false, message: '', type: '' });
                         onPress={() => setShowPassword(!showPassword)}
                       >
                         <Feather
-                          name={showPassword ? 'eye' : 'eye-off'}
+                          name={showPassword ? "eye" : "eye-off"}
                           size={20}
                           color="black"
                         />
@@ -370,7 +371,7 @@ const [toast, setToast] = useState({ visible: false, message: '', type: '' });
                   {loading ? (
                     <ActivityIndicator color="white" size="small" />
                   ) : (
-                    <Text style={{ color: 'white' }}>Log in</Text>
+                    <Text style={{ color: "white" }}>Log in</Text>
                   )}
                 </TouchableOpacity>
 
@@ -390,7 +391,7 @@ const [toast, setToast] = useState({ visible: false, message: '', type: '' });
 }
 const styles = StyleSheet.create({
   toasr: {
-    position: 'absolute', // Make sure the toast is positioned absolutely
+    position: "absolute", // Make sure the toast is positioned absolutely
     top: 0, // Adjust the top position if needed
     left: 0, // Align with the left edge
     right: 0, // Align with the right edge
@@ -406,15 +407,15 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   flex: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 30,
   },
   testx: {
     marginLeft: 10,
   },
   reegister: {
-    fontFamily: 'KumbhSans_500Medium',
+    fontFamily: "KumbhSans_500Medium",
     fontSize: 20,
 
     lineHeight: 24,
@@ -423,36 +424,36 @@ const styles = StyleSheet.create({
     marginTop: 50,
   },
   enadp: {
-    fontFamily: 'Lora_500Medium',
+    fontFamily: "Lora_500Medium",
     fontSize: 20,
 
     lineHeight: 24,
-    textAlign: 'left',
-    color: '#1D1D1D',
+    textAlign: "left",
+    color: "#1D1D1D",
   },
   greetings: {
-    fontFamily: 'KumbhSans_400Regular',
+    fontFamily: "KumbhSans_400Regular",
     fontSize: 18,
 
     lineHeight: 24,
-    textAlign: 'left',
-    color: '#6B6B6B',
+    textAlign: "left",
+    color: "#6B6B6B",
   },
   inputs: {
     marginTop: 30,
   },
   labell: {
     // marginBottom: ,
-    fontFamily: 'LexendDeca_400Regular',
+    fontFamily: "LexendDeca_400Regular",
     fontSize: 16,
 
     lineHeight: 20,
-    textAlign: 'left',
-    color: '#6B6B6B',
+    textAlign: "left",
+    color: "#6B6B6B",
   },
   inputt: {
-    backgroundColor: '#ffffff',
-    borderColor: 'gray',
+    backgroundColor: "#ffffff",
+    borderColor: "gray",
     borderWidth: 1,
     height: 50,
     borderRadius: 8,
@@ -460,13 +461,13 @@ const styles = StyleSheet.create({
     paddingRight: 20,
   },
   scares: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     // backgroundColor: 'red',
-    width: '100%',
-    backgroundColor: '#ffffff',
-    borderColor: 'gray',
+    width: "100%",
+    backgroundColor: "#ffffff",
+    borderColor: "gray",
     borderWidth: 1,
     height: 50,
     borderRadius: 8,
@@ -477,116 +478,116 @@ const styles = StyleSheet.create({
     flex: 1, // Make the container flex to fill the available space
   },
   inpu2: {
-    width: 'fit-content',
-    borderColor: 'transparent', // Set border color to transparent
+    width: "fit-content",
+    borderColor: "transparent", // Set border color to transparent
     borderWidth: 0, // Set border width to 0
-    outlineColor: 'transparent', // Set outline color to transparent
+    outlineColor: "transparent", // Set outline color to transparent
     outlineWidth: 0, // Set outline width to 0
 
     height: 50,
-    width: 'auto',
+    width: "auto",
     paddingLeft: 20,
   },
   checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   checkbox: {
     width: 20,
     height: 20,
     borderRadius: 4,
     borderWidth: 2,
-    borderColor: '#999',
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderColor: "#999",
+    justifyContent: "center",
+    alignItems: "center",
   },
   checked: {
-    backgroundColor: 'blue', // Adjust color as needed
+    backgroundColor: "blue", // Adjust color as needed
   },
   label: {
     marginLeft: 15,
-    width: '80%',
-    fontFamily: 'KumbhSans_400Regular',
+    width: "80%",
+    fontFamily: "KumbhSans_400Regular",
     fontSize: 14,
 
     lineHeight: 18,
-    textAlign: 'left',
-    color: '#1D1D1D',
+    textAlign: "left",
+    color: "#1D1D1D",
   },
   others: {
-    fontFamily: 'KumbhSans_500Medium',
+    fontFamily: "KumbhSans_500Medium",
 
-    color: '#007F5F',
+    color: "#007F5F",
   },
   create: {
-    fontFamily: 'LexendDeca_400Regular',
-    width: '100%',
+    fontFamily: "LexendDeca_400Regular",
+    width: "100%",
     height: 55,
-    backgroundColor: '#000000',
-    color: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#000000",
+    color: "white",
+    justifyContent: "center",
+    alignItems: "center",
     borderRadius: 10,
     marginBottom: 15,
     fontSize: 16,
   },
   already: {
-    fontFamily: 'LexendDeca_400Regular',
-    width: '100%',
+    fontFamily: "LexendDeca_400Regular",
+    width: "100%",
     height: 55,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     borderWidth: 1,
-    borderColor: 'transparent',
-    color: '#000000',
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderColor: "transparent",
+    color: "#000000",
+    justifyContent: "center",
+    alignItems: "center",
     borderRadius: 10,
     marginBottom: 13,
     fontSize: 16,
   },
   error: {
-    color: 'red',
-    fontFamily: 'KumbhSans_400Regular',
+    color: "red",
+    fontFamily: "KumbhSans_400Regular",
     fontSize: 14,
 
     marginTop: 9,
   },
   forget: {
     flex: 1,
-    flexDirection: 'column',
-    alignItems: 'flex-end',
-    justifyContent: 'flex-end',
-    width: '100%',
+    flexDirection: "column",
+    alignItems: "flex-end",
+    justifyContent: "flex-end",
+    width: "100%",
     marginTop: 2,
     marginBottom: 40,
   },
   clckforget: {
-    fontFamily: 'KumbhSans_500Medium',
+    fontFamily: "KumbhSans_500Medium",
     fontSize: 16,
 
     lineHeight: 18,
-    color: '#1D1D1D',
+    color: "#1D1D1D",
   },
-     toast: {
-    position: 'absolute',
+  toast: {
+    position: "absolute",
     top: 60, // Positioned at the top
     left: 20,
     right: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
     padding: 15,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
     zIndex: 9999, // Ensure it's above other elements
   },
   successToast: {
-    backgroundColor: 'rgba(0, 128, 0, 0.9)',
+    backgroundColor: "rgba(0, 128, 0, 0.9)",
   },
   errorToast: {
-    backgroundColor: 'rgba(255, 0, 0, 0.9)',
+    backgroundColor: "rgba(255, 0, 0, 0.9)",
   },
   toastText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });

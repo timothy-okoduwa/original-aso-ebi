@@ -1,22 +1,24 @@
+/** @format */
+
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-} from 'react-native';
-import React, { useContext } from 'react';
-import { AntDesign } from '@expo/vector-icons';
-import { Feather } from '@expo/vector-icons';
-import { Ionicons } from '@expo/vector-icons';
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import { Link, usePathname, useRouter } from 'expo-router';
+} from "react-native";
+import React, { useContext } from "react";
+import { AntDesign } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import { Link, usePathname, useRouter } from "expo-router";
 import {
   useFonts,
   KumbhSans_400Regular,
   KumbhSans_500Medium,
-} from '@expo-google-fonts/kumbh-sans';
-import { CartContext } from '../app/CartContext';
+} from "@expo-google-fonts/kumbh-sans";
+import { CartContext } from "../app/CartContext";
 
 export default function BottomNav() {
   const pathname = usePathname();
@@ -33,16 +35,16 @@ export default function BottomNav() {
   }
 
   const mainhome = () => {
-    router.push('/mainhome');
+    router.push("/mainhome");
   };
   const shop = () => {
-    router.push('/shop');
+    router.push("/shop");
   };
   const cart = () => {
-    router.push('/cart');
+    router.push("/cart");
   };
   const order = () => {
-    router.push('/order');
+    router.push("/order");
   };
 
   const isCartPopulated = cartItems.length > 0;
@@ -52,19 +54,19 @@ export default function BottomNav() {
       <View style={styles.flexes}>
         <View>
           <TouchableOpacity
-            style={{ justifyContent: 'center', alignItems: 'center' }}
+            style={{ justifyContent: "center", alignItems: "center" }}
             onPress={mainhome}
           >
             <View>
               <AntDesign
                 name="home"
                 size={24}
-                color={pathname === '/mainhome' ? '#000000' : '#b3b3b3'}
+                color={pathname === "/mainhome" ? "#000000" : "#b3b3b3"}
               />
             </View>
             <Text
               style={{
-                color: pathname === '/mainhome' ? '#000000' : '#b3b3b3',
+                color: pathname === "/mainhome" ? "#000000" : "#b3b3b3",
               }}
             >
               Home
@@ -73,7 +75,7 @@ export default function BottomNav() {
         </View>
         <View>
           <TouchableOpacity
-            style={{ justifyContent: 'center', alignItems: 'center' }}
+            style={{ justifyContent: "center", alignItems: "center" }}
             onPress={shop}
           >
             <View>
@@ -81,18 +83,18 @@ export default function BottomNav() {
                 name="shopping-bag"
                 size={24}
                 color={
-                  pathname === '/shop' || pathname === '/storeresult'
-                    ? '#000000'
-                    : '#b3b3b3'
+                  pathname === "/shop" || pathname === "/storeresult"
+                    ? "#000000"
+                    : "#b3b3b3"
                 }
               />
             </View>
             <Text
               style={{
                 color:
-                  pathname === '/shop' || pathname === '/storeresult'
-                    ? '#000000'
-                    : '#b3b3b3',
+                  pathname === "/shop" || pathname === "/storeresult"
+                    ? "#000000"
+                    : "#b3b3b3",
               }}
             >
               Shop
@@ -101,14 +103,14 @@ export default function BottomNav() {
         </View>
         <View>
           <TouchableOpacity
-            style={{ justifyContent: 'center', alignItems: 'center' }}
+            style={{ justifyContent: "center", alignItems: "center" }}
             onPress={cart}
           >
             <View>
               <Ionicons
                 name="cart-outline"
                 size={24}
-                color={pathname === '/cart' ? '#000000' : '#b3b3b3'}
+                color={pathname === "/cart" ? "#000000" : "#b3b3b3"}
               />
               {isCartPopulated && (
                 <View style={styles.dotContainer}>
@@ -117,7 +119,7 @@ export default function BottomNav() {
               )}
             </View>
             <Text
-              style={{ color: pathname === '/cart' ? '#000000' : '#b3b3b3' }}
+              style={{ color: pathname === "/cart" ? "#000000" : "#b3b3b3" }}
             >
               Cart
             </Text>
@@ -125,18 +127,29 @@ export default function BottomNav() {
         </View>
         <View>
           <TouchableOpacity
-            style={{ justifyContent: 'center', alignItems: 'center' }}
+            style={{ justifyContent: "center", alignItems: "center" }}
             onPress={order}
           >
             <View>
               <FontAwesome6
                 name="box-open"
                 size={24}
-                color={pathname === '/order' ? '#000000' : '#b3b3b3'}
+                color={
+                  pathname === "/order" ||
+                  pathname === "/orderdetails/ordernumber"
+                    ? "#000000"
+                    : "#b3b3b3"
+                }
               />
             </View>
             <Text
-              style={{ color: pathname === '/order' ? '#000000' : '#b3b3b3' }}
+              style={{
+                color:
+                  pathname === "/order" ||
+                  pathname === "/orderdetails/ordernumber"
+                    ? "#000000"
+                    : "#b3b3b3",
+              }}
             >
               Order
             </Text>
@@ -144,18 +157,18 @@ export default function BottomNav() {
         </View>
         <View>
           <TouchableOpacity
-            style={{ justifyContent: 'center', alignItems: 'center' }}
+            style={{ justifyContent: "center", alignItems: "center" }}
           >
             <View>
               <Ionicons
                 name="settings-outline"
                 size={24}
-                color={pathname === '/settings' ? '#000000' : '#b3b3b3'}
+                color={pathname === "/settings" ? "#000000" : "#b3b3b3"}
               />
             </View>
             <Text
               style={{
-                color: pathname === '/settings' ? '#000000' : '#b3b3b3',
+                color: pathname === "/settings" ? "#000000" : "#b3b3b3",
               }}
             >
               Settings
@@ -169,25 +182,25 @@ export default function BottomNav() {
 
 const styles = StyleSheet.create({
   main: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     height: 66,
   },
   flexes: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: '100%',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    alignItems: "center",
+    height: "100%",
+    justifyContent: "space-around",
   },
   labels: {
-    fontFamily: 'KumbhSans_400Regular',
+    fontFamily: "KumbhSans_400Regular",
     fontSize: 14,
     lineHeight: 17,
-    textAlign: 'center',
-    color: '#000000',
+    textAlign: "center",
+    color: "#000000",
     marginTop: 15,
   },
   dotContainer: {
-    position: 'absolute',
+    position: "absolute",
     top: -1,
     right: -1,
   },
@@ -195,6 +208,6 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#F11515',
+    backgroundColor: "#F11515",
   },
 });
