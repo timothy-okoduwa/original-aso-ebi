@@ -1,18 +1,25 @@
-import React, { useState, useRef } from 'react';
-import { WebView } from 'react-native-webview';
-import { View, Text, Button, StyleSheet, TouchableOpacity } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import * as Notifications from 'expo-notifications';
+/** @format */
 
-import PaymentSuccessModal from '../components/PaymentSuccessModal';
+import React, { useState, useRef } from "react";
+import { WebView } from "react-native-webview";
+import { View, StyleSheet } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import * as Notifications from "expo-notifications";
+import { useOrder } from "./OrderContext";
+import { useContext } from "react";
+import { CartContext } from "./CartContext";
+
+import PaymentSuccessModal from "../components/PaymentSuccessModal";
 
 export default function PaystackWebView() {
   const router = useRouter();
   const webViewRef = useRef(null);
-  const { paymentType, totalAmount } = useLocalSearchParams();
+  const { paymentType, totalAmount, orderedItems, numberOfItems } =
+    useLocalSearchParams();
   const [isModalVisible, setModalVisible] = useState(false); // Modal state
-
+  const { addOrder } = useOrder(); // Retrieve cart items from the context
+  const { clearCart } = useContext(CartContext);
   // Convert totalAmount to kobo (1 NGN = 100 kobo)
   const amountInKobo = Math.round(parseFloat(totalAmount) * 100);
 
@@ -20,35 +27,53 @@ export default function PaystackWebView() {
   const handleWebViewMessage = async (event) => {
     try {
       const data = JSON.parse(event.nativeEvent.data);
-      console.log('Payment Response:', data);
+      console.log("Payment Response:", data);
 
-      if (data.type === 'close') {
-        console.log('Payment modal closed');
+      if (data.type === "close") {
+        console.log("Payment modal closed");
         router.back();
-      } else if (data.status === 'success') {
-        console.log('Payment successful!');
+      } else if (data.status === "success") {
+        console.log("Payment successful!");
 
+        // Generate a unique ID for the order
+        const generateOrderId = () => {
+          const randomNumber = Math.floor(100000 + Math.random() * 900000);
+          return `#${randomNumber}`;
+        };
+        const orderId = generateOrderId();
+
+        // Add the order
+        addOrder({
+          id: orderId,
+          items: orderedItems, // Use actual cart items
+          total: totalAmount,
+          qty: numberOfItems,
+          PaymentMethod: paymentType,
+          paymentResponse: data,
+          date: new Date().toISOString(),
+        });
+        // Clear the cart
+        clearCart();
         // Show the success modal
         setModalVisible(true);
-
         // Trigger a notification when payment is successful
         await Notifications.scheduleNotificationAsync({
           content: {
-            title: 'Order Status',
-            body: 'Your payment was successful! Your order is being processed.',
+            title: "Order Status",
+            body: `Your payment was successful! Your order ID is ${orderId}.`,
             sound: true,
           },
           trigger: null, // This means the notification will be shown immediately
         });
 
-        console.log('Notification scheduled!');
-      } else if (data.status === 'failed') {
-        console.log('Payment failed!');
+        console.log("Notification scheduled!");
+      } else if (data.status === "failed") {
+        console.log("Payment failed!");
         router.back();
       }
     } catch (error) {
-      console.log('Error parsing message from WebView:', error);
-      console.log('Raw message:', event.nativeEvent.data);
+      console.log("Error parsing message from WebView:", error);
+      console.log("Raw message:", event.nativeEvent.data);
     }
   };
 
@@ -91,7 +116,7 @@ export default function PaystackWebView() {
   // Close modal function
   const closeModal = () => {
     setModalVisible(false);
-    // router.back();
+    router.back();
   };
 
   return (
@@ -99,7 +124,7 @@ export default function PaystackWebView() {
       <StatusBar style="dark" />
       <WebView
         ref={webViewRef}
-        originWhitelist={['*']}
+        originWhitelist={["*"]}
         source={{ html: paystackHTML }} // Pass the HTML string with the correct payment type
         javaScriptEnabled={true}
         onMessage={handleWebViewMessage} // Capture Paystack's response and close event
@@ -112,43 +137,43 @@ export default function PaystackWebView() {
 
 const styles = StyleSheet.create({
   modalContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 20,
     borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   iconContainer: {
-    backgroundColor: '#E9F7EF',
+    backgroundColor: "#E9F7EF",
     width: 80,
     height: 80,
     borderRadius: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 20,
   },
   checkmark: {
     fontSize: 40,
-    color: '#28a745',
+    color: "#28a745",
   },
   modalTitle: {
     fontSize: 22,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
   },
   modalText: {
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 20,
   },
   doneButton: {
-    backgroundColor: '#000',
+    backgroundColor: "#000",
     paddingVertical: 10,
     paddingHorizontal: 40,
     borderRadius: 5,
   },
   doneButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
   },
 });

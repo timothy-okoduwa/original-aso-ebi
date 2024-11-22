@@ -16,9 +16,17 @@ import {
 } from "@expo-google-fonts/kumbh-sans";
 import a from "../constants/image/sen2.png";
 import { useRouter } from "expo-router";
+import ViewOrderTimeLineModal from "./ViewOrderTimeLineModal";
 
 export default function OrderDetails() {
   const [lineHeight, setLineHeight] = useState(0);
+  const [isModalVisible, setModalVisible] = useState(false); // Modal state
+  const closeModal = () => {
+    setModalVisible(false);
+  };
+  const openModal = () => {
+    setModalVisible(true);
+  };
 
   const handleLayout = (event) => {
     const { height } = event.nativeEvent.layout;
@@ -109,7 +117,7 @@ export default function OrderDetails() {
         </View>
       </View>
       <View style={styles.odtimline}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={openModal}>
           <Text style={styles.vot}>view order timeline</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.consup}>
@@ -182,6 +190,7 @@ export default function OrderDetails() {
           </View>
         </View>
       </View>
+      <ViewOrderTimeLineModal visible={isModalVisible} onClose={closeModal} />
     </View>
   );
 }

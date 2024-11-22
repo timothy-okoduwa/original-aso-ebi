@@ -16,11 +16,14 @@ import {
 } from "@expo-google-fonts/kumbh-sans";
 import a from "../constants/image/sen2.png";
 import { useRouter } from "expo-router";
-
+import { useOrder } from "../app/OrderContext";
 export default function OnGoingOrders() {
   const router = useRouter();
-  const move = () => {
-    router.push("/orderdetails/ordernumber");
+  const { orders } = useOrder();
+
+  const moveToOrderDetails = (orderId) => {
+    // Navigate to order details page and pass the orderId
+    router.push(`/orderdetails/orderr/${orderId}`);
   };
   const [fontsLoaded, fontError] = useFonts({
     KumbhSans_400Regular,
@@ -32,57 +35,77 @@ export default function OnGoingOrders() {
   }
   return (
     <View>
-      <TouchableOpacity style={styles.holderr} onPress={move}>
-        <View>
-          <View style={styles.imageHolder}>
-            <Image style={styles.image} source={a} resizeMode="cover" />
-          </View>
+      {orders.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No ongoing orders yet!</Text>
         </View>
-        <View style={styles.prices}>
-          <View>
-            <View>
-              <Text style={styles.namez}>Brown Striped Fabric</Text>
-            </View>
-            <View>
-              <Text style={styles.amont}>₦ 20,000</Text>
-            </View>
-            <View>
-              <Text style={styles.qty}>Qty: 5 yards</Text>
-            </View>
-          </View>
-          <View style={styles.pills}>
-            <Text style={styles.cnf}>Confirmed</Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.holderr} onPress={move}>
-        <View>
-          <View style={styles.imageHolder}>
-            <Image style={styles.image} source={a} resizeMode="cover" />
-          </View>
-        </View>
-        <View style={styles.prices}>
-          <View>
-            <View>
-              <Text style={styles.namez}>Brown Striped Fabric</Text>
-            </View>
-            <View>
-              <Text style={styles.amont}>₦ 20,000</Text>
-            </View>
-            <View>
-              <Text style={styles.qty}>Qty: 5 yards</Text>
-            </View>
-          </View>
-          <View style={styles.pillsShipped}>
-            <Text style={styles.cnf}>Shipped</Text>
-          </View>
-        </View>
-      </TouchableOpacity>
+      ) : (
+        orders.map((order) => {
+          // Get the first image URL from orderedItems
+          const firstImage =
+            order?.items?.length > 0 ? order?.items[0].image : null;
+
+          // Debugging: Log the items and the first image
+          console.log("Order Items:", order.items); // Log the items in the order
+          console.log("First Image:", firstImage); // Log the first image
+          console.log("order:", order);
+
+          return (
+            <TouchableOpacity
+              key={order.id}
+              style={styles.holderr}
+              onPress={() => moveToOrderDetails(order.id)}
+            >
+              <View>
+                <View style={styles.imageHolder}>
+                  <Image
+                    style={styles.image}
+                    source={firstImage || a} // Use fallback if firstImage is not available
+                    resizeMode="cover"
+                  />
+                </View>
+              </View>
+              <View style={styles.prices}>
+                <View>
+                  <View>
+                    <Text style={styles.namez}>
+                      Order ID: {order.id || "N/A"}
+                    </Text>
+                  </View>
+                  <View>
+                    <Text style={styles.amont}>
+                      ₦
+                      {Number(order.total).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                      })}
+                    </Text>
+                  </View>
+                  <View>
+                    <Text style={styles.qty}>Qty: {order.qty} item(s)</Text>
+                  </View>
+                </View>
+                <View style={styles.pills}>
+                  <Text style={styles.cnf}>Confirmed</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          );
+        })
+      )}
     </View>
   );
 }
-
 const styles = StyleSheet.create({
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 50,
+  },
+  emptyText: {
+    fontSize: 18,
+    color: "#888",
+  },
   pop: {
     justifyContent: "flex-end",
     alignItems: "flex-end",

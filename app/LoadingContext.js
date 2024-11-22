@@ -1,5 +1,7 @@
+/** @format */
+
 // app/LoadingContext.js
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext } from "react";
 
 // Create a Context for the loading state
 const LoadingContext = createContext();
@@ -20,3 +22,4 @@ export const LoadingProvider = ({ children }) => {
 
 // Create a custom hook for using the loading context
 export const useLoading = () => useContext(LoadingContext);
+export default LoadingProvider;

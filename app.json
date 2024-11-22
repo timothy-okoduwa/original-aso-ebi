@@ -10,7 +10,8 @@
     "androidStatusBar": {
       "backgroundColor": "#ffffff",
       "color": "#000000",
-      "translucent": false
+      "translucent": false,
+      "newArchEnabled": true
     },
     "splash": {
       "image": "./assets/images/splash.png",

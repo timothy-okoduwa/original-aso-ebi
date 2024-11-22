@@ -13,7 +13,7 @@ import { setToken } from "../components/features/auth/authSlice"; // Import setT
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LoadingProvider } from "./LoadingContext";
 import LoadingIndicator from "./LoadingIndicator";
-
+import { OrderProvider } from "./OrderContext";
 // MainComponent that will check for token inside the Provider
 const MainComponent = () => {
   const router = useRouter();
@@ -60,14 +60,16 @@ export default function Layout() {
       <SafeAreaView style={styles.container}>
         <Provider store={store}>
           <CartProvider>
-            <LoadingProvider>
-              <StatusBar
-                style="dark"
-                backgroundColor="#FFFFFF"
-                translucent={false}
-              />
-              <MainComponent />
-            </LoadingProvider>
+            <OrderProvider>
+              <LoadingProvider>
+                <StatusBar
+                  style="dark"
+                  backgroundColor="#FFFFFF"
+                  translucent={false}
+                />
+                <MainComponent />
+              </LoadingProvider>
+            </OrderProvider>
           </CartProvider>
         </Provider>
       </SafeAreaView>

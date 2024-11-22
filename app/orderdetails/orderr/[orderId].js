@@ -17,11 +17,11 @@ import {
 } from "@expo-google-fonts/kumbh-sans";
 import { useRouter } from "expo-router";
 import moment from "moment";
-import BottomNav from "../../components/ButtomNav";
-import OrderDetails from "../../components/OrderDetails";
-import OrderDetailsForProgress from "../../components/OrderDetailsForProgress";
+import BottomNav from "../../../components/ButtomNav";
+import OrderDetails from "../../../components/OrderDetails";
+import OrderDetailsForProgress from "../../../components/OrderDetailsForProgress";
 
-export default function ordernumber() {
+export default function orderId() {
   const router = useRouter();
   const [fontsLoaded, fontError] = useFonts({
     KumbhSans_400Regular,
