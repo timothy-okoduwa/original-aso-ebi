@@ -15,14 +15,16 @@ import {
   KumbhSans_400Regular,
   KumbhSans_500Medium,
 } from "@expo-google-fonts/kumbh-sans";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import moment from "moment";
 import BottomNav from "../../../components/ButtomNav";
 import OrderDetails from "../../../components/OrderDetails";
 import OrderDetailsForProgress from "../../../components/OrderDetailsForProgress";
-
+import { useOrder } from "../../OrderContext";
 export default function orderId() {
   const router = useRouter();
+  const { orders } = useOrder(); // Fetch orders from context
+  const { orderId } = useLocalSearchParams(); // Get orderId from URL
   const [fontsLoaded, fontError] = useFonts({
     KumbhSans_400Regular,
     KumbhSans_500Medium,
@@ -39,6 +41,9 @@ export default function orderId() {
       setRefreshing(false);
     }, 2000);
   };
+  const order = orders.find((order) => order.id === `#${orderId}`);
+  console.log("orders", order);
+
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
@@ -57,8 +62,8 @@ export default function orderId() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.main}>
-          <OrderDetails />
-          {/* <OrderDetailsForProgress /> */}
+          {/* <OrderDetails order={order} /> */}
+          <OrderDetailsForProgress order={order} />
         </View>
       </ScrollView>
       <BottomNav />

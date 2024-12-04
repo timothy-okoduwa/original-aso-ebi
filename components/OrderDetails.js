@@ -18,7 +18,7 @@ import a from "../constants/image/sen2.png";
 import { useRouter } from "expo-router";
 import ViewOrderTimeLineModal from "./ViewOrderTimeLineModal";
 
-export default function OrderDetails() {
+export default function OrderDetails({ order }) {
   const [lineHeight, setLineHeight] = useState(0);
   const [isModalVisible, setModalVisible] = useState(false); // Modal state
   const closeModal = () => {

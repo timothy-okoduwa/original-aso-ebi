@@ -10,7 +10,7 @@ import React, { useEffect, useState } from "react";
 import { Image } from "react-native";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import Icon from "react-native-vector-icons/MaterialIcons"; // Install this using `npm install react-native-vector-icons`
-
+import moment from "moment";
 import {
   useFonts,
   KumbhSans_400Regular,
@@ -19,7 +19,7 @@ import {
 import a from "../constants/image/sen2.png";
 import { useRouter } from "expo-router";
 
-export default function OrderDetailsForProgress() {
+export default function OrderDetailsForProgress({ order }) {
   const [lineHeight, setLineHeight] = useState(0);
   const steps = [
     {
@@ -30,12 +30,12 @@ export default function OrderDetailsForProgress() {
     {
       title: "Preparing Order",
       description: "Your order is being prepared.",
-      completed: true,
+      completed: false,
     },
     {
       title: "Shipped",
       description: "Your order has been given to our rider.",
-      completed: true,
+      completed: false,
     },
     {
       title: "In Transit",
@@ -66,9 +66,17 @@ export default function OrderDetailsForProgress() {
   if (!fontsLoaded || fontError) {
     return null;
   }
+  const items = JSON.parse(order.items);
+
+  // Example delivery and service fees
+  const deliveryFee = 1000;
+  const serviceFee = 500;
+
+  // Calculate total sub-total
+  const subTotal = items.reduce((sum, item) => sum + item.price, 0);
   return (
     <View style={styles.pushmain}>
-      <TouchableOpacity style={styles.holderr} onPress={move}>
+      <View style={styles.holderr}>
         <View>
           <View style={styles.imageHolder}>
             <Image style={styles.image} source={a} resizeMode="cover" />
@@ -77,17 +85,22 @@ export default function OrderDetailsForProgress() {
         <View style={styles.prices}>
           <View>
             <View>
-              <Text style={styles.namez}>#11242209</Text>
+              <Text style={styles.namez}>{order.id}</Text>
             </View>
             <View>
-              <Text style={styles.amont}>₦ 200,000</Text>
+              <Text style={styles.amont}>
+                ₦{" "}
+                {Number(order.total).toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                })}
+              </Text>
             </View>
           </View>
           <View style={styles.pills}>
-            <Text style={styles.cnf}>Shipped</Text>
+            <Text style={styles.cnf}>Confirmed</Text>
           </View>
         </View>
-      </TouchableOpacity>
+      </View>
 
       <View>
         <View style={{ marginTop: 10 }}>
@@ -135,34 +148,37 @@ export default function OrderDetailsForProgress() {
           <View style={{ gap: 15 }}>
             <View style={styles.colasp} onLayout={handleLayout}>
               <View>
-                <View style={{ width: "77%" }}>
+                <View style={{ width: "70%" }}>
                   <Text style={styles.addyName}>
                     Idera oluwa stores, 123b idumota market, Lagos
                   </Text>
                 </View>
                 <View style={{ marginTop: 5 }}>
-                  <Text style={styles.addyTime}>5:20pm</Text>
+                  <Text style={styles.addyTime}>
+                    {" "}
+                    {moment(order.date).format("h:mma")}
+                  </Text>
                 </View>
               </View>
               <View>
-                <Text>Sat, 2nd Nov, 2024</Text>
+                <Text> {moment(order.date).format("ddd, Do MMM, YYYY")}</Text>
               </View>
             </View>
             <View style={styles.colasp} onLayout={handleLayout}>
               <View>
-                <View style={{ width: "77%" }}>
+                <View style={{ width: "73%" }}>
                   <Text style={styles.addyName}>
                     117, Adeladun Street, via Onado Bus-stop, Magodo, Lagos
                   </Text>
                 </View>
-                <View style={{ marginTop: 5 }}>
+                {/* <View style={{ marginTop: 5 }}>
                   <Text style={styles.addyTime}>6:30pm</Text>
-                </View>
+                </View> */}
               </View>
               <View>
                 <View style={{ marginTop: 5 }}>
                   <View style={styles.pills}>
-                    <Text style={styles.cnf}>Shipped</Text>
+                    <Text style={styles.cnf}>Confirmed</Text>
                   </View>
                 </View>
               </View>
@@ -172,29 +188,31 @@ export default function OrderDetailsForProgress() {
       </View>
       <View>
         <View style={styles.fki2}>
-          <View style={styles.sponner}>
-            <View>
-              <Text style={styles.shish2}>Royal Blue Lace</Text>
+          {items.map((item, index) => (
+            <View key={index} style={styles.sponner}>
+              <View>
+                <Text style={styles.shish2}>{item.name}</Text>
+              </View>
+              <View>
+                <Text style={styles.shish2}>
+                  {item.quantity} {item.quantity > 1 ? "yards" : "yard"} ( ₦{" "}
+                  {item.price.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                  })}{" "}
+                  )
+                </Text>
+              </View>
             </View>
-            <View>
-              <Text style={styles.shish2}>5 yards ( ₦ 20,000.00 )</Text>
-            </View>
-          </View>
-          <View style={styles.sponner}>
-            <View>
-              <Text style={styles.shish2}>Shifon Caracade</Text>
-            </View>
-            <View>
-              <Text style={styles.shish2}>5 yards ( ₦ 100,000.00 )</Text>
-            </View>
-          </View>
+          ))}
 
           <View style={styles.sponner2}>
             <View>
-              <Text style={styles.shish2}>Sub-total (2 items)</Text>
+              <Text style={styles.shish2}>
+                Sub-total ({items.length} {items.length > 1 ? "items" : "item"})
+              </Text>
             </View>
             <View>
-              <Text style={styles.shish2}>₦ 120,000.00</Text>
+              <Text style={styles.shish2}>₦ {subTotal.toLocaleString()}</Text>
             </View>
           </View>
         </View>
@@ -204,7 +222,12 @@ export default function OrderDetailsForProgress() {
               <Text style={styles.shish2}>Delivery Fee</Text>
             </View>
             <View>
-              <Text style={styles.shish2}>₦5,000.00</Text>
+              <Text style={styles.shish2}>
+                ₦{" "}
+                {deliveryFee.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                })}
+              </Text>
             </View>
           </View>
           <View style={styles.sponner}>
@@ -212,7 +235,12 @@ export default function OrderDetailsForProgress() {
               <Text style={styles.shish2}>Service Fee</Text>
             </View>
             <View>
-              <Text style={styles.shish2}>₦200</Text>
+              <Text style={styles.shish2}>
+                ₦{" "}
+                {serviceFee.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                })}
+              </Text>
             </View>
           </View>
 
@@ -221,7 +249,13 @@ export default function OrderDetailsForProgress() {
               <Text style={styles.shish3}>Total</Text>
             </View>
             <View>
-              <Text style={styles.shish3}>₦ 124,200.00</Text>
+              <Text style={styles.shish3}>
+                ₦{" "}
+                {(subTotal + deliveryFee + serviceFee).toLocaleString(
+                  undefined,
+                  { minimumFractionDigits: 2 }
+                )}
+              </Text>
             </View>
           </View>
         </View>
@@ -230,9 +264,19 @@ export default function OrderDetailsForProgress() {
         style={styles.pettt} // Disable the button when loading
       >
         <View>
-          <Text style={styles.plat}>Pay on Delivery</Text>
+          <Text style={styles.plat}>
+            Pay with {order?.PaymentMethod || "Delivery"}
+          </Text>
           <View style={styles.dealss}>
-            <Text style={styles.pori}>Pay with cash</Text>
+            <Text style={styles.pori}>
+              Pay with {order?.PaymentMethod || "Delivery"}
+            </Text>
+          </View>
+          <View style={{ marginTop: 10 }}>
+            <Text>
+              Transaction Refrence:{" "}
+              {order?.paymentResponse?.reference || "Pay on Delivery"}
+            </Text>
           </View>
         </View>
       </View>
@@ -400,7 +444,7 @@ const styles = StyleSheet.create({
   addview: {
     display: "flex",
     flexDirection: "row",
-    gap: 20,
+    gap: 15,
   },
   pushmain: {
     marginTop: 30,
@@ -583,7 +627,7 @@ const styles = StyleSheet.create({
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F79E1B",
+    backgroundColor: "#3F70CF",
     borderRadius: 4,
     fontFamily: "KumbhSans_400Regular",
     fontSize: 12,

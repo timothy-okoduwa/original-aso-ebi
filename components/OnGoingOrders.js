@@ -22,9 +22,15 @@ export default function OnGoingOrders() {
   const { orders } = useOrder();
 
   const moveToOrderDetails = (orderId) => {
-    // Navigate to order details page and pass the orderId
-    router.push(`/orderdetails/orderr/${orderId}`);
+    // Remove the first character (#) from the orderId
+    const sanitizedOrderId = orderId.startsWith("#")
+      ? orderId.substring(1)
+      : orderId;
+
+    // Navigate to order details page with the sanitized orderId
+    router.push(`/orderdetails/orderr/${sanitizedOrderId}`);
   };
+
   const [fontsLoaded, fontError] = useFonts({
     KumbhSans_400Regular,
     KumbhSans_500Medium,
