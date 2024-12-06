@@ -12,8 +12,7 @@ import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import { Link, useRouter } from "expo-router";
 import { AntDesign } from "@expo/vector-icons";
-// import { Feather } from '@expo/vector-icons';
-// import { Feather } from '@expo/vector-icons';
+
 import {
   useFonts,
   LexendDeca_400Regular,
@@ -40,61 +39,11 @@ import {
   Lora_700Bold_Italic,
 } from "@expo-google-fonts/lora";
 
-export default function forgetpassword() {
+export default function editprofile() {
   const router = useRouter();
   const back = () => {
     router.back();
   };
-  // State variables to store input values and corresponding error messages
-
-  const [email, setEmail] = useState("");
-  const [emailError, setEmailError] = useState("");
-  // Validation functions
-  // const gotoresetlink = () => {
-  //   router.push('/resetlinksent');
-  // };
-
-  const validateEmail = () => {
-    if (email.trim() === "") {
-      setEmailError("Email is required");
-      return false;
-    }
-
-    const hasAtSymbol = email.includes("@");
-    const hasDotCom = email.endsWith(".com");
-
-    if (!hasAtSymbol) {
-      setEmailError('Email is missing "@" symbol');
-      return false;
-    }
-
-    if (!hasDotCom) {
-      setEmailError('Email is missing ".com"');
-      return false;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setEmailError("Invalid email address");
-      return false;
-    }
-
-    setEmailError("");
-    return true;
-  };
-
-  // Handle submit button press
-  const handleCreateAccount = () => {
-    const isEmailValid = validateEmail();
-
-    // If all fields are valid, submit the form
-    if (isEmailValid) {
-      // Submit the form or navigate to the next screen
-      console.log("Form submitted successfully");
-      router.push("/resetlinksent");
-    }
-  };
-
   const [fontsLoaded, fontError] = useFonts({
     LexendDeca_400Regular,
     KumbhSans_100Thin,
@@ -128,42 +77,29 @@ export default function forgetpassword() {
             <AntDesign name="arrowleft" size={24} color="black" />
           </View>
           <View style={styles.testx}>
-            <Text style={styles.reegister}>Forget Password</Text>
+            <Text style={styles.reegister}>Edit Profile</Text>
           </View>
         </TouchableOpacity>
         <View style={styles.createups}>
           <View>
-            <Text style={styles.enadp}>Enter your email</Text>
+            <Text style={styles.enadp}>Edit your Profile</Text>
           </View>
-          <View style={{ marginTop: 20 }}>
-            <Text style={styles.greetings}>
-              Enter your email address to receive instructions for resetting
-              your password.
-            </Text>
-          </View>
+
           <View style={styles.inputs}>
             <View style={{ marginTop: 20 }}>
-              <Text style={styles.labell}>Email</Text>
+              <Text style={styles.labell}>full name</Text>
               <View style={{ marginTop: 16 }}>
                 <TextInput
                   style={styles.inputt}
-                  value={email}
-                  onChangeText={(text) => setEmail(text)}
-                  placeholder="youremail@here.com"
+                  placeholder="Timothy okoduwa"
                   keyboardType="email-address" // Change this to 'password' or 'default' for different types
                   placeholderTextColor="#999" // Change placeholder text color here
                 />
               </View>
-              <View style={{ marginTop: "10", marginBottom: "10" }}>
-                <Text style={styles.error}>{emailError}</Text>
-              </View>
             </View>
 
-            <View style={{ marginBottom: 30 }}>
-              <TouchableOpacity
-                style={styles.create}
-                onPress={handleCreateAccount}
-              >
+            <View style={{ marginBottom: 30, marginTop: 40 }}>
+              <TouchableOpacity style={styles.create}>
                 <Text style={{ color: "white" }}>Done</Text>
               </TouchableOpacity>
             </View>

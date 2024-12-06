@@ -9,20 +9,80 @@ import {
   Image,
   RefreshControl,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ButtomNav from "../components/ButtomNav";
 import { StatusBar } from "expo-status-bar";
-import data from "../components/data";
+
 import {
   useFonts,
   KumbhSans_400Regular,
   KumbhSans_500Medium,
 } from "@expo-google-fonts/kumbh-sans";
 import { useRouter } from "expo-router";
-import Orders from "../components/Orders";
+import SettingContent from "../components/SettingContent";
+import { useLoading } from "./LoadingContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export default function order() {
+export default function settings() {
   const [refreshing, setRefreshing] = useState(false);
+  const [userName, setUserName] = useState("");
+  const { showLoading, hideLoading } = useLoading();
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userId = await AsyncStorage.getItem("userId");
+        const token = await AsyncStorage.getItem("token");
+
+        if (userId && token) {
+          // Fetch the user data from the API using the userId and token
+          const response = await fetch(
+            `https://oae-be.onrender.com/api/oae/auth/${userId}/user`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+          const responseData = await response.json();
+
+          console.log("API Response:", responseData); // Log the entire response for debugging
+
+          if (response.ok) {
+            // Check if responseData and responseData.data exist
+            if (responseData && responseData.data) {
+              const fetchedUserName = responseData.data.name || "John Doe"; // Get the name from the response
+              setUserName(fetchedUserName); // Update state with user data
+            } else {
+              console.error("Error: User data is missing in the response.");
+              setUserName("John Doe"); // Provide fallback value
+            }
+          } else {
+            console.error(
+              "Error fetching user data:",
+              responseData.message || "Failed to fetch user"
+            );
+          }
+        } else {
+          console.log("No userId or token found");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchUserData();
+
+    // Simulate data loading
+    showLoading();
+    const timeout = setTimeout(() => {
+      hideLoading();
+    }, 1000); // Adjust the timeout to simulate data loading time
+
+    return () => clearTimeout(timeout);
+  }, []);
   const router = useRouter();
   const [fontsLoaded, fontError] = useFonts({
     KumbhSans_400Regular,
@@ -44,7 +104,7 @@ export default function order() {
     <View style={styles.container}>
       <StatusBar style="dark" />
       <View style={styles.storeview}>
-        <Text style={styles.store}>Order</Text>
+        <Text style={styles.store}>Settings</Text>
       </View>
       <ScrollView
         contentContainerStyle={styles.scrollViewContent}
@@ -60,8 +120,8 @@ export default function order() {
           />
         }
       >
-        <View>
-          <Orders />
+        <View style={styles.main}>
+          <SettingContent userName={userName} />
         </View>
       </ScrollView>
       <ButtomNav />
@@ -87,7 +147,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    zIndex: 1,
+    // zIndex: 1,
     backgroundColor: "white",
     padding: 15,
     paddingTop: 45,

@@ -1,21 +1,23 @@
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import React, { useState, useEffect } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import ButtomNav from '../components/ButtomNav';
-import data from '../components/data';
+/** @format */
+
+import { View, Text, StyleSheet, ScrollView } from "react-native";
+import React, { useState, useEffect } from "react";
+import { StatusBar } from "expo-status-bar";
+import ButtomNav from "../components/ButtomNav";
+import data from "../components/data";
 import {
   useFonts,
   KumbhSans_400Regular,
   KumbhSans_500Medium,
-} from '@expo-google-fonts/kumbh-sans';
-import SearchComponent from '../components/SearchCompnent';
-import CategoriesStore from '../components/CategoriesStore';
-import FabricDataStore from '../components/FabricDataStore';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+} from "@expo-google-fonts/kumbh-sans";
+import SearchComponent from "../components/SearchCompnent";
+import CategoriesStore from "../components/CategoriesStore";
+import FabricDataStore from "../components/FabricDataStore";
+import { useRouter, useLocalSearchParams } from "expo-router";
 
 export default function storeresult() {
-  const [activeCategory, setActiveCategory] = useState('New Arrival');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState("New Arrival");
+  const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
   const { category } = useLocalSearchParams();
 
@@ -27,7 +29,7 @@ export default function storeresult() {
 
   let filteredData = data;
 
-  if (activeCategory !== 'New Arrival') {
+  if (activeCategory !== "New Arrival") {
     filteredData = data.filter(
       (fabric) =>
         fabric.category === activeCategory &&
@@ -80,7 +82,7 @@ export default function storeresult() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    position: 'relative',
+    position: "relative",
   },
   scrollViewContent: {
     flexGrow: 1,
@@ -92,19 +94,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   storeview: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     zIndex: 1,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     padding: 15,
     paddingTop: 45,
-    alignItems: 'center',
+    alignItems: "center",
   },
   store: {
-    fontFamily: 'KumbhSans_400Regular',
-    color: '#000000',
+    fontFamily: "KumbhSans_400Regular",
+    color: "#000000",
     fontSize: 40,
   },
 });

@@ -46,6 +46,9 @@ export default function BottomNav() {
   const order = () => {
     router.push("/order");
   };
+  const settings = () => {
+    router.push("/settings");
+  };
 
   const isCartPopulated = cartItems.length > 0;
 
@@ -158,6 +161,7 @@ export default function BottomNav() {
         <View>
           <TouchableOpacity
             style={{ justifyContent: "center", alignItems: "center" }}
+            onPress={settings}
           >
             <View>
               <Ionicons
@@ -184,6 +188,13 @@ const styles = StyleSheet.create({
   main: {
     backgroundColor: "white",
     height: 66,
+    // Shadow for iOS
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: -1 }, // Negative height for top shadow
+    shadowOpacity: 1, // 10% opacity
+    shadowRadius: 94.67 / 1, // Convert shadow blur to radius
+    // Shadow for Android
+    elevation: 30, // Adjust as needed for Android shadow depth
   },
   flexes: {
     flexDirection: "row",
