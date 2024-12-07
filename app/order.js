@@ -8,18 +8,18 @@ import {
   TouchableOpacity,
   Image,
   RefreshControl,
-} from "react-native";
-import React, { useState } from "react";
-import ButtomNav from "../components/ButtomNav";
-import { StatusBar } from "expo-status-bar";
-import data from "../components/data";
+} from 'react-native';
+import React, { useState } from 'react';
+import ButtomNav from '../components/ButtomNav';
+import { StatusBar } from 'expo-status-bar';
+import data from '../components/data';
 import {
   useFonts,
   KumbhSans_400Regular,
   KumbhSans_500Medium,
-} from "@expo-google-fonts/kumbh-sans";
-import { useRouter } from "expo-router";
-import Orders from "../components/Orders";
+} from '@expo-google-fonts/kumbh-sans';
+import { useRouter } from 'expo-router';
+import Orders from '../components/Orders';
 
 export default function order() {
   const [refreshing, setRefreshing] = useState(false);
@@ -53,7 +53,7 @@ export default function order() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={["#F11515", "#000000", "#0000ff"]}
+            colors={['#F11515', '#000000', '#0000ff']}
             tintColor="red"
             title="Pull to refresh..."
             titleColor="#00ff00"
@@ -71,7 +71,7 @@ export default function order() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    position: "relative",
+    position: 'relative',
   },
   scrollViewContent: {
     flexGrow: 1,
@@ -83,19 +83,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   storeview: {
-    position: "absolute",
+    position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     zIndex: 1,
-    backgroundColor: "white",
+    backgroundColor: 'white',
     padding: 15,
     paddingTop: 45,
-    alignItems: "center",
+    alignItems: 'center',
   },
   store: {
-    fontFamily: "KumbhSans_400Regular",
-    color: "#000000",
+    fontFamily: 'KumbhSans_400Regular',
+    color: '#000000',
     fontSize: 40,
   },
   pushdown: {
@@ -103,32 +103,32 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   select: {
-    fontFamily: "KumbhSans_400Regular",
+    fontFamily: 'KumbhSans_400Regular',
     fontSize: 19,
   },
   cardContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
   card: {
     marginBottom: 30,
-    width: "48%",
+    width: '48%',
     borderRadius: 10,
   },
   imageHolder: {
     height: 180,
-    width: "100%",
+    width: '100%',
     borderRadius: 10,
-    overflow: "hidden",
-    position: "relative",
+    overflow: 'hidden',
+    position: 'relative',
   },
   image: {
-    width: "100%",
-    height: "100%",
+    width: '100%',
+    height: '100%',
   },
   textContainer: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 10,
     left: 10,
     paddingHorizontal: 8,
@@ -136,8 +136,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   imageText: {
-    color: "white",
-    fontFamily: "KumbhSans_400Regular",
+    color: 'white',
+    fontFamily: 'KumbhSans_400Regular',
     fontSize: 19,
   },
 });
