@@ -1,3 +1,5 @@
+/** @format */
+
 import {
   View,
   Text,
@@ -7,25 +9,25 @@ import {
   ScrollView,
   ActivityIndicator,
   RefreshControl,
-   Animated,
-} from 'react-native';
-import React, { useState, useEffect,useRef } from 'react';
-import { Link, useRouter } from 'expo-router';
-import { AntDesign } from '@expo/vector-icons';
-import { Feather } from '@expo/vector-icons';
+  Animated,
+} from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { Link, useRouter } from "expo-router";
+import { AntDesign } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 // import { Feather } from '@expo/vector-icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { registerUser } from '../components/features/auth/authSlice';
-import { StatusBar } from 'expo-status-bar';
-import Toast from 'react-native-toast-message';
-import { useLoading } from './LoadingContext';
+import { useDispatch, useSelector } from "react-redux";
+import { registerUser } from "../components/features/auth/authSlice";
+import { StatusBar } from "expo-status-bar";
+import Toast from "react-native-toast-message";
+import { useLoading } from "./LoadingContext";
 
 // ;
 
 import {
   useFonts,
   LexendDeca_400Regular,
-} from '@expo-google-fonts/lexend-deca';
+} from "@expo-google-fonts/lexend-deca";
 import {
   KumbhSans_100Thin,
   KumbhSans_200ExtraLight,
@@ -36,7 +38,7 @@ import {
   KumbhSans_700Bold,
   KumbhSans_800ExtraBold,
   KumbhSans_900Black,
-} from '@expo-google-fonts/kumbh-sans';
+} from "@expo-google-fonts/kumbh-sans";
 import {
   Lora_400Regular,
   Lora_500Medium,
@@ -46,7 +48,7 @@ import {
   Lora_500Medium_Italic,
   Lora_600SemiBold_Italic,
   Lora_700Bold_Italic,
-} from '@expo-google-fonts/lora';
+} from "@expo-google-fonts/lora";
 const CustomToast = ({ visible, message, type }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -73,7 +75,7 @@ const CustomToast = ({ visible, message, type }) => {
       style={[
         styles.toast,
         { opacity: fadeAnim },
-        type === 'success' ? styles.successToast : styles.errorToast,
+        type === "success" ? styles.successToast : styles.errorToast,
       ]}
     >
       <Text style={styles.toastText}>{message}</Text>
@@ -94,38 +96,38 @@ export default function createaccount() {
   const [isChecked, setIsChecked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [visible, setVisible] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const { showLoading, hideLoading } = useLoading();
   const [refreshing, setRefreshing] = useState(false);
   const [userId, setUserId] = useState(null); // New state for storing the user's ID
- const [toast, setToast] = useState({ visible: false, message: '', type: '' });
+  const [toast, setToast] = useState({ visible: false, message: "", type: "" });
   const role = 1;
   // State variables to store input values and corresponding error messages
 
-  const [name, setname] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [nameError, setnameError] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [phoneError, setPhoneError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [confirmPasswordError, setConfirmPasswordError] = useState('');
-  const [checkError, setCheckError] = useState('');
+  const [name, setname] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [nameError, setnameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
+  const [checkError, setCheckError] = useState("");
 
   const handlePhoneChange = (text) => {
     let formattedPhone = text;
 
     // Remove the leading zero
-    if (formattedPhone.startsWith('0')) {
+    if (formattedPhone.startsWith("0")) {
       formattedPhone = formattedPhone.substring(1);
     }
 
     // Remove the +234 prefix
-    if (formattedPhone.startsWith('234')) {
+    if (formattedPhone.startsWith("234")) {
       formattedPhone = formattedPhone.substring(3);
-    } else if (formattedPhone.startsWith('+234')) {
+    } else if (formattedPhone.startsWith("+234")) {
       formattedPhone = formattedPhone.substring(4);
     }
 
@@ -154,38 +156,38 @@ export default function createaccount() {
   const checkesit = () => {
     if (!isChecked) {
       setCheckError(
-        'Please agree to the Terms and Conditions and Privacy Policy'
+        "Please agree to the Terms and Conditions and Privacy Policy"
       );
       return false;
     }
-    setCheckError('');
+    setCheckError("");
     return true;
   };
   const validatename = () => {
-    if (name.trim() === '') {
-      setnameError('Full name is required');
+    if (name.trim() === "") {
+      setnameError("Full name is required");
       return false;
     }
-    setnameError('');
+    setnameError("");
     return true;
   };
   const validatePhone = () => {
-    if (phone.trim() === '') {
-      setPhoneError('Phone number is required');
+    if (phone.trim() === "") {
+      setPhoneError("Phone number is required");
       return false;
     }
-    setnameError('');
+    setnameError("");
     return true;
   };
 
   const validateEmail = () => {
-    if (email.trim() === '') {
-      setEmailError('Email is required');
+    if (email.trim() === "") {
+      setEmailError("Email is required");
       return false;
     }
 
-    const hasAtSymbol = email.includes('@');
-    const hasDotCom = email.endsWith('.com');
+    const hasAtSymbol = email.includes("@");
+    const hasDotCom = email.endsWith(".com");
 
     if (!hasAtSymbol) {
       setEmailError('Email is missing "@" symbol');
@@ -199,22 +201,22 @@ export default function createaccount() {
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setEmailError('Invalid email address');
+      setEmailError("Invalid email address");
       return false;
     }
 
-    setEmailError('');
+    setEmailError("");
     return true;
   };
 
   const validatePassword = () => {
-    if (password.trim() === '') {
-      setPasswordError('Password is required');
+    if (password.trim() === "") {
+      setPasswordError("Password is required");
       return false;
     }
 
     if (password.length < 8) {
-      setPasswordError('Password must be at least 8 characters');
+      setPasswordError("Password must be at least 8 characters");
       return false;
     }
 
@@ -222,37 +224,37 @@ export default function createaccount() {
     const containsNumbers = /\d/.test(password);
 
     if (!containsLetters || !containsNumbers) {
-      setPasswordError('Password must contain both letters and numbers');
+      setPasswordError("Password must contain both letters and numbers");
       return false;
     }
 
-    setPasswordError('');
+    setPasswordError("");
     return true;
   };
 
   const validateConfirmPassword = () => {
-    if (confirmPassword.trim() === '') {
-      setConfirmPasswordError('confirm password is required');
+    if (confirmPassword.trim() === "") {
+      setConfirmPasswordError("confirm password is required");
       return false;
     }
     if (confirmPassword !== password) {
-      setConfirmPasswordError('Passwords do not match');
+      setConfirmPasswordError("Passwords do not match");
       return false;
     }
-    setConfirmPasswordError('');
+    setConfirmPasswordError("");
     return true;
   };
 
   const showToast = (message, type) => {
     setToast({ visible: true, message, type });
     setTimeout(() => {
-      setToast({ visible: false, message: '', type: '' });
+      setToast({ visible: false, message: "", type: "" });
     }, 3000); // Hide toast after 3 seconds
   };
 
   useEffect(() => {
     return () => {
-      setToast({ visible: false, message: '', type: '' });
+      setToast({ visible: false, message: "", type: "" });
     };
   }, []);
   // Handle submit button press
@@ -281,33 +283,39 @@ export default function createaccount() {
     setLoading(true); // Only set loading to true if all validations pass
     showLoading(); // Show loading indicator before starting async operation
 
-   try {
-      const response = await dispatch(registerUser({ name, email, phone, password, role: 1 }));
+    try {
+      const response = await dispatch(
+        registerUser({ name, email, phone, password, role: 1 })
+      );
 
-      if (response.meta.requestStatus === 'fulfilled') {
+      if (response.meta.requestStatus === "fulfilled") {
         const newUserId = response.payload.data._id;
         setUserId(newUserId);
-        console.log(response)
-        showToast('Registration successful!', 'success');
-        router.push({ pathname: '/otpverification', params: { userId: newUserId } });
+        console.log(response);
+        showToast("Registration successful!", "success");
+        router.push({
+          pathname: "/otpverification",
+          params: { userId: newUserId },
+        });
       } else {
-        showToast(response.error.message || 'Registration failed', 'error');
+        showToast(response.error.message || "Registration failed", "error");
+        console.log(response.error.message || "Registration failed", "error");
       }
     } catch (error) {
-      showToast('An unexpected error occurred', 'error');
+      showToast("An unexpected error occurred", "error");
     } finally {
       setLoading(false);
       hideLoading();
     }
   };
 
-console.log(userId)
+  console.log(userId);
   // Use useEffect to handle side effects based on Redux state
   useEffect(() => {
-    if (authStatus === 'succeeded') {
-      showToast(successMessage || 'Registration successful!', 'success');
-    } else if (authStatus === 'failed') {
-      showToast(authError || 'Registration failed. Please try again.', 'error');
+    if (authStatus === "succeeded") {
+      showToast(successMessage || "Registration successful!", "success");
+    } else if (authStatus === "failed") {
+      showToast(authError || "Registration failed. Please try again.", "error");
     }
   }, [authStatus, successMessage, authError]);
 
@@ -354,11 +362,11 @@ console.log(userId)
   return (
     <View>
       <View style={styles.toasr}>
-       <CustomToast
-        visible={toast.visible}
-        message={toast.message}
-        type={toast.type}
-      />
+        <CustomToast
+          visible={toast.visible}
+          message={toast.message}
+          type={toast.type}
+        />
       </View>
 
       <ScrollView
@@ -368,7 +376,7 @@ console.log(userId)
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={['#F11515', '#000000', '#0000ff']}
+            colors={["#F11515", "#000000", "#0000ff"]}
             tintColor="red"
             title="Pull to refresh..."
             titleColor="#00ff00"
@@ -380,7 +388,7 @@ console.log(userId)
         <View style={styles.main}>
           <View style={styles.flex}>
             <Link href="/onboarding">
-              {' '}
+              {" "}
               <View>
                 <AntDesign name="arrowleft" size={24} color="black" />
               </View>
@@ -451,7 +459,7 @@ console.log(userId)
                     style={[
                       styles.scares,
                       {
-                        borderColor: isInputFocused ? 'black' : 'gray',
+                        borderColor: isInputFocused ? "black" : "gray",
                         borderWidth: isInputFocused ? 2 : 1,
                       },
                     ]}
@@ -474,7 +482,7 @@ console.log(userId)
                         onPress={() => setShowPassword(!showPassword)}
                       >
                         <Feather
-                          name={showPassword ? 'eye' : 'eye-off'}
+                          name={showPassword ? "eye" : "eye-off"}
                           size={20}
                           color="black"
                         />
@@ -491,7 +499,7 @@ console.log(userId)
                     style={[
                       styles.scares,
                       {
-                        borderColor: isInputFocused2 ? 'black' : 'gray',
+                        borderColor: isInputFocused2 ? "black" : "gray",
                         borderWidth: isInputFocused2 ? 2 : 1,
                       },
                     ]}
@@ -514,7 +522,7 @@ console.log(userId)
                         onPress={() => setShowPassword2(!showPassword2)}
                       >
                         <Feather
-                          name={showPassword2 ? 'eye' : 'eye-off'}
+                          name={showPassword2 ? "eye" : "eye-off"}
                           size={20}
                           color="black"
                         />
@@ -535,8 +543,8 @@ console.log(userId)
                     )}
                   </View>
                   <Text style={styles.label}>
-                    I have read and agree to the{' '}
-                    <Text style={styles.others}>Terms and Conditions</Text> and{' '}
+                    I have read and agree to the{" "}
+                    <Text style={styles.others}>Terms and Conditions</Text> and{" "}
                     <Text style={styles.others}>Privacy Policy</Text>
                   </Text>
                 </TouchableOpacity>
@@ -548,11 +556,11 @@ console.log(userId)
                   onPress={handleCreateAccount}
                   disabled={isDisabled} // Disable button based on combined conditions
                 >
-                  <Text style={{ color: 'white' }}>
+                  <Text style={{ color: "white" }}>
                     {loading ? (
                       <ActivityIndicator color="white" size="small" />
                     ) : (
-                      <Text style={{ color: 'white' }}>Create Account</Text>
+                      <Text style={{ color: "white" }}>Create Account</Text>
                     )}
                   </Text>
                 </TouchableOpacity>
@@ -571,7 +579,6 @@ console.log(userId)
                     </Link>
                   </TouchableOpacity>
                 </View> */}
-               
               </View>
             </View>
           </View>
@@ -588,15 +595,15 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   flex: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: '30px',
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: "30px",
   },
   testx: {
     marginLeft: 10,
   },
   reegister: {
-    fontFamily: 'KumbhSans_500Medium',
+    fontFamily: "KumbhSans_500Medium",
     fontSize: 20,
 
     lineHeight: 24,
@@ -605,36 +612,36 @@ const styles = StyleSheet.create({
     marginTop: 50,
   },
   enadp: {
-    fontFamily: 'Lora_500Medium',
+    fontFamily: "Lora_500Medium",
     fontSize: 20,
 
     lineHeight: 24,
-    textAlign: 'left',
-    color: '#1D1D1D',
+    textAlign: "left",
+    color: "#1D1D1D",
   },
   greetings: {
-    fontFamily: 'Lora_400Regular',
+    fontFamily: "Lora_400Regular",
     fontSize: 18,
 
     lineHeight: 24,
-    textAlign: 'left',
-    color: '#6B6B6B',
+    textAlign: "left",
+    color: "#6B6B6B",
   },
   inputs: {
     marginTop: 30,
   },
   labell: {
     // marginBottom: ,
-    fontFamily: 'LexendDeca_400Regular',
+    fontFamily: "LexendDeca_400Regular",
     fontSize: 16,
 
     lineHeight: 20,
-    textAlign: 'left',
-    color: '#6B6B6B',
+    textAlign: "left",
+    color: "#6B6B6B",
   },
   inputt: {
-    backgroundColor: '#ffffff',
-    borderColor: 'gray',
+    backgroundColor: "#ffffff",
+    borderColor: "gray",
     borderWidth: 1,
     height: 50,
     borderRadius: 8,
@@ -642,13 +649,13 @@ const styles = StyleSheet.create({
     paddingRight: 20,
   },
   scares: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     // backgroundColor: 'red',
-    width: '100%',
-    backgroundColor: '#ffffff',
-    borderColor: 'gray',
+    width: "100%",
+    backgroundColor: "#ffffff",
+    borderColor: "gray",
     borderWidth: 1,
     height: 50,
     borderRadius: 8,
@@ -659,83 +666,83 @@ const styles = StyleSheet.create({
     flex: 1, // Make the container flex to fill the available space
   },
   inpu2: {
-    width: 'fit-content',
-    borderColor: 'transparent', // Set border color to transparent
+    width: "fit-content",
+    borderColor: "transparent", // Set border color to transparent
     borderWidth: 0, // Set border width to 0
-    outlineColor: 'transparent', // Set outline color to transparent
+    outlineColor: "transparent", // Set outline color to transparent
     outlineWidth: 0, // Set outline width to 0
 
     height: 50,
-    width: 'auto',
+    width: "auto",
     paddingLeft: 20,
   },
   checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   checkbox: {
     width: 20,
     height: 20,
     borderRadius: 4,
     borderWidth: 2,
-    borderColor: '#999',
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderColor: "#999",
+    justifyContent: "center",
+    alignItems: "center",
   },
   checked: {
-    backgroundColor: 'blue', // Adjust color as needed
+    backgroundColor: "blue", // Adjust color as needed
   },
   label: {
     marginLeft: 15,
-    width: '80%',
-    fontFamily: 'Lora_400Regular',
+    width: "80%",
+    fontFamily: "Lora_400Regular",
     fontSize: 14,
 
     lineHeight: 18,
-    textAlign: 'left',
-    color: '#1D1D1D',
+    textAlign: "left",
+    color: "#1D1D1D",
   },
   others: {
-    fontFamily: 'KumbhSans_500Medium',
+    fontFamily: "KumbhSans_500Medium",
 
-    color: '#007F5F',
+    color: "#007F5F",
   },
   create: {
-    fontFamily: 'LexendDeca_400Regular',
-    width: '100%',
+    fontFamily: "LexendDeca_400Regular",
+    width: "100%",
     height: 55,
-    backgroundColor: '#000000',
-    color: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#000000",
+    color: "white",
+    justifyContent: "center",
+    alignItems: "center",
     borderRadius: 10,
     marginBottom: 15,
     fontSize: 16,
   },
   already: {
-    fontFamily: 'LexendDeca_400Regular',
-    width: '100%',
+    fontFamily: "LexendDeca_400Regular",
+    width: "100%",
     height: 55,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     borderWidth: 1,
-    borderColor: 'transparent',
-    color: '#000000',
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderColor: "transparent",
+    color: "#000000",
+    justifyContent: "center",
+    alignItems: "center",
     borderRadius: 10,
     // marginBottom: 13,
     fontSize: 16,
   },
   error: {
-    color: 'red',
-    fontFamily: 'Lora_400Regular',
+    color: "red",
+    fontFamily: "Lora_400Regular",
     fontSize: 14,
 
     marginTop: 4,
     marginBottom: 8,
   },
   toasr: {
-    position: 'absolute', // Make sure the toast is positioned absolutely
+    position: "absolute", // Make sure the toast is positioned absolutely
     top: 0, // Adjust the top position if needed
     left: 0, // Align with the left edge
     right: 0, // Align with the right edge
@@ -744,26 +751,26 @@ const styles = StyleSheet.create({
     padding: 10, // Add padding for a better appearance
     borderRadius: 10, // Optional: add border-radius for rounded corners
   },
-   toast: {
-    position: 'absolute',
+  toast: {
+    position: "absolute",
     top: 60, // Positioned at the top
     left: 20,
     right: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
     padding: 15,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
     zIndex: 9999, // Ensure it's above other elements
   },
   successToast: {
-    backgroundColor: 'rgba(0, 128, 0, 0.9)',
+    backgroundColor: "rgba(0, 128, 0, 0.9)",
   },
   errorToast: {
-    backgroundColor: 'rgba(255, 0, 0, 0.9)',
+    backgroundColor: "rgba(255, 0, 0, 0.9)",
   },
   toastText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });

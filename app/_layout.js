@@ -24,12 +24,14 @@ const MainComponent = () => {
       try {
         const userId = await AsyncStorage.getItem("userId");
         if (userId) {
-          // If userId exists, set the user in Redux state
           dispatch(setUser({ _id: userId }));
-          router.push("/"); // Redirect after successful userId retrieval
+          router.replace("/cart");
+        } else {
+          router.replace("/"); // Ensure this matches the logout redirection
         }
       } catch (error) {
-        console.error("Error loading userId from AsyncStorage:", error);
+        console.error("Error loading userId:", error);
+        router.replace("/login");
       }
     };
 

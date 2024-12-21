@@ -1,4 +1,6 @@
-import React, { useState, useRef,useEffect } from 'react';
+/** @format */
+
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,25 +9,23 @@ import {
   TextInput,
   ScrollView,
   ActivityIndicator,
-  Animated
-} from 'react-native';
-import { Link, useRouter, useLocalSearchParams } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { AntDesign } from '@expo/vector-icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { verifyOtp } from '../components/features/auth/authSlice';
-import Toast from 'react-native-toast-message';
+  Animated,
+} from "react-native";
+import { Link, useRouter, useLocalSearchParams } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { AntDesign } from "@expo/vector-icons";
+import { useDispatch, useSelector } from "react-redux";
+import { verifyOtp } from "../components/features/auth/authSlice";
+import Toast from "react-native-toast-message";
 import {
   useFonts,
   LexendDeca_400Regular,
-} from '@expo-google-fonts/lexend-deca';
+} from "@expo-google-fonts/lexend-deca";
 import {
   KumbhSans_400Regular,
   KumbhSans_500Medium,
-} from '@expo-google-fonts/kumbh-sans';
-import {
-  Lora_500Medium,
-} from '@expo-google-fonts/lora';
+} from "@expo-google-fonts/kumbh-sans";
+import { Lora_500Medium } from "@expo-google-fonts/lora";
 const CustomToast = ({ visible, message, type }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -52,7 +52,7 @@ const CustomToast = ({ visible, message, type }) => {
       style={[
         styles.toast,
         { opacity: fadeAnim },
-        type === 'success' ? styles.successToast : styles.errorToast,
+        type === "success" ? styles.successToast : styles.errorToast,
       ]}
     >
       <Text style={styles.toastText}>{message}</Text>
@@ -60,22 +60,22 @@ const CustomToast = ({ visible, message, type }) => {
   );
 };
 const OtpInput = ({ onOtpChange }) => {
-  const [otp, setOtp] = useState(['', '', '', '']);
+  const [otp, setOtp] = useState(["", "", "", ""]);
   const inputRefs = useRef([]);
 
   const handleChange = (text, index) => {
     const newOtp = [...otp];
     newOtp[index] = text;
     setOtp(newOtp);
-    onOtpChange(newOtp.join(''));
+    onOtpChange(newOtp.join(""));
 
-    if (text !== '' && index < 3) {
+    if (text !== "" && index < 3) {
       inputRefs.current[index + 1].focus();
     }
   };
 
   const handleKeyPress = (e, index) => {
-    if (e.nativeEvent.key === 'Backspace' && index > 0 && otp[index] === '') {
+    if (e.nativeEvent.key === "Backspace" && index > 0 && otp[index] === "") {
       inputRefs.current[index - 1].focus();
     }
   };
@@ -104,26 +104,26 @@ export default function OtpVerification() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { status, error, successMessage } = useSelector((state) => state.auth);
-  const [otpValue, setOtpValue] = useState('');
+  const [otpValue, setOtpValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [toast, setToast] = useState({ visible: false, message: '', type: '' });
-   const showToast = (message, type) => {
+  const [toast, setToast] = useState({ visible: false, message: "", type: "" });
+  const showToast = (message, type) => {
     setToast({ visible: true, message, type });
     setTimeout(() => {
-      setToast({ visible: false, message: '', type: '' });
+      setToast({ visible: false, message: "", type: "" });
     }, 6000); // Hide toast after 3 seconds
   };
 
   useEffect(() => {
     // Cleanup function to hide toast when component unmounts
     return () => {
-      setToast({ visible: false, message: '', type: '' });
+      setToast({ visible: false, message: "", type: "" });
     };
   }, []);
 
- const handleVerifyOtp = () => {
+  const handleVerifyOtp = () => {
     if (otpValue.length !== 4) {
-      showToast('Please enter a 4-digit OTP', 'error');
+      showToast("Please enter a 4-digit OTP", "error");
       return;
     }
 
@@ -131,18 +131,18 @@ export default function OtpVerification() {
     dispatch(verifyOtp({ otp: otpValue, userId }))
       .then((result) => {
         setIsLoading(false);
-        if (result.meta.requestStatus === 'fulfilled') {
-          showToast('OTP verified successfully, proceed to login', 'success');
+        if (result.meta.requestStatus === "fulfilled") {
+          showToast("OTP verified successfully, proceed to login", "success");
           // Handle success (e.g., navigate to next screen)
-              router.push('/login')
+          router.push("/login");
         } else {
-          showToast(result.payload?.message || result.error.message, 'error');
+          showToast(result.payload?.message || result.error.message, "error");
         }
       })
       .catch((error) => {
         setIsLoading(false);
-        showToast('An unexpected error occurred', 'error');
-        console.error('Error during OTP verification:', error);
+        showToast("An unexpected error occurred", "error");
+        console.error("Error during OTP verification:", error);
       });
   };
   const [fontsLoaded, fontError] = useFonts({
@@ -158,7 +158,7 @@ export default function OtpVerification() {
 
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <StatusBar style="dark" />
+      <StatusBar style="dark" />
       <View style={styles.main}>
         <View style={styles.flex}>
           <Link href="/onboarding">
@@ -172,33 +172,35 @@ export default function OtpVerification() {
         </View>
         <View style={styles.createups}>
           <View>
-            <Text style={styles.enadp}>Verify your phone number</Text>
-            <Text style={styles.enadp}>{userId}</Text>
+            <Text style={styles.enadp}>Verify your Email Address</Text>
+            <Text style={styles.enadp}>user ID: {userId}</Text>
           </View>
           <View style={{ marginTop: 20 }}>
             <Text style={styles.greetings}>
-              We have sent a 4 digit OTP to your mobile number, please provide it in the boxes below.
+              We have sent a 4 digit OTP to your{" "}
+              <Text style={{ fontWeight: "bold" }}>Email Address</Text> , please
+              provide it in the boxes below.
             </Text>
           </View>
           <View style={styles.inputs}>
             <OtpInput onOtpChange={setOtpValue} />
             <View style={{ marginTop: 30, marginBottom: 30 }}>
-              <TouchableOpacity 
-                style={styles.create} 
+              <TouchableOpacity
+                style={styles.create}
                 onPress={handleVerifyOtp}
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <ActivityIndicator color="white" />
                 ) : (
-                  <Text style={{ color: 'white' }}>Verify OTP</Text>
+                  <Text style={{ color: "white" }}>Verify OTP</Text>
                 )}
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </View>
-  <CustomToast
+      <CustomToast
         visible={toast.visible}
         message={toast.message}
         type={toast.type}
@@ -214,19 +216,19 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   flex: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 30,
   },
   headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   testx: {
     marginLeft: 10,
   },
   register: {
-    fontFamily: 'KumbhSans_500Medium',
+    fontFamily: "KumbhSans_500Medium",
     fontSize: 20,
     lineHeight: 24,
   },
@@ -234,64 +236,65 @@ const styles = StyleSheet.create({
     marginTop: 50,
   },
   enadp: {
-    fontFamily: 'Lora_500Medium',
+    fontFamily: "Lora_500Medium",
     fontSize: 20,
     lineHeight: 24,
-    textAlign: 'left',
-    color: '#1D1D1D',
+    textAlign: "left",
+    color: "#1D1D1D",
   },
   greetings: {
-    fontFamily: 'KumbhSans_400Regular',
+    fontFamily: "KumbhSans_400Regular",
     fontSize: 18,
     lineHeight: 24,
-    textAlign: 'left',
-    color: '#6B6B6B',
+    textAlign: "left",
+    color: "#6B6B6B",
   },
   inputs: {
     marginTop: 30,
   },
   otpContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 20,
   },
   otpInput: {
     width: 50,
     height: 50,
-    backgroundColor: '#ffffff',
-    borderColor: 'gray',
+    backgroundColor: "#ffffff",
+    borderColor: "gray",
     borderWidth: 1,
     borderRadius: 8,
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 24,
   },
   create: {
-    fontFamily: 'LexendDeca_400Regular',
-    width: '100%',
+    fontFamily: "LexendDeca_400Regular",
+    width: "100%",
     height: 55,
-    backgroundColor: '#000000',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#000000",
+    justifyContent: "center",
+    alignItems: "center",
     borderRadius: 10,
     marginBottom: 15,
-  }, toast: {
-    position: 'absolute',
+  },
+  toast: {
+    position: "absolute",
     top: 30,
     left: 20,
     right: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
     padding: 10,
     borderRadius: 5,
-    alignItems: 'center',
+    alignItems: "center",
   },
   successToast: {
-    backgroundColor: 'rgba(0, 128, 0, 0.7)',
+    backgroundColor: "rgba(0, 128, 0, 0.7)",
   },
   errorToast: {
-    backgroundColor: 'rgba(255, 0, 0, 0.7)',
+    backgroundColor: "rgba(255, 0, 0, 0.7)",
   },
   toastText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
   },
 });
