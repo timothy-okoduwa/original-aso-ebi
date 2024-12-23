@@ -478,7 +478,6 @@ const styles = StyleSheet.create({
     flex: 1, // Make the container flex to fill the available space
   },
   inpu2: {
-    width: "fit-content",
     borderColor: "transparent", // Set border color to transparent
     borderWidth: 0, // Set border width to 0
     outlineColor: "transparent", // Set outline color to transparent

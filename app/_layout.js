@@ -25,7 +25,7 @@ const MainComponent = () => {
         const userId = await AsyncStorage.getItem("userId");
         if (userId) {
           dispatch(setUser({ _id: userId }));
-          router.replace("/cart");
+          router.replace("/mainhome");
         } else {
           router.replace("/"); // Ensure this matches the logout redirection
         }

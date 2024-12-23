@@ -176,13 +176,7 @@ const styles = StyleSheet.create({
     width: "48%",
     borderRadius: 10,
   },
-  imageHolder: {
-    height: 180,
-    width: "100%",
-    borderRadius: 10,
-    overflow: "hidden",
-    position: "relative",
-  },
+
   image: {
     width: "100%",
     height: "100%",

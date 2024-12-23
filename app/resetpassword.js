@@ -314,15 +314,7 @@ const styles = StyleSheet.create({
     textAlign: "left",
     color: "#6B6B6B",
   },
-  inputt: {
-    backgroundColor: "#ffffff",
-    borderColor: "gray",
-    borderWidth: 1,
-    height: 50,
-    borderRadius: 8,
-    paddingLeft: 20,
-    paddingRight: 20,
-  },
+
   scares: {
     flexDirection: "row",
     alignItems: "center",
@@ -341,7 +333,6 @@ const styles = StyleSheet.create({
     flex: 1, // Make the container flex to fill the available space
   },
   inpu2: {
-    width: "fit-content",
     borderColor: "transparent", // Set border color to transparent
     borderWidth: 0, // Set border width to 0
     outlineColor: "transparent", // Set outline color to transparent

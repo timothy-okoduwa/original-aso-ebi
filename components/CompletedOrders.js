@@ -93,20 +93,6 @@ const styles = StyleSheet.create({
     fontFamily: "KumbhSans_500Medium",
     color: "#000000",
   },
-  added: {
-    width: "100%",
-    height: 55,
-    backgroundColor: "#ffffff",
-    color: "#767676",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 10,
-    marginBottom: 15,
-
-    borderWidth: 1, // Add border width
-    borderColor: "#767676", // Add border color
-  },
   first: {
     color: "white",
     fontSize: 16,

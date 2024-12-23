@@ -196,7 +196,6 @@ const styles = StyleSheet.create({
     flex: 1, // Make the container flex to fill the available space
   },
   inpu2: {
-    width: "fit-content",
     borderColor: "transparent", // Set border color to transparent
     borderWidth: 0, // Set border width to 0
     outlineColor: "transparent", // Set outline color to transparent
@@ -249,20 +248,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     fontSize: 16,
   },
-  already: {
-    fontFamily: "LexendDeca_400Regular",
-    width: "100%",
-    height: 55,
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: "transparent",
-    color: "#000000",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 10,
-    marginBottom: 13,
-    fontSize: 16,
-  },
   error: {
     color: "red",
     fontFamily: "KumbhSans_400Regular",
@@ -301,7 +286,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   password: {
-    marginTop: "17px",
     fontFamily: "KumbhSans_400Regular",
     fontSize: 16,
 
@@ -312,23 +296,5 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     flex: 1,
-  },
-  labell: {
-    // marginBottom: ,
-    fontFamily: "LexendDeca_400Regular",
-    fontSize: 16,
-
-    lineHeight: 20,
-    textAlign: "left",
-    color: "#6B6B6B",
-  },
-  inputt: {
-    backgroundColor: "#ffffff",
-    borderColor: "gray",
-    borderWidth: 1,
-    height: 50,
-    borderRadius: 8,
-    paddingLeft: 20,
-    paddingRight: 20,
   },
 });

@@ -9,9 +9,7 @@
     "userInterfaceStyle": "automatic",
     "androidStatusBar": {
       "backgroundColor": "#ffffff",
-      "color": "#000000",
-      "translucent": false,
-      "newArchEnabled": true
+      "translucent": false
     },
     "splash": {
       "image": "./assets/images/splash.png",
@@ -22,13 +20,18 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "original.aso.ebi"
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+       "adaptiveIcon": {
+           "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff",
+        "monochromeImage": "./assets/images/adaptive-icon.png"
+      },
+      "package": "original.aso.ebi",
+       "icon": "./assets/images/icon.png"
+  
     },
     "web": {
       "bundler": "metro",
@@ -41,6 +44,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "3fdd9a0d-1d3b-4e63-b969-f3dcc582d25f"
+      }
     }
   }
 }

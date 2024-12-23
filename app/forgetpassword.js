@@ -251,7 +251,6 @@ const styles = StyleSheet.create({
     flex: 1, // Make the container flex to fill the available space
   },
   inpu2: {
-    width: "fit-content",
     borderColor: "transparent", // Set border color to transparent
     borderWidth: 0, // Set border width to 0
     outlineColor: "transparent", // Set outline color to transparent
@@ -302,20 +301,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 10,
     marginBottom: 15,
-    fontSize: 16,
-  },
-  already: {
-    fontFamily: "LexendDeca_400Regular",
-    width: "100%",
-    height: 55,
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: "transparent",
-    color: "#000000",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 10,
-    marginBottom: 13,
     fontSize: 16,
   },
   error: {
