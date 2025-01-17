@@ -109,7 +109,7 @@ export default function SettingContent({ userName }) {
 
         const endpoints = [
           `https://oae-be.onrender.com/api/oae/auth/${userId}/update-image`,
-          `https://oae-be.onrender.com/oae/auth/${userId}/update-image`,
+          `https://oae-be.onrender.com/oae/auth/${userId}/update-images`,
           `https://oae-be.onrender.com/api/auth/${userId}/update-image`,
           `https://oae-be.onrender.com/auth/${userId}/update-image`,
         ];
