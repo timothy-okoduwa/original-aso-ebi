@@ -1,7 +1,14 @@
 /** @format */
 
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
-import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Alert,
+} from "react-native"; // Add Alert import
+import React, { useState, useEffect } from "react";
 import {
   useFonts,
   KumbhSans_400Regular,
@@ -19,7 +26,15 @@ export default function SettingContent({ userName }) {
   const router = useRouter();
   const dispatch = useDispatch();
   const [profileImage, setProfileImage] = useState(p); // Default profile image
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [userId, setUserId] = useState(null);
+  useEffect(() => {
+    const getUserId = async () => {
+      const id = await AsyncStorage.getItem("userId");
+      setUserId(id);
+    };
+    getUserId();
+  }, []);
   const [fontsLoaded, fontError] = useFonts({
     KumbhSans_400Regular,
     KumbhSans_500Medium,
@@ -28,6 +43,7 @@ export default function SettingContent({ userName }) {
   if (!fontsLoaded || fontError) {
     return null;
   }
+
   const logout = async () => {
     try {
       // Remove userId from AsyncStorage
@@ -47,33 +63,108 @@ export default function SettingContent({ userName }) {
     }
   };
 
-  const userId = AsyncStorage.getItem("userId");
   const editprofile = () => {
     router.push("/editprofile");
   };
   const forgetpassword = () => {
     router.push("/forgetpassword");
   };
-  const chooseImage = async () => {
-    // Request permission to access the gallery
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert(
-        "Permission Denied",
-        "You need to grant permission to access your photos."
-      );
-      return;
-    } // Launch the image picker
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 1,
-    });
 
-    if (!result.canceled) {
-      setProfileImage({ uri: result.assets[0].uri }); // Set the chosen image
+  const chooseImage = async () => {
+    try {
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Permission Denied",
+          "You need to grant permission to access your photos."
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        quality: 1,
+        base64: true,
+      });
+
+      if (!result.canceled) {
+        setIsLoading(true);
+        const imageUri = result.assets[0].uri;
+
+        if (!userId) {
+          Alert.alert("Error", "User ID not found. Please log in again.");
+          return;
+        }
+
+        const formData = new FormData();
+        const fileExtension = imageUri.split(".").pop();
+
+        formData.append("image", {
+          uri: imageUri,
+          name: `profile-image.${fileExtension}`,
+          type: `image/${fileExtension}`,
+        });
+
+        const endpoints = [
+          `https://oae-be.onrender.com/api/oae/auth/${userId}/update-image`,
+          `https://oae-be.onrender.com/oae/auth/${userId}/update-image`,
+          `https://oae-be.onrender.com/api/auth/${userId}/update-image`,
+          `https://oae-be.onrender.com/auth/${userId}/update-image`,
+        ];
+
+        let response;
+        let errorDetails = [];
+
+        for (const endpoint of endpoints) {
+          try {
+            console.log("Trying endpoint:", endpoint);
+            response = await fetch(endpoint, {
+              method: "PATCH",
+              headers: {
+                Accept: "application/json",
+                "Content-Type": "multipart/form-data",
+              },
+              body: formData,
+            });
+
+            if (response.ok) {
+              console.log("Successful endpoint:", endpoint);
+              const data = await response.json();
+              console.log("Parsed response:", data);
+
+              setProfileImage({ uri: imageUri });
+              Alert.alert("Success", "Profile image updated successfully!");
+              return; // Exit the loop on success
+            } else {
+              console.log(
+                `Failed with status ${response.status} for endpoint: ${endpoint}`
+              );
+              errorDetails.push({ endpoint, status: response.status });
+            }
+          } catch (error) {
+            console.error(`Error with endpoint ${endpoint}:`, error.message);
+            errorDetails.push({ endpoint, error: error.message });
+          }
+        }
+
+        throw new Error(
+          `Failed to upload image. Errors: ${JSON.stringify(
+            errorDetails,
+            null,
+            2
+          )}`
+        );
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error.message);
+      Alert.alert("Error", `Failed to upload image: ${error.message}`);
+    } finally {
+      setIsLoading(false);
     }
   };
+
   return (
     <View>
       <View style={styles.imagestuff}>
@@ -91,8 +182,15 @@ export default function SettingContent({ userName }) {
             </Text>
           </View>
           <View style={{ marginTop: "14" }}>
-            <TouchableOpacity style={styles.update} onPress={chooseImage}>
-              <Text style={styles.updatetext}>Update Profile</Text>
+            <TouchableOpacity
+              style={[styles.update, isLoading && { opacity: 0.7 }]}
+              onPress={chooseImage}
+              disabled={isLoading}
+            >
+              <Text style={styles.updatetext}>
+                {" "}
+                {isLoading ? "Uploading..." : "Update Profile"}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -100,7 +198,7 @@ export default function SettingContent({ userName }) {
       <View style={{ marginTop: "30" }}>
         <View>
           <Text style={styles.othset}>Settings</Text>
-          <Text>user id{userId}</Text>
+          {/* <Text>user id{userId}</Text> */}
         </View>
         <TouchableOpacity
           style={{ marginTop: "50", width: "100%" }}
