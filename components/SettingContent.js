@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Image,
   Alert,
-} from "react-native"; // Add Alert import
+} from "react-native";
 import React, { useState, useEffect } from "react";
 import {
   useFonts,
@@ -22,19 +22,39 @@ import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useDispatch } from "react-redux";
 import { setUser } from "./features/auth/authSlice";
-export default function SettingContent({ userName }) {
+
+export default function SettingContent({ userName, UserData }) {
   const router = useRouter();
   const dispatch = useDispatch();
-  const [profileImage, setProfileImage] = useState(p); // Default profile image
+  const [profileImage, setProfileImage] = useState(p);
   const [isLoading, setIsLoading] = useState(false);
   const [userId, setUserId] = useState(null);
+  const [token, setToken] = useState(null);
+  console.log(UserData);
   useEffect(() => {
-    const getUserId = async () => {
-      const id = await AsyncStorage.getItem("userId");
-      setUserId(id);
+    const getStoredData = async () => {
+      try {
+        const [storedToken, id] = await Promise.all([
+          AsyncStorage.getItem("token"),
+          AsyncStorage.getItem("userId"),
+        ]);
+
+        if (!storedToken || !id) {
+          Alert.alert("Session Expired", "Please login again");
+          router.push("/login");
+          return;
+        }
+
+        setToken(storedToken);
+        setUserId(id);
+      } catch (error) {
+        console.error("Error retrieving stored data:", error);
+        Alert.alert("Error", "Failed to load user data");
+      }
     };
-    getUserId();
+    getStoredData();
   }, []);
+
   const [fontsLoaded, fontError] = useFonts({
     KumbhSans_400Regular,
     KumbhSans_500Medium,
@@ -44,30 +64,52 @@ export default function SettingContent({ userName }) {
     return null;
   }
 
-  const logout = async () => {
-    try {
-      // Remove userId from AsyncStorage
-      await AsyncStorage.removeItem("userId");
+  const createFormData = async (uri) => {
+    const filename = uri.split("/").pop();
+    const extension = filename.split(".").pop().toLowerCase();
 
-      // Verify userId removal
-      const userId = await AsyncStorage.getItem("userId");
-      console.log("userId after logout:", userId); // Should log 'null'
+    const formData = new FormData();
+    formData.append("profilePic", {
+      uri,
+      type: extension === "jpg" ? "image/jpeg" : `image/${extension}`,
+      name: `profile-${Date.now()}.${extension}`,
+    });
 
-      // Clear Redux state if applicable (optional)
-      dispatch(setUser(null));
+    return formData;
+  };
 
-      // Redirect to login page
-      router.push("/login");
-    } catch (error) {
-      console.error("Error during logout:", error);
+  const uploadImage = async (formData) => {
+    if (!token || !userId) {
+      throw new Error("No authentication credentials");
     }
-  };
 
-  const editprofile = () => {
-    router.push("/editprofile");
-  };
-  const forgetpassword = () => {
-    router.push("/forgetpassword");
+    const url = `https://oae-be.onrender.com/api/oae/auth/${userId}/update-image`;
+
+    // Log the request details
+    console.log("Making request to:", url);
+    console.log("With headers:", {
+      Accept: "application/json",
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+    });
+
+    const response = await fetch(url, {
+      method: "PATCH",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Server error response:", errorText);
+      throw new Error(`Upload failed with status ${response.status}`);
+    }
+
+    return response;
   };
 
   const chooseImage = async () => {
@@ -76,8 +118,8 @@ export default function SettingContent({ userName }) {
         await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== "granted") {
         Alert.alert(
-          "Permission Denied",
-          "You need to grant permission to access your photos."
+          "Permission Required",
+          "Please grant camera roll permissions"
         );
         return;
       }
@@ -85,84 +127,47 @@ export default function SettingContent({ userName }) {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
-        quality: 1,
-        base64: true,
+        quality: 0.5,
+        aspect: [1, 1],
       });
 
-      if (!result.canceled) {
-        setIsLoading(true);
-        const imageUri = result.assets[0].uri;
+      if (result.canceled) return;
 
-        if (!userId) {
-          Alert.alert("Error", "User ID not found. Please log in again.");
-          return;
-        }
+      setIsLoading(true);
+      const profilePic = result.assets[0].uri;
 
-        const formData = new FormData();
-        const fileExtension = imageUri.split(".").pop();
-
-        formData.append("image", {
-          uri: imageUri,
-          name: `profile-image.${fileExtension}`,
-          type: `image/${fileExtension}`,
-        });
-
-        const endpoints = [
-          `https://oae-be.onrender.com/api/oae/auth/${userId}/update-image`,
-          `https://oae-be.onrender.com/oae/auth/${userId}/update-image`,
-          `https://oae-be.onrender.com/api/auth/${userId}/update-image`,
-          `https://oae-be.onrender.com/auth/${userId}/update-image`,
-        ];
-
-        let response;
-        let errorDetails = [];
-
-        for (const endpoint of endpoints) {
-          try {
-            console.log("Trying endpoint:", endpoint);
-            response = await fetch(endpoint, {
-              method: "PATCH",
-              headers: {
-                Accept: "application/json",
-                "Content-Type": "multipart/form-data",
-              },
-              body: formData,
-            });
-
-            if (response.ok) {
-              console.log("Successful endpoint:", endpoint);
-              const data = await response.json();
-              console.log("Parsed response:", data);
-
-              setProfileImage({ uri: imageUri });
-              Alert.alert("Success", "Profile image updated successfully!");
-              return; // Exit the loop on success
-            } else {
-              console.log(
-                `Failed with status ${response.status} for endpoint: ${endpoint}`
-              );
-              errorDetails.push({ endpoint, status: response.status });
-            }
-          } catch (error) {
-            console.error(`Error with endpoint ${endpoint}:`, error.message);
-            errorDetails.push({ endpoint, error: error.message });
-          }
-        }
-
-        throw new Error(
-          `Failed to upload image. Errors: ${JSON.stringify(
-            errorDetails,
-            null,
-            2
-          )}`
-        );
+      try {
+        const formData = await createFormData(profilePic); // Pass `profilePic` directly
+        await uploadImage(formData);
+        setProfileImage({ uri: profilePic });
+        Alert.alert("Success", "Profile image updated successfully");
+      } catch (error) {
+        console.error("Upload failed:", error);
+        handleUploadError(error);
       }
     } catch (error) {
-      console.error("Error uploading image:", error.message);
-      Alert.alert("Error", `Failed to upload image: ${error.message}`);
+      console.error("Image picker error:", error);
+      Alert.alert("Error", "Failed to select image. Please try again.");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const logout = async () => {
+    try {
+      await AsyncStorage.multiRemove(["userId", "token"]);
+      dispatch(setUser(null));
+      router.push("/login");
+    } catch (error) {
+      console.error("Error during logout:", error);
+      Alert.alert("Error", "Failed to logout. Please try again.");
+    }
+  };
+  const editprofile = () => {
+    router.push("/editprofile");
+  };
+  const forgetpassword = () => {
+    router.push("/forgetpassword");
   };
 
   return (
@@ -171,7 +176,13 @@ export default function SettingContent({ userName }) {
         <View style={styles.flexer}>
           <View style={styles.setimage}>
             <Image
-              source={profileImage}
+              source={
+                UserData
+                  ? { uri: UserData } // Remote image URL
+                  : profileImage.uri
+                  ? profileImage // Remote/local image already in correct format
+                  : p // Fallback to default local image
+              }
               style={styles.image}
               resizeMode="cover"
             />

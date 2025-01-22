@@ -27,6 +27,7 @@ export default function settings() {
   const [refreshing, setRefreshing] = useState(false);
   const [userName, setUserName] = useState("");
   const { showLoading, hideLoading } = useLoading();
+  const [UserData, setUserData] = useState("");
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -54,7 +55,10 @@ export default function settings() {
             // Check if responseData and responseData.data exist
             if (responseData && responseData.data) {
               const fetchedUserName = responseData.data.name || "John Doe"; // Get the name from the response
+              const fetchedUserPics =
+                responseData.data.profilePic || "John Doe"; // Get the name from the response
               setUserName(fetchedUserName); // Update state with user data
+              setUserData(fetchedUserPics);
             } else {
               console.error("Error: User data is missing in the response.");
               setUserName("John Doe"); // Provide fallback value
@@ -121,7 +125,7 @@ export default function settings() {
         }
       >
         <View style={styles.main}>
-          <SettingContent userName={userName} />
+          <SettingContent userName={userName} UserData={UserData} />
         </View>
       </ScrollView>
       <ButtomNav />
