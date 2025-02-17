@@ -186,15 +186,9 @@ export default function BottomNav() {
 
 const styles = StyleSheet.create({
   main: {
-    backgroundColor: "white",
+    backgroundColor: "offwhite",
     height: 66,
-    // Shadow for iOS
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: -1 }, // Negative height for top shadow
-    shadowOpacity: 1, // 10% opacity
-    shadowRadius: 94.67 / 1, // Convert shadow blur to radius
-    // Shadow for Android
-    elevation: 30, // Adjust as needed for Android shadow depth
+   
   },
   flexes: {
     flexDirection: "row",

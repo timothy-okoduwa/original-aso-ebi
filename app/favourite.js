@@ -6,10 +6,13 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from "axios";
 import ButtomNav from '../components/ButtomNav';
 import { StatusBar } from 'expo-status-bar';
-import data from '../components/data';
+import a from "../constants/image/oo.png";
+
 import {
   useFonts,
   KumbhSans_400Regular,
@@ -17,42 +20,111 @@ import {
 } from '@expo-google-fonts/kumbh-sans';
 import { useRouter } from 'expo-router';
 import { Ionicons, Feather } from '@expo/vector-icons';
+import {Skeleton} from '../components/Spinner'
+const BASE_URL = "https://oae-be.onrender.com/api/oae";
+const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IlRpbW15bGVlb2tvZHV3YTdAZ21haWwuY29tIiwiaWQiOiI2NzY1OTY1Yjc5NWE4ZDA1Mjc5ZWYwNjMiLCJpYXQiOjE3MzgyMzA4MzYsImV4cCI6MTc0MDgyMjgzNn0.XL6zUHtFJjLrW4lSH-ivzTIoK7p88WZkJOrOt-862q4";
 
 export default function Favourite() {
   const router = useRouter();
+  const [favorites, setFavorites] = useState({}); 
+  const [favoriteProducts, setFavoriteProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const loadFavoritesAndProducts = async () => {
+      try {
+        setLoading(true);
+        // Load favorites from AsyncStorage
+        const storedFavorites = await AsyncStorage.getItem('favorites');
+        const favoritesObj = storedFavorites ? JSON.parse(storedFavorites) : {};
+        setFavorites(favoritesObj);
+
+        // Fetch all products
+        const response = await axios.get(`${BASE_URL}/products/all-products`, {
+          headers: {
+            Authorization: `Bearer ${TOKEN}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        // Filter products that are in favorites
+        const favoriteProductsList = response.data.data.filter(
+          product => favoritesObj[product._id]
+        );
+        setFavoriteProducts(favoriteProductsList);
+      } catch (error) {
+        console.error('Error loading favorites and products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadFavoritesAndProducts();
+  }, []);
+
   const [fontsLoaded, fontError] = useFonts({
     KumbhSans_400Regular,
     KumbhSans_500Medium,
   });
-
+  const removeFavorite = async (productId) => {
+    try {
+      const newFavorites = { ...favorites };
+      delete newFavorites[productId];
+      setFavorites(newFavorites);
+      await AsyncStorage.setItem('favorites', JSON.stringify(newFavorites));
+      setFavoriteProducts(prev => prev.filter(product => product._id !== productId));
+    } catch (error) {
+      console.error('Error removing favorite:', error);
+    }
+  };
   if (!fontsLoaded || fontError) {
     return null;
   }
-
-  // Filter data where favourite is true
-  const favoriteData = data.filter((item) => item.favorite);
-
-  // Extract unique categories and their images from filtered data
-  const categories = [];
-  const categoryMap = {};
-
-  favoriteData.forEach((item) => {
-    if (!categoryMap[item.category]) {
-      categoryMap[item.category] = item.image;
-      categories.push({
-        name: item.name,
-        image: item.image,
-        price: item.price,
-      });
-    }
-  });
-
-  const gotocreataccount = (fabricName) => {
-    router.push(`/${fabricName}`);
+  const FabricSkeleton = () => {
+    return (
+      <View style={styles.card}>
+        <Skeleton height={180} style={styles.imageHolder} />
+        <View style={styles.negetive}>
+          <View style={styles.titleContainer}>
+            <Skeleton width="80%" height={19} style={{ marginTop: 7 }} />
+            <View style={styles.colorsContainer}>
+              {[1, 2, 3].map((_, index) => (
+                <Skeleton
+                  key={index}
+                  width={12}
+                  height={12}
+                  style={[styles.colorDot, { marginRight: 4 }]}
+                />
+              ))}
+            </View>
+          </View>
+          <Skeleton width={30} height={30} style={{ borderRadius: 15 }} />
+        </View>
+        <Skeleton width="40%" height={19} style={{ marginTop: 10 }} />
+      </View>
+    );
   };
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.storeview}>
+          <Text style={styles.store}>Favorites</Text>
+        </View>
+         <View style={styles.pushdown}>
+              <View style={styles.column}>
+                <View style={styles.cardContainer}>
+                  {[1, 2, 3, 4].map((index) => (
+                    <FabricSkeleton key={index} />
+                  ))}
+                </View>
+              </View>
+            </View>
+      </View>
+    );
+  }
+ 
 
   return (
-    <View style={styles.container}>
+<View style={styles.container}>
       <StatusBar style="dark" />
       <View style={styles.storeview}>
         <Text style={styles.store}>Favorites</Text>
@@ -62,64 +134,48 @@ export default function Favourite() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.main}>
-          <View style={styles.okay}>
-            <View style={styles.pushdown}></View>
-
-            {/* Check if there are no favorites */}
-            {categories.length === 0 ? (
-              <View style={styles.cartt}>
-                <View style={styles.circle}>
-                  <Feather name="heart" size={74} color="#000000" />
-                </View>
-                <View>
-                  <Text style={styles.empty}>Favorites is Empty</Text>
-                </View>
-                <View>
-                  <Text style={styles.once}>
-                    Once you add items to your Favorites, you'll find them
-                    displayed here.
-                  </Text>
-                </View>
+          {favoriteProducts.length === 0 ? (
+            <View style={styles.cartt}>
+              <View style={styles.circle}>
+                <Feather name="heart" size={74} color="#000000" />
               </View>
-            ) : (
-              <View style={styles.cardContainer}>
-                {categories.map((category, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.card}
-                    onPress={() => gotocreataccount(category.name)}
-                  >
-                    <View style={styles.imageHolder}>
-                      <Image
-                        style={styles.image}
-                        source={category.image}
-                        resizeMode="cover"
-                      />
-                    </View>
-                    <View style={styles.negetive}>
-                      <View>
-                        <Text style={styles.name}>
-                          {category.name.replace(/-/g, ' ')}
-                        </Text>
+              <Text style={styles.empty}>Favorites is Empty</Text>
+              <Text style={styles.once}>
+                Once you add items to your Favorites, you'll find them displayed here.
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.cardContainer}>
+              {favoriteProducts.map((product) => (
+                <TouchableOpacity
+                  key={product._id}
+                  style={styles.card}
+                  onPress={() => router.push(`/product/${product._id}`)}
+                >
+                  <View style={styles.imageHolder}>
+                    <Image
+                      style={styles.image}
+                      source={product.image && product.image.length > 0 
+                        ? { uri: product.image[0] }
+                        : a}
+                      resizeMode="cover"
+                    />
+                  </View>
+                  <View style={styles.negetive}>
+                    <Text style={styles.name}>{product.categoryTitle}</Text>
+                    <TouchableOpacity onPress={() => removeFavorite(product._id)}>
+                      <View style={styles.holi}>
+                        <Ionicons name="heart" size={18} color="#F11515" />
                       </View>
-                      <TouchableOpacity>
-                        <View style={styles.holi}>
-                          <Ionicons
-                            name="heart-outline"
-                            size={18}
-                            color="#F11515"
-                          />
-                        </View>
-                      </TouchableOpacity>
-                    </View>
-                    <View>
-                      <Text style={styles.price}>{category.price}</Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-          </View>
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.price}>
+                    ₦{Number(product.price).toLocaleString()}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </View>
       </ScrollView>
       <ButtomNav />
@@ -193,7 +249,7 @@ const styles = StyleSheet.create({
     fontSize: 40,
   },
   pushdown: {
-    marginTop: 20,
+    marginTop: 140,
     marginBottom: 30,
   },
   select: {
@@ -204,9 +260,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+  }, column: {
+    flex: 1,
+    marginLeft: 0,
   },
   card: {
-    marginBottom: 30,
+    marginBottom: 60,
     width: '48%',
     borderRadius: 10,
   },
@@ -254,5 +313,12 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     color: '#000000',
     marginTop: 10,
+  },  titleContainer: {
+    flex: 1,
+  },
+  colorsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
   },
 });

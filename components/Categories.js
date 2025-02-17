@@ -4,10 +4,12 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Image } from 'react-native';
 import a from '../constants/image/graf.png';
+import axios from 'axios';
 import {
   useFonts,
   KumbhSans_100Thin,
@@ -22,50 +24,90 @@ import {
 } from '@expo-google-fonts/kumbh-sans';
 import { Ledger_400Regular } from '@expo-google-fonts/ledger';
 import { useRouter } from 'expo-router';
+import {Skeleton} from './Spinner'
+const CategorySkeleton = () => {
+  return (
+    <View style={styles.categoryList}>
+      {[1, 2, 3, 4].map((index) => (
+        <Skeleton
+          key={index}
+          width={100}
+          height={30}
+          style={[
+            styles.categoryItem,
+            { marginRight: 10 }
+          ]}
+        />
+      ))}
+    </View>
+  );
+};
+const BannerSkeleton = () => {
+  return (
+    <View style={styles.banner}>
+      <Skeleton
+        width="100%"
+        height={140}
+        style={{
+          borderRadius: 20,
+        }}
+      />
+    </View>
+  );
+};
+const BASE_URL = "https://oae-be.onrender.com/api/oae";
+const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IlRpbW15bGVlb2tvZHV3YTdAZ21haWwuY29tIiwiaWQiOiI2NzY1OTY1Yjc5NWE4ZDA1Mjc5ZWYwNjMiLCJpYXQiOjE3MzgyMzA4MzYsImV4cCI6MTc0MDgyMjgzNn0.XL6zUHtFJjLrW4lSH-ivzTIoK7p88WZkJOrOt-862q4";
+
 export default function Categories({ setActiveCategory, activeCategory }) {
   const router = useRouter();
-  const categories = [
-    'New Arrival',
-    'Lace',
-    'Senator',
-    'Guinea',
-    'Cotton',
-    'Polyester',
-    'Silk',
-    'Linen',
-    'Wool',
-    'Denim',
-    'Velvet',
-    'Satin',
-    'Chiffon',
-    'Rayon',
-    'Flannel',
-    'Organza',
-    'Tulle',
-    'Cashmere',
-    'Tweed',
-    'Corduroy',
-    'Spandex',
-    'Taffeta',
-    'Georgette',
-  ];
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/categories/all-categories/`, {
+        headers: {
+          Authorization: `Bearer ${TOKEN}`,
+        },
+      });
+      // Add "All Products" as the first category
+      const allProductsCategory = {
+        _id: 'all-products',
+        categoryName: 'All Products',
+      };
+      setCategories([allProductsCategory, ...response.data.data]);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      setError("Failed to load categories");
+      setLoading(false);
+    }
+  };
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={[
         styles.categoryItem,
-        { backgroundColor: item === activeCategory ? '#000' : '#F5F5F5' },
+        { backgroundColor: item.categoryName === activeCategory ? '#000' : '#F5F5F5' },
       ]}
-      onPress={() => setActiveCategory(item)}
+      onPress={() => setActiveCategory(item.categoryName)}
     >
-      <Text
-        style={[
-          styles.categoryText,
-          { color: item === activeCategory ? '#FFF' : '#000' },
-        ]}
-      >
-        {item}
-      </Text>
+      <View style={styles.categoryContent}>
+       
+        <Text
+          style={[
+            styles.categoryText,
+            { color: item.categoryName === activeCategory ? '#FFF' : '#000' },
+          ]}
+        >
+          {item.categoryName}
+        </Text>
+      </View>
     </TouchableOpacity>
   );
 
@@ -85,9 +127,30 @@ export default function Categories({ setActiveCategory, activeCategory }) {
   if (!fontsLoaded || fontError) {
     return null;
   }
+
   const goToCategory = () => {
     router.push('/shop');
   };
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+      <Text style={styles.title}>Categories</Text>
+      <View style={{ marginBottom: 10 }}>
+        <CategorySkeleton />
+      </View>
+      <BannerSkeleton />
+    </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -96,7 +159,7 @@ export default function Categories({ setActiveCategory, activeCategory }) {
         data={categories}
         horizontal
         renderItem={renderItem}
-        keyExtractor={(item, index) => index.toString()}
+        keyExtractor={(item) => item._id}
         contentContainerStyle={styles.categoryList}
         showsHorizontalScrollIndicator={false}
       />
@@ -108,11 +171,9 @@ export default function Categories({ setActiveCategory, activeCategory }) {
             <Text style={styles.omoh}> New Arrivals</Text>
           </View>
           <View>
-            <View>
-              <TouchableOpacity style={styles.create} onPress={goToCategory}>
-                <Text style={{ color: 'white' }}>🔥Shop Now</Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity style={styles.create} onPress={goToCategory}>
+              <Text style={{ color: 'white' }}>🔥Shop Now</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -122,7 +183,6 @@ export default function Categories({ setActiveCategory, activeCategory }) {
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
     marginTop: 40,
   },
   title: {
@@ -139,21 +199,34 @@ const styles = StyleSheet.create({
   categoryItem: {
     backgroundColor: '#F5F5F5',
     borderRadius: 10,
-    paddingVertical: 14,
-    paddingHorizontal: 15,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     marginRight: 10,
-    height: 43,
+    minHeight: 30,
+    minWidth: 100,
+  },
+  categoryContent: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  categoryImage: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    marginBottom: 4,
   },
   categoryText: {
     fontFamily: 'KumbhSans_400Regular',
-    fontSize: 16,
+    fontSize: 14,
     color: '#000000',
+    textAlign: 'center',
+    textTransform: 'capitalize',
   },
   banner: {
     marginTop: 30,
-
     width: '100%',
-    height: 140, // Set the desired height of the banner
+    height: 140,
     borderRadius: 20,
     overflow: 'hidden',
   },
@@ -185,7 +258,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 4,
-
     fontSize: 16,
+  },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    color: 'red',
+    fontFamily: 'KumbhSans_400Regular',
+    fontSize: 16,
+  },
+  skeletonCategoryList: {
+    flexDirection: 'row',
+    paddingHorizontal: 0,
+  },
+  skeletonContainer: {
+    opacity: 0.7,
+  },
+  categoryList: {
+    flexDirection: 'row',
+    overflow: 'hidden',
   },
 });

@@ -1,5 +1,3 @@
-/** @format */
-
 import {
   View,
   Text,
@@ -8,11 +6,12 @@ import {
   TouchableOpacity,
   Image,
   RefreshControl,
+  ActivityIndicator,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ButtomNav from "../components/ButtomNav";
 import { StatusBar } from "expo-status-bar";
-import data from "../components/data";
+import axios from "axios";
 import {
   useFonts,
   KumbhSans_400Regular,
@@ -20,43 +19,60 @@ import {
 } from "@expo-google-fonts/kumbh-sans";
 import { useRouter } from "expo-router";
 
+const BASE_URL = "https://oae-be.onrender.com/api/oae";
+const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IlRpbW15bGVlb2tvZHV3YTdAZ21haWwuY29tIiwiaWQiOiI2NzY1OTY1Yjc5NWE4ZDA1Mjc5ZWYwNjMiLCJpYXQiOjE3MzgyMzA4MzYsImV4cCI6MTc0MDgyMjgzNn0.XL6zUHtFJjLrW4lSH-ivzTIoK7p88WZkJOrOt-862q4";
+
 export default function Shop() {
   const [refreshing, setRefreshing] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const router = useRouter();
+
   const [fontsLoaded, fontError] = useFonts({
     KumbhSans_400Regular,
     KumbhSans_500Medium,
   });
 
+  const fetchCategories = async () => {
+    try {
+      setError(null);
+      const response = await axios.get(`${BASE_URL}/categories/all-categories`, {
+        headers: {
+          Authorization: `Bearer ${TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      });
+      setCategories(response.data.data);
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+      setError("Failed to load categories. Please try again later.");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchCategories();
+  };
+
+  const goToCategory = (categoryId) => {
+    router.push({
+      pathname: "/storeresult",
+      params: { categoryId },
+    });
+  };
+
   if (!fontsLoaded || fontError) {
     return null;
   }
 
-  // Extract unique categories and their images
-  const categories = [];
-  const categoryMap = {};
-
-  data.forEach((item) => {
-    if (!categoryMap[item.category]) {
-      categoryMap[item.category] = item.image;
-      categories.push({ name: item.category, image: item.image });
-    }
-  });
-
-  const goToCategory = (category) => {
-    router.push({
-      pathname: "/storeresult",
-      params: { category },
-    });
-  };
-  const onRefresh = () => {
-    setRefreshing(true);
-    // Simulate a network request
-    setTimeout(() => {
-      // After 2 seconds stop refreshing
-      setRefreshing(false);
-    }, 2000);
-  };
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
@@ -83,26 +99,39 @@ export default function Shop() {
               <Text style={styles.select}>Select a category</Text>
             </View>
 
-            <View style={styles.cardContainer}>
-              {categories.map((category, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.card}
-                  onPress={() => goToCategory(category.name)}
-                >
-                  <View style={styles.imageHolder}>
-                    <Image
-                      style={styles.image}
-                      source={category.image}
-                      resizeMode="cover"
-                    />
-                    <View style={styles.textContainer}>
-                      <Text style={styles.imageText}>{category.name}</Text>
+            {loading && !refreshing ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#000000" />
+              </View>
+            ) : error ? (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            ) : (
+              <View style={styles.cardContainer}>
+                {categories.map((category) => (
+                  <TouchableOpacity
+                    key={category._id}
+                    style={styles.card}
+                    onPress={() => goToCategory(category._id)}
+                  >
+                    <View style={styles.imageHolder}>
+                      <Image
+                        style={styles.image}
+                        source={{ uri: category.categoryImage }}
+                        resizeMode="cover"
+                      />
+                      <View style={styles.textContainer}>
+                        <Text style={styles.imageText}>
+                          {category.categoryName.charAt(0).toUpperCase() + 
+                           category.categoryName.slice(1)}
+                        </Text>
+                      </View>
                     </View>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
           </View>
         </View>
       </ScrollView>
@@ -118,8 +147,26 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     flexGrow: 1,
-    paddingBottom: 0, // Adjust this value to accommodate the height of your ButtomNav component
-    paddingTop: 100, // Add enough padding to the top to avoid overlap
+    paddingBottom: 0,
+    paddingTop: 100,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: 200,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: 200,
+  },
+  errorText: {
+    fontFamily: "KumbhSans_400Regular",
+    fontSize: 16,
+    color: "#F11515",
+    textAlign: "center",
   },
   main: {
     padding: 15,
@@ -174,6 +221,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 10,
     left: 10,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 5,
@@ -182,5 +230,6 @@ const styles = StyleSheet.create({
     color: "white",
     fontFamily: "KumbhSans_400Regular",
     fontSize: 19,
+    textTransform: "capitalize",
   },
 });
