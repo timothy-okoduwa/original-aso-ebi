@@ -169,7 +169,7 @@ export default function SettingContent({ userName, UserData }) {
   const forgetpassword = () => {
     router.push("/forgetpassword");
   };
-
+  // console.log("user id:", userId);
   return (
     <View>
       <View style={styles.imagestuff}>
