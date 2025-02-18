@@ -10,7 +10,7 @@ export const CartProvider = ({ children }) => {
   const addToCart = (item) => {
     setCartItems((prevItems) => {
       const existingItemIndex = prevItems.findIndex(
-        (cartItem) => cartItem.name === item.name
+        (cartItem) => cartItem.categoryTitle === item.categoryTitle
       );
 
       if (existingItemIndex > -1) {
@@ -21,36 +21,36 @@ export const CartProvider = ({ children }) => {
         updatedItems[existingItemIndex] = {
           ...existingItem,
           quantity: newQuantity,
-          price: calculatePrice(existingItem.basePrice, newQuantity), // Store as numeric
+          price: calculatePrice(existingItem.basePrice, newQuantity),
         };
         return updatedItems;
       } else {
         return [
           ...prevItems,
           { ...item, price: calculatePrice(item.basePrice, item.quantity) },
-        ]; // Add numeric price
+        ];
       }
     });
   };
 
-  const updateItemQuantity = (itemName, newQuantity) => {
-    if (newQuantity < 1) return;
+  const updateItemQuantity = (categoryTitle, newQuantity) => {
+    if (newQuantity < 5) return; // Minimum 5 yards
     setCartItems((prevItems) =>
       prevItems.map((item) =>
-        item.name === itemName
+        item.categoryTitle === categoryTitle
           ? {
               ...item,
               quantity: newQuantity,
-              price: calculatePrice(item.basePrice, newQuantity), // Store as numeric
+              price: calculatePrice(item.basePrice, newQuantity),
             }
           : item
       )
     );
   };
 
-  const removeFromCart = (itemName) => {
+  const removeFromCart = (categoryTitle) => {
     setCartItems((prevItems) =>
-      prevItems.filter((item) => item.name !== itemName)
+      prevItems.filter((item) => item.categoryTitle !== categoryTitle)
     );
   };
 
@@ -59,24 +59,25 @@ export const CartProvider = ({ children }) => {
   };
 
   const calculatePrice = (basePrice, quantity) => {
-    const priceNumber = parseFloat(
-      basePrice.replace("₦", "").replace(/,/g, "")
-    );
-    const totalPrice =
-      quantity > 5
-        ? (priceNumber / 5) * quantity
-        : priceNumber * (quantity / 5);
-    return totalPrice; // Return numeric value
+    // Ensure basePrice is a number
+    const price =
+      typeof basePrice === "string"
+        ? parseFloat(basePrice.replace(/[^0-9.]/g, ""))
+        : basePrice;
+
+    if (quantity === 5) {
+      return price; // Return base price for minimum quantity
+    } else {
+      return price * (quantity / 5); // Multiply proportionally for higher quantities
+    }
   };
 
   const formatPrice = (price) => {
-    return `₦${price.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+    return `₦${price.toLocaleString()}`;
   };
 
   const getTotalAmount = () => {
-    return cartItems.reduce((total, item) => {
-      return total + item.price; // Now this is numeric
-    }, 0);
+    return cartItems.reduce((total, item) => total + item.price, 0);
   };
 
   return (
@@ -88,10 +89,12 @@ export const CartProvider = ({ children }) => {
         removeFromCart,
         clearCart,
         getTotalAmount,
+        formatPrice,
       }}
     >
       {children}
     </CartContext.Provider>
   );
 };
+
 export default CartProvider;

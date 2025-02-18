@@ -4,17 +4,16 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
+  Image,
+  ActivityIndicator,
 } from "react-native";
-import React, { useContext } from "react";
+import React, { useContext, useMemo } from "react";
 import {
   useFonts,
   KumbhSans_400Regular,
   KumbhSans_500Medium,
 } from "@expo-google-fonts/kumbh-sans";
-import { Image } from "react-native";
-import a from "../constants/image/sen2.png";
 import { useRouter } from "expo-router";
 import {
   Octicons,
@@ -23,6 +22,65 @@ import {
   Ionicons,
 } from "@expo/vector-icons";
 import { CartContext } from "../app/CartContext";
+
+const EmptyCart = () => (
+  <View style={styles.emptyCart}>
+    <View style={styles.circle}>
+      <Ionicons name="cart-outline" size={74} color="#000000" />
+    </View>
+    <Text style={styles.emptyTitle}>Cart is Empty</Text>
+    <Text style={styles.emptyDescription}>
+      Once you add items to your cart, you'll find them displayed here.
+    </Text>
+  </View>
+);
+
+const CartItem = ({ item, onIncrement, onDecrement, onDelete }) => {
+  const formatItemName = (categoryTitle) => {
+    if (!categoryTitle) return "Untitled Item";
+    return categoryTitle.replace(/-/g, " ");
+  };
+
+  const formatPrice = (price) => {
+    if (typeof price !== "number") return "₦0.00";
+    return `₦${price.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+  };
+
+  // Ensure item exists and has required properties
+  if (!item) return null;
+  return (
+    <View style={styles.itemContainer}>
+      <View style={styles.imageContainer}>
+        <Image style={styles.image} source={item.image} resizeMode="cover" />
+      </View>
+      <View style={styles.itemDetails}>
+        <View>
+          <Text style={styles.itemName}>
+            {formatItemName(item.categoryTitle)}
+          </Text>
+          <Text style={styles.itemPrice}>{formatPrice(item.price)}</Text>
+          <Text style={styles.quantity}>Qty: {item.quantity} yards</Text>
+        </View>
+        <View style={styles.quantityControls}>
+          <TouchableOpacity style={styles.controlButton} onPress={onDecrement}>
+            <Octicons name="dash" size={18} color="#000000" />
+          </TouchableOpacity>
+          <Text style={styles.quantityText}>{item.quantity}</Text>
+          <TouchableOpacity style={styles.controlButton} onPress={onIncrement}>
+            <Entypo name="plus" size={18} color="#000000" />
+          </TouchableOpacity>
+        </View>
+      </View>
+      <TouchableOpacity style={styles.deleteButton} onPress={onDelete}>
+        <MaterialCommunityIcons
+          name="delete-outline"
+          size={24}
+          color="#FB5D5D"
+        />
+      </TouchableOpacity>
+    </View>
+  );
+};
 
 export default function CartItems() {
   const router = useRouter();
@@ -33,61 +91,29 @@ export default function CartItems() {
     clearCart,
     getTotalAmount,
   } = useContext(CartContext);
+
   const [fontsLoaded, fontError] = useFonts({
     KumbhSans_400Regular,
     KumbhSans_500Medium,
   });
 
-  if (!fontsLoaded || fontError) {
-    return null;
-  }
-
-  if (cartItems.length === 0) {
-    return (
-      <View style={styles.cartt}>
-        <View style={styles.circle}>
-          <Ionicons name="cart-outline" size={74} color="#000000" />
-        </View>
-        <View>
-          <Text style={styles.empty}>Cart is Empty</Text>
-        </View>
-        <View>
-          <Text style={styles.once}>
-            Once you add items to your cart, you'll find them displayed here.
-          </Text>
-        </View>
-      </View>
-    );
-  }
-
   const handleIncrement = (item) => {
-    const newQuantity =
-      item.quantity >= 5 ? item.quantity + 5 : item.quantity + 1;
-    updateItemQuantity(item.name, newQuantity);
+    if (!item?.categoryTitle) return;
+    // Always increment by 5
+    const newQuantity = item.quantity + 5;
+    updateItemQuantity(item.categoryTitle, newQuantity);
   };
 
   const handleDecrement = (item) => {
-    const newQuantity =
-      item.quantity > 5 ? item.quantity - 5 : Math.max(1, item.quantity - 1);
-    updateItemQuantity(item.name, newQuantity);
-  };
-
-  const handleDelete = (itemName) => {
-    removeFromCart(itemName);
-  };
-
-  const handleClearCart = () => {
-    clearCart();
+    if (!item?.categoryTitle) return;
+    // Decrease by 5, but don't go below 5
+    const newQuantity = Math.max(5, item.quantity - 5);
+    updateItemQuantity(item.categoryTitle, newQuantity);
   };
   const handleCheckOut = () => {
-    const totalAmount = getTotalAmount(); // Get the total amount
-
-    // Calculate the total number of unique items
-    const numberOfItems = cartItems.length;
-
-    // Create an array of item names and quantities
+    const totalAmount = getTotalAmount();
     const orderedItems = cartItems.map((item) => ({
-      name: item.name,
+      name: item.categoryTitle, // Use categoryTitle instead of name
       quantity: item.quantity,
       price: item.price,
       image: item.image,
@@ -97,251 +123,70 @@ export default function CartItems() {
       pathname: "/checkout",
       params: {
         totalAmount,
-        numberOfItems,
-        orderedItems: JSON.stringify(orderedItems), // Pass the ordered items
+        numberOfItems: cartItems.length,
+        orderedItems: JSON.stringify(orderedItems),
       },
     });
   };
-  const formatPrice = (price) => {
-    return `₦${price.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
-  };
+
+  const formattedTotal = useMemo(
+    () =>
+      `₦${getTotalAmount().toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+      })}`,
+    [getTotalAmount, cartItems]
+  );
+
+  if (!fontsLoaded || fontError) {
+    return <ActivityIndicator size="large" color="#000000" />;
+  }
+
+  if (cartItems.length === 0) {
+    return <EmptyCart />;
+  }
 
   return (
-    <View>
-      <View>
-        <Text style={styles.summary}>Cart Summary</Text>
-      </View>
+    <View style={styles.container}>
+      <Text style={styles.title}>Cart Summary</Text>
       {cartItems.map((item, index) => (
-        <View key={index} style={styles.holderr}>
-          <View>
-            <View style={styles.imageHolder}>
-              <Image
-                style={styles.image}
-                source={item.image || a}
-                resizeMode="cover"
-              />
-            </View>
-          </View>
-          <View style={styles.prices}>
-            <View>
-              <View>
-                <Text style={styles.namez}>{item.name.replace(/-/g, " ")}</Text>
-              </View>
-              <View>
-                <Text style={styles.amont}>
-                  ₦
-                  {item.price.toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                  })}
-                </Text>
-              </View>
-              <View>
-                <Text style={styles.qty}>Qty: {item.quantity} yards</Text>
-              </View>
-            </View>
-            <View style={styles.counter}>
-              <TouchableOpacity
-                style={styles.incbut}
-                onPress={() => handleDecrement(item)}
-              >
-                <Text style={styles.incone}>
-                  <Octicons name="dash" size={18} color="#000000" />
-                </Text>
-              </TouchableOpacity>
-              <View>
-                <Text style={styles.mount}>{item.quantity}</Text>
-              </View>
-              <TouchableOpacity
-                style={styles.incbut}
-                onPress={() => handleIncrement(item)}
-              >
-                <Text style={styles.incone}>
-                  <Entypo name="plus" size={18} color="#000000" />
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-          <View style={styles.delete}>
-            <TouchableOpacity
-              style={styles.gaddle}
-              onPress={() => handleDelete(item.name)}
-            >
-              <Text>
-                <MaterialCommunityIcons
-                  name="delete-outline"
-                  size={24}
-                  color="#FB5D5D"
-                />
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        <CartItem
+          key={index}
+          item={item}
+          onIncrement={() => handleIncrement(item)}
+          onDecrement={() => handleDecrement(item)}
+          onDelete={() => removeFromCart(item.categoryTitle)}
+        />
       ))}
-      <View style={styles.pop}>
-        <Text style={styles.total}>Total: {formatPrice(getTotalAmount())}</Text>
-      </View>
-      <View style={styles.flux}>
-        <TouchableOpacity style={styles.create} onPress={handleCheckOut}>
-          <Text style={styles.first}>Checkout</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.added} onPress={handleClearCart}>
-          <Text style={styles.sec}>Clear Cart</Text>
-        </TouchableOpacity>
+      <View style={styles.footer}>
+        <Text style={styles.total}>Total: {formattedTotal}</Text>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.checkoutButton}
+            onPress={handleCheckOut}
+          >
+            <Text style={styles.checkoutButtonText}>Checkout</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.clearButton} onPress={clearCart}>
+            <Text style={styles.clearButtonText}>Clear Cart</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  pop: {
-    justifyContent: "flex-end",
-    alignItems: "flex-end",
-    marginTop: 60,
+  container: {
+    flex: 1,
   },
-  total: {
-    fontSize: 25,
-    fontFamily: "KumbhSans_500Medium",
-    color: "#000000",
-  },
-  added: {
-    width: "100%",
-    height: 55,
-    backgroundColor: "#ffffff",
-    color: "#767676",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 10,
-    marginBottom: 15,
-
-    borderWidth: 1, // Add border width
-    borderColor: "#767676", // Add border color
-  },
-  first: {
-    color: "white",
-    fontSize: 16,
-    fontFamily: "KumbhSans_500Medium",
-  },
-  sec: {
-    color: "#767676",
-    fontSize: 16,
-    fontFamily: "KumbhSans_500Medium",
-  },
-  create: {
-    fontFamily: "KumbhSans_500Medium",
-    width: "100%",
-    height: 55,
-    backgroundColor: "#000000",
-    color: "white",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 10,
-    marginBottom: 15,
-    fontSize: 16,
-  },
-  flux: {
-    backgroundColor: "white",
-    marginTop: 50,
-  },
-
-  summary: {
+  title: {
     marginTop: 30,
     fontFamily: "KumbhSans_400Regular",
     fontSize: 20,
-    lineHeight: 19,
-    textAlign: "left",
     color: "#000000",
   },
-  holderr: {
-    marginTop: 50,
-    // backgroundColor: 'green',
-    flexDirection: "row",
-    // justifyContent: 'space-between',
-  },
-  imageHolder: {
-    height: 100, // Adjust card height as needed
-    width: 100, // Set width to 48% to accommodate two cards in a row with some space between them
-    borderRadius: 3.12,
-    overflow: "hidden",
-    // backgroundColor: 'red',
-  },
-  image: {
-    width: "100%",
+  emptyCart: {
     flex: 1,
-  },
-  prices: {
-    marginLeft: 20,
-    width: "40%",
-    flexDirection: "column",
-    justifyContent: "space-between",
-  },
-  namez: {
-    fontFamily: "KumbhSans_500Medium",
-    fontSize: 18,
-    lineHeight: 17.36,
-    textAlign: "left",
-    color: "#2E2E2E",
-  },
-  amont: {
-    fontFamily: "KumbhSans_500Medium",
-    fontSize: 18,
-    lineHeight: 17.36,
-    textAlign: "left",
-    color: "#2E2E2E",
-    marginTop: 10,
-  },
-  qty: {
-    fontFamily: "KumbhSans_500Medium",
-    fontSize: 18,
-    lineHeight: 17.36,
-    textAlign: "left",
-    color: "#2E2E2E",
-    marginTop: 10,
-  },
-  counter: {
-    width: 160,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 14,
-  },
-  incone: {
-    fontFamily: "KumbhSans_500Medium",
-    fontSize: 20,
-  },
-  incbut: {
-    width: 29,
-    height: 26,
-    borderRadius: 5,
-    backgroundColor: "#F5F5F5",
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1, // Add border width
-    borderColor: "#DCDCDC", // Add border color
-  },
-  gaddle: {
-    width: 32,
-    height: 32,
-    borderRadius: 5,
-    backgroundColor: "#D2D2D233",
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1, // Add border width
-    borderColor: "#DCDCDC", // Add border color
-  },
-  mount: {
-    fontFamily: "KumbhSans_500Medium",
-    fontSize: 13,
-    color: "#000000",
-  },
-  delete: {
-    // marginLeft: 80,
-    flex: 1,
-
-    alignItems: "flex-end",
-  },
-  cartt: {
-    height: "100%",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -353,17 +198,125 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  empty: {
+  emptyTitle: {
     marginTop: 20,
     fontFamily: "KumbhSans_500Medium",
     fontSize: 20,
     color: "#000000",
   },
-  once: {
+  emptyDescription: {
     fontFamily: "KumbhSans_400Regular",
     fontSize: 18,
     marginTop: 10,
     width: 250,
     textAlign: "center",
+  },
+  itemContainer: {
+    marginTop: 50,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  imageContainer: {
+    height: 100,
+    width: 100,
+    borderRadius: 3.12,
+    overflow: "hidden",
+  },
+  image: {
+    width: "100%",
+    height: "100%",
+  },
+  itemDetails: {
+    marginLeft: 20,
+    flex: 1,
+  },
+  itemName: {
+    fontFamily: "KumbhSans_500Medium",
+    fontSize: 18,
+    color: "#2E2E2E",
+  },
+  itemPrice: {
+    fontFamily: "KumbhSans_500Medium",
+    fontSize: 18,
+    color: "#2E2E2E",
+    marginTop: 10,
+  },
+  quantity: {
+    fontFamily: "KumbhSans_500Medium",
+    fontSize: 18,
+    color: "#2E2E2E",
+    marginTop: 10,
+  },
+  quantityControls: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 14,
+    gap: 15,
+  },
+  controlButton: {
+    width: 29,
+    height: 26,
+    borderRadius: 5,
+    backgroundColor: "#F5F5F5",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#DCDCDC",
+  },
+  quantityText: {
+    fontFamily: "KumbhSans_500Medium",
+    fontSize: 13,
+    color: "#000000",
+  },
+  deleteButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 5,
+    backgroundColor: "#D2D2D233",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#DCDCDC",
+  },
+  footer: {
+    marginTop: 60,
+  },
+  total: {
+    fontSize: 25,
+    fontFamily: "KumbhSans_500Medium",
+    color: "#000000",
+    textAlign: "right",
+  },
+  buttonContainer: {
+    marginTop: 50,
+    gap: 15,
+  },
+  checkoutButton: {
+    width: "100%",
+    height: 55,
+    backgroundColor: "#000000",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 10,
+  },
+  checkoutButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontFamily: "KumbhSans_500Medium",
+  },
+  clearButton: {
+    width: "100%",
+    height: 55,
+    backgroundColor: "#ffffff",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#767676",
+  },
+  clearButtonText: {
+    color: "#767676",
+    fontSize: 16,
+    fontFamily: "KumbhSans_500Medium",
   },
 });
