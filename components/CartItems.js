@@ -22,6 +22,7 @@ import {
   Ionicons,
 } from "@expo/vector-icons";
 import { CartContext } from "../app/CartContext";
+import a from "../constants/image/oo.png";
 
 const EmptyCart = () => (
   <View style={styles.emptyCart}>
@@ -48,10 +49,23 @@ const CartItem = ({ item, onIncrement, onDecrement, onDelete }) => {
 
   // Ensure item exists and has required properties
   if (!item) return null;
+  // Handle image source properly for both local and remote images
+  const imageSource = () => {
+    if (!item.image) return a; // Default image
+
+    // If the image is already a number (local require), use it directly
+    if (typeof item.image === "number") return item.image;
+
+    // If it's a URI string, return an object with uri property
+    if (typeof item.image === "string") return { uri: item.image };
+
+    // Fallback to default image
+    return a;
+  };
   return (
     <View style={styles.itemContainer}>
       <View style={styles.imageContainer}>
-        <Image style={styles.image} source={item.image} resizeMode="cover" />
+        <Image style={styles.image} source={imageSource()} resizeMode="cover" />
       </View>
       <View style={styles.itemDetails}>
         <View>
