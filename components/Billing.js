@@ -14,6 +14,8 @@ import {
   useFonts,
   LexendDeca_400Regular,
 } from "@expo-google-fonts/lexend-deca";
+import * as Location from 'expo-location';
+
 import {
   KumbhSans_100Thin,
   KumbhSans_200ExtraLight,
@@ -48,6 +50,19 @@ export default function Billing({
 }) {
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
+  const storeAddress = "No 28-30 John Street, Idumota, Lagos, Nigeria";
+const [deliveryFee, setDeliveryFee] = useState(1000);
+useEffect(() => {
+  // Request location permissions on component mount
+  (async () => {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      console.error('Location permission denied');
+      return;
+    }
+  })();
+}, []);
+
   useEffect(() => {
     const testNotification = async () => {
       await Notifications.scheduleNotificationAsync({
@@ -83,6 +98,110 @@ export default function Billing({
   const [newPostal, setNewPostal] = useState("");
   const [newZip, setNewZip] = useState("");
 
+  const calculateDeliveryFee = async (address) => {
+    console.log("Calculating delivery fee for address:", address.add);
+    
+    try {
+      // Get coordinates for store
+      console.log("Geocoding store address:", storeAddress);
+      const storeLocationResult = await Location.geocodeAsync(storeAddress);
+      console.log("Store location result:", storeLocationResult);
+      
+      // Get coordinates for selected address
+      const fullUserAddress = address.add;
+      console.log("Geocoding user address:", fullUserAddress);
+      const userLocationResult = await Location.geocodeAsync(fullUserAddress);
+      console.log("User location result:", userLocationResult);
+      
+      if (storeLocationResult.length > 0 && userLocationResult.length > 0) {
+        const storeLoc = storeLocationResult[0];
+        const userLoc = userLocationResult[0];
+        
+        // Calculate distance
+        const distance = calculateDistance(
+          storeLoc.latitude, 
+          storeLoc.longitude, 
+          userLoc.latitude, 
+          userLoc.longitude
+        );
+        console.log("Calculated distance:", distance, "km");
+        
+        // Check if address is in Lagos Island first
+        if (isInLagosIsland(address.add)) {
+          console.log("Address is in Lagos Island");
+          setDeliveryFee(1000);
+        } else if (distance <= 5) {
+          console.log("Distance <= 5km");
+          setDeliveryFee(1500);
+        } else if (distance <= 10) {
+          console.log("Distance <= 10km");
+          setDeliveryFee(2000);
+        } else if (distance <= 15) {
+          console.log("Distance <= 15km");
+          setDeliveryFee(2500);
+        } else if (distance <= 20) {
+          console.log("Distance <= 20km");
+          setDeliveryFee(3000);
+        } else {
+          console.log("Distance > 20km");
+          setDeliveryFee(3500);
+        }
+      } else {
+        console.warn("Could not geocode addresses properly");
+        // Fall back to keyword checking if geocoding fails
+        if (isInLagosIsland(address.add)) {
+          setDeliveryFee(1000);
+        } else {
+          // For other Lagos areas, default to 2500 if geocoding fails
+          setDeliveryFee(3500);
+        }
+      }
+    } catch (error) {
+      console.error("Error calculating delivery fee:", error);
+      // Fall back to keyword checking if there's an error
+      if (isInLagosIsland(address.add)) {
+        setDeliveryFee(1000);
+      } else {
+        setDeliveryFee(2500); // Default for other areas
+      }
+    }
+  };
+
+
+  useEffect(() => {
+    // Only calculate if an address is selected
+    if (selectedAddress !== null) {
+      calculateDeliveryFee(addressList[selectedAddress]);
+    }
+  }, [selectedAddress]);
+  // Helper function to calculate distance using Haversine formula
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Radius of the Earth in km
+  const dLat = deg2rad(lat2 - lat1);
+  const dLon = deg2rad(lon2 - lon1);
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2); 
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  const distance = R * c; // Distance in km
+  return distance;
+};
+
+const deg2rad = (deg) => {
+  return deg * (Math.PI/180);
+};
+
+// Function to check if an address is in Lagos Island
+const isInLagosIsland = (address) => {
+  const lagosIslandKeywords = [
+    'idumota', 'lagos island', 'marina', 'broad street', 'tinubu', 
+    'obalende','cms',"tbs"
+  ];
+  
+  const addressLower = address.toLowerCase();
+  return lagosIslandKeywords.some(keyword => addressLower.includes(keyword));
+};
   const handleSelectAddress = (index) => {
     setSelectedAddress(index);
   };
@@ -136,10 +255,9 @@ export default function Billing({
   // Debugging: Check if orderedItems is an array
   console.log(Array.isArray(orderedItems)); // Should log true
   console.log(orderedItems); // Check the contents of orderedItems
-  const deliveryFee = 1000;
-  const serviceFee = 500;
-  const calculatedTotalAmount =
-    parseFloat(totalAmount) + deliveryFee + serviceFee;
+
+  const serviceFee = parseFloat(totalAmount) * 0.01; // 1% of subtotal
+  const calculatedTotalAmount = parseFloat(totalAmount) + deliveryFee + serviceFee;
 
   return (
     <View style={styles.mainn}>
@@ -329,7 +447,9 @@ export default function Billing({
             <Text style={styles.shish2}>Service Fee</Text>
           </View>
           <View>
-            <Text style={styles.shish2}>₦{serviceFee}</Text>
+            <Text style={styles.shish2}>₦{serviceFee.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+  })}</Text>
           </View>
         </View>
 

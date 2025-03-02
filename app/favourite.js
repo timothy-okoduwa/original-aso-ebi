@@ -24,8 +24,8 @@ import { useRouter } from "expo-router";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { Skeleton } from "../components/Spinner";
 const BASE_URL = "https://oae-be.onrender.com/api/oae";
-const TOKEN =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IlRpbW15bGVlb2tvZHV3YTdAZ21haWwuY29tIiwiaWQiOiI2NzY1OTY1Yjc5NWE4ZDA1Mjc5ZWYwNjMiLCJpYXQiOjE3MzgyMzA4MzYsImV4cCI6MTc0MDgyMjgzNn0.XL6zUHtFJjLrW4lSH-ivzTIoK7p88WZkJOrOt-862q4";
+// const TOKEN =
+//   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IlRpbW15bGVlb2tvZHV3YTdAZ21haWwuY29tIiwiaWQiOiI2NzY1OTY1Yjc5NWE4ZDA1Mjc5ZWYwNjMiLCJpYXQiOjE3MzgyMzA4MzYsImV4cCI6MTc0MDgyMjgzNn0.XL6zUHtFJjLrW4lSH-ivzTIoK7p88WZkJOrOt-862q4";
 
 export default function Favourite() {
   const router = useRouter();
@@ -34,6 +34,7 @@ export default function Favourite() {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const loadFavoritesAndProducts = async () => {
+      const TOKEN = await AsyncStorage.getItem("token");
       try {
         setLoading(true);
         // Load favorites from AsyncStorage

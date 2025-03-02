@@ -51,13 +51,13 @@ const CartItem = ({ item, onIncrement, onDecrement, onDelete }) => {
   if (!item) return null;
   // Handle image source properly for both local and remote images
   const imageSource = () => {
-    if (!item.image) return a; // Default image
+    if (!item.image[0]) return a; // Default image
 
     // If the image is already a number (local require), use it directly
-    if (typeof item.image === "number") return item.image;
+    if (typeof item.image[0] === "number") return item.image[0];
 
     // If it's a URI string, return an object with uri property
-    if (typeof item.image === "string") return { uri: item.image };
+    if (typeof item.image[0] === "string") return { uri: item.image[0] };
 
     // Fallback to default image
     return a;

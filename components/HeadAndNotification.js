@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import {
   useFonts,
   KumbhSans_100Thin,
@@ -15,7 +15,7 @@ import {
   KumbhSans_800ExtraBold,
   KumbhSans_900Black,
 } from '@expo-google-fonts/kumbh-sans';
-export default function HeadAndNotification() {
+export default function HeadAndNotification({userName}) {
   const router = useRouter();
   const [fontsLoaded, fontError] = useFonts({
     KumbhSans_100Thin,
@@ -40,6 +40,11 @@ export default function HeadAndNotification() {
       <View style={styles.flexes}>
         <View>
           <Text style={styles.oae}>OAE</Text>
+            <Link href="/login">
+                      <View >
+                        <Text> Welcome, {userName ? userName : "Guest"}</Text>
+                      </View>
+                    </Link>
         </View>
         <View>
           {/* <Text>
@@ -68,10 +73,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   oae: {
-    fontFamily: 'KumbhSans_400Regular',
+    fontFamily: 'KumbhSans_600SemiBold',
     fontSize: 20,
     lineHeight: 24,
     textAlign: 'left',
     color: '#000000',
+    marginBottom:10
   },
 });

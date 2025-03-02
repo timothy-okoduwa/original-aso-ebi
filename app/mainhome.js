@@ -116,12 +116,8 @@ export default function mainhome() {
         }
       >
         <View style={styles.main}>
-          <Link href="/login">
-            <View>
-              <Text> Welcome, {userName ? userName : "Guest"}</Text>
-            </View>
-          </Link>
-          <HeadAndNotification />
+        
+          <HeadAndNotification userName={userName} />
           <SearchCompnent setSearchQuery={handleSearch} />
           <Categories
             setActiveCategory={handleCategoryChange}

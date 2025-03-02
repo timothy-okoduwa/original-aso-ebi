@@ -25,8 +25,8 @@ import Categories from "../components/Categories";
 import { Skeleton } from "../components/Spinner";
 
 const BASE_URL = "https://oae-be.onrender.com/api/oae";
-const TOKEN =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IlRpbW15bGVlb2tvZHV3YTdAZ21haWwuY29tIiwiaWQiOiI2NzY1OTY1Yjc5NWE4ZDA1Mjc5ZWYwNjMiLCJpYXQiOjE3MzgyMzA4MzYsImV4cCI6MTc0MDgyMjgzNn0.XL6zUHtFJjLrW4lSH-ivzTIoK7p88WZkJOrOt-862q4";
+// const TOKEN =
+//   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IlRpbW15bGVlb2tvZHV3YTdAZ21haWwuY29tIiwiaWQiOiI2NzY1OTY1Yjc5NWE4ZDA1Mjc5ZWYwNjMiLCJpYXQiOjE3MzgyMzA4MzYsImV4cCI6MTc0MDgyMjgzNn0.XL6zUHtFJjLrW4lSH-ivzTIoK7p88WZkJOrOt-862q4";
 
 export default function StoreResult() {
   const [products, setProducts] = useState([]);
@@ -47,8 +47,9 @@ export default function StoreResult() {
   }, [categoryId]);
 
   const fetchCategoryName = async () => {
+    const TOKEN = await AsyncStorage.getItem("token");
     try {
-      const TOKEN = await AsyncStorage.getItem("token");
+      
       const response = await axios.get(
         `${BASE_URL}/categories/all-categories`,
         {
@@ -66,6 +67,8 @@ export default function StoreResult() {
   };
 
   const fetchProducts = async () => {
+    const TOKEN = await AsyncStorage.getItem("token");
+
     try {
       setLoading(true);
       setError(null);

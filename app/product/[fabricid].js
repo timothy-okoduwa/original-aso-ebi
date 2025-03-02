@@ -15,10 +15,11 @@ import DetailsDescription from "../../components/DetailsDescription";
 import { StatusBar } from "expo-status-bar";
 import BottomNav from "../../components/ButtomNav";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const BASE_URL = "https://oae-be.onrender.com/api/oae";
-const TOKEN =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IlRpbW15bGVlb2tvZHV3YTdAZ21haWwuY29tIiwiaWQiOiI2NzY1OTY1Yjc5NWE4ZDA1Mjc5ZWYwNjMiLCJpYXQiOjE3MzgyMzA4MzYsImV4cCI6MTc0MDgyMjgzNn0.XL6zUHtFJjLrW4lSH-ivzTIoK7p88WZkJOrOt-862q4";
+// const TOKEN =
+//   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IlRpbW15bGVlb2tvZHV3YTdAZ21haWwuY29tIiwiaWQiOiI2NzY1OTY1Yjc5NWE4ZDA1Mjc5ZWYwNjMiLCJpYXQiOjE3MzgyMzA4MzYsImV4cCI6MTc0MDgyMjgzNn0.XL6zUHtFJjLrW4lSH-ivzTIoK7p88WZkJOrOt-862q4";
 
 export default function detailspage() {
   const pathname = usePathname();
@@ -29,6 +30,7 @@ export default function detailspage() {
 
   useEffect(() => {
     const fetchProduct = async () => {
+      const TOKEN = await AsyncStorage.getItem("token");
       try {
         setLoading(true);
         // Fetch all products
