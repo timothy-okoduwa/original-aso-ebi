@@ -2,9 +2,32 @@
 
 import { View, Text, StyleSheet } from "react-native";
 import React from "react";
-import data from "./data";
-export default function Colors({ product }) {
-  if (product) {
+import { Skeleton } from "./Spinner"; // Update this path
+
+export default function Colors({ product, loading = false }) {
+  // Show skeleton while loading
+  if (loading) {
+    return (
+      <View style={styles.main}>
+        {/* Title skeleton */}
+        <Skeleton width={60} height={20} />
+        
+        {/* Color blocks skeleton */}
+        <View style={styles.cold}>
+          {[...Array(4)].map((_, index) => (
+            <Skeleton
+              key={index}
+              width={40}
+              height={40}
+              style={styles.colorBlockSkeleton}
+            />
+          ))}
+        </View>
+      </View>
+    );
+  }
+  
+  if (product && product.colors && product.colors.length > 0) {
     return (
       <View style={styles.main}>
         <Text>Colors</Text>
@@ -19,10 +42,11 @@ export default function Colors({ product }) {
       </View>
     );
   } else {
-    // If fabric is not found, render an appropriate message or fallback component
-    return <Text>Fabric not found</Text>;
+    // If colors are not found, render an appropriate message or fallback component
+    return <Text>Colors not available</Text>;
   }
 }
+
 const styles = StyleSheet.create({
   main: {
     marginTop: 10,
@@ -38,4 +62,8 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     marginRight: 10,
   },
+  colorBlockSkeleton: {
+    borderRadius: 4,
+    marginRight: 10,
+  }
 });

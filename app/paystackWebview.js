@@ -91,7 +91,7 @@ export default function PaystackWebView() {
       <script type="text/javascript">
         function payWithPaystack() {
           var handler = PaystackPop.setup({
-            key: 'pk_test_89aaa353160cbf6c9c97b5efb14e4e0ff3f5f5eb', // Your Paystack Public Key
+            key: 'pk_test_89d99d549ceafb943dcddc0687ea082f0d8599d0', // Your Paystack Public Key
             email: 'timothyokoduwa7@gmail.com', // Replace with dynamic user email
             amount: ${amountInKobo}, // Amount in kobo
             currency: 'NGN',

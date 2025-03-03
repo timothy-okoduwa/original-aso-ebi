@@ -79,7 +79,7 @@ useEffect(() => {
   }, []);
   const [addressList, setAddressList] = useState([
     {
-      add: "No 104 mosafejor Road alaba lagos",
+      add: "No 104 mosafejor Road alaba suru lagos",
       phone: "09045339820",
       postal: "102103",
       zip: "897643",
@@ -102,79 +102,143 @@ useEffect(() => {
     console.log("Calculating delivery fee for address:", address.add);
     
     try {
-      // Get coordinates for store
-      console.log("Geocoding store address:", storeAddress);
-      const storeLocationResult = await Location.geocodeAsync(storeAddress);
-      console.log("Store location result:", storeLocationResult);
+      // First attempt: Try direct geocoding
+      const result = await tryGeocoding(address.add, storeAddress);
       
-      // Get coordinates for selected address
-      const fullUserAddress = address.add;
-      console.log("Geocoding user address:", fullUserAddress);
-      const userLocationResult = await Location.geocodeAsync(fullUserAddress);
-      console.log("User location result:", userLocationResult);
+      if (result.success) {
+        // Use the calculated distance to set delivery fee
+        setDeliveryFeeByDistance(result.distance);
+        return;
+      }
       
-      if (storeLocationResult.length > 0 && userLocationResult.length > 0) {
-        const storeLoc = storeLocationResult[0];
-        const userLoc = userLocationResult[0];
+      // Second attempt: Try with city/state appended if not already present
+      if (!address.add.toLowerCase().includes('lagos')) {
+        const enhancedAddress = `${address.add}, Lagos, Nigeria`;
+        console.log("Trying with enhanced address:", enhancedAddress);
         
-        // Calculate distance
-        const distance = calculateDistance(
-          storeLoc.latitude, 
-          storeLoc.longitude, 
-          userLoc.latitude, 
-          userLoc.longitude
-        );
-        console.log("Calculated distance:", distance, "km");
-        
-        // Check if address is in Lagos Island first
-        if (isInLagosIsland(address.add)) {
-          console.log("Address is in Lagos Island");
-          setDeliveryFee(1000);
-        } else if (distance <= 5) {
-          console.log("Distance <= 5km");
-          setDeliveryFee(1500);
-        } else if (distance <= 10) {
-          console.log("Distance <= 10km");
-          setDeliveryFee(2000);
-        } else if (distance <= 15) {
-          console.log("Distance <= 15km");
-          setDeliveryFee(2500);
-        } else if (distance <= 20) {
-          console.log("Distance <= 20km");
-          setDeliveryFee(3000);
-        } else {
-          console.log("Distance > 20km");
-          setDeliveryFee(3500);
-        }
-      } else {
-        console.warn("Could not geocode addresses properly");
-        // Fall back to keyword checking if geocoding fails
-        if (isInLagosIsland(address.add)) {
-          setDeliveryFee(1000);
-        } else {
-          // For other Lagos areas, default to 2500 if geocoding fails
-          setDeliveryFee(3500);
+        const secondResult = await tryGeocoding(enhancedAddress, storeAddress);
+        if (secondResult.success) {
+          setDeliveryFeeByDistance(secondResult.distance);
+          return;
         }
       }
+      
+      // Third attempt: Fall back to area-based detection
+      console.log("Falling back to area-based detection");
+      setDeliveryFeeByArea(address.add);
+      
     } catch (error) {
       console.error("Error calculating delivery fee:", error);
-      // Fall back to keyword checking if there's an error
-      if (isInLagosIsland(address.add)) {
-        setDeliveryFee(1000);
-      } else {
-        setDeliveryFee(2500); // Default for other areas
-      }
+      // Final fallback
+      setDeliveryFeeByArea(address.add);
     }
   };
-
-
-  useEffect(() => {
-    // Only calculate if an address is selected
-    if (selectedAddress !== null) {
-      calculateDeliveryFee(addressList[selectedAddress]);
+// Helper function to attempt geocoding and distance calculation
+const tryGeocoding = async (userAddress, storeAddr) => {
+  try {
+    // Get coordinates for store
+    const storeLocationResult = await Location.geocodeAsync(storeAddr);
+    
+    // Get coordinates for selected address
+    const userLocationResult = await Location.geocodeAsync(userAddress);
+    
+    if (storeLocationResult.length > 0 && userLocationResult.length > 0) {
+      const storeLoc = storeLocationResult[0];
+      const userLoc = userLocationResult[0];
+      
+      // Calculate distance
+      const distance = calculateDistance(
+        storeLoc.latitude, 
+        storeLoc.longitude, 
+        userLoc.latitude, 
+        userLoc.longitude
+      );
+      console.log("Calculated distance:", distance, "km");
+      
+      return { success: true, distance };
     }
-  }, [selectedAddress]);
-  // Helper function to calculate distance using Haversine formula
+    return { success: false };
+  } catch (error) {
+    console.error("Geocoding failed:", error);
+    return { success: false, error };
+  }
+};
+const setDeliveryFeeByDistance = (distance) => {
+  if (distance <= 5) {
+    console.log("Distance <= 5km");
+    setDeliveryFee(1500);
+  } else if (distance <= 10) {
+    console.log("Distance <= 10km");
+    setDeliveryFee(2000);
+  } else if (distance <= 15) {
+    console.log("Distance <= 15km");
+    setDeliveryFee(2500);
+  } else if (distance <= 20) {
+    console.log("Distance <= 20km");
+    setDeliveryFee(3000);
+  } else {
+    console.log("Distance > 20km");
+    setDeliveryFee(3500);
+  }
+};
+// Enhanced area detection using more keywords and regions
+const setDeliveryFeeByArea = (address) => {
+  const addressLower = address.toLowerCase();
+  
+  // Lagos Island detection (expanded)
+  if (isInLagosIsland(addressLower)) {
+    console.log("Address identified as Lagos Island");
+    setDeliveryFee(1000);
+    return;
+  }
+  
+  // Other specific areas with known rates
+  const areaRates = [
+    { keywords: ['victoria island', 'vi', 'oniru', 'lekki phase 1'], fee: 1500 },
+    { keywords: ['lekki', 'chevron', 'ajah', 'ikate', 'osapa london'], fee: 2000 },
+    { keywords: ['ikoyi', 'obalende'], fee: 1500 },
+    { keywords: ['surulere', 'yaba', 'ebute metta', 'oyingbo'], fee: 2000 },
+    { keywords: ['ikeja', 'maryland', 'ojota', 'magodo', 'gbagada', 'anthony'], fee: 2500 },
+    { keywords: ['festac', 'satellite', 'ojo', 'alaba'], fee: 3000 },
+    { keywords: ['ikorodu', 'epe', 'badagry'], fee: 3500 }
+  ];
+  
+  // Check each area
+  for (const area of areaRates) {
+    if (area.keywords.some(keyword => addressLower.includes(keyword))) {
+      console.log(`Address identified as ${area.keywords[0]}`);
+      setDeliveryFee(area.fee);
+      return;
+    }
+  }
+  
+  // Default rate if no area identified
+  console.log("Could not identify specific area, using default rate");
+  setDeliveryFee(3000);
+};
+
+// Enhanced isInLagosIsland function with more keywords
+const isInLagosIsland = (address) => {
+  const lagosIslandKeywords = [
+    'idumota', 'lagos island', 'marina', 'broad street', 'tinubu', 
+    'obalende', 'cms', 'tbs', 'nnamdi azikiwe', 'adeniji adele',
+    'dolphin estate', 'eko bridge', 'carter bridge', 'apongbon',
+    'ita faji', 'oke arin', 'balogun', 'docemo', 'oluwole', 'martins'
+  ];
+  
+  return lagosIslandKeywords.some(keyword => address.includes(keyword));
+};
+
+// Enhanced calculateDistance with better precision
+const deg2rad = (deg) => {
+  return deg * (Math.PI/180);
+};
+const validateAddress = (address) => {
+  if (!address || address.trim().length < 10) {
+    return "Please enter a more detailed address";
+  }
+  return null; // No error
+};
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371; // Radius of the Earth in km
   const dLat = deg2rad(lat2 - lat1);
@@ -185,23 +249,21 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
     Math.sin(dLon/2) * Math.sin(dLon/2); 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
   const distance = R * c; // Distance in km
-  return distance;
+  return Math.round(distance * 100) / 100; // Round to 2 decimal places
 };
 
-const deg2rad = (deg) => {
-  return deg * (Math.PI/180);
-};
+  useEffect(() => {
+    // Only calculate if an address is selected
+    if (selectedAddress !== null) {
+      calculateDeliveryFee(addressList[selectedAddress]);
+    }
+  }, [selectedAddress]);
+  // Helper function to calculate distance using Haversine formula
+
+
 
 // Function to check if an address is in Lagos Island
-const isInLagosIsland = (address) => {
-  const lagosIslandKeywords = [
-    'idumota', 'lagos island', 'marina', 'broad street', 'tinubu', 
-    'obalende','cms',"tbs"
-  ];
-  
-  const addressLower = address.toLowerCase();
-  return lagosIslandKeywords.some(keyword => addressLower.includes(keyword));
-};
+
   const handleSelectAddress = (index) => {
     setSelectedAddress(index);
   };
@@ -211,6 +273,12 @@ const isInLagosIsland = (address) => {
   };
 
   const handleSubmitNewAddress = () => {
+    const addressError = validateAddress(newAddress);
+    if (addressError) {
+      alert(addressError);
+      return;
+    }
+    
     const newEntry = {
       add: newAddress,
       phone: newPhone,

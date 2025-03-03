@@ -9,8 +9,9 @@ import {
 } from "@expo-google-fonts/kumbh-sans";
 import { Octicons, Entypo } from "@expo/vector-icons";
 import { CartContext } from "../app/CartContext";
+import { Skeleton } from "./Spinner"; // Update this path
 
-export default function DetailsDescription({ product }) {
+export default function DetailsDescription({ product, loading = false }) {
   const [quantity, setQuantity] = useState(5);
   const [added, setAdded] = useState(false);
   const [fontsLoaded, fontError] = useFonts({
@@ -65,6 +66,41 @@ export default function DetailsDescription({ product }) {
 
   if (fontError || !fontsLoaded) {
     return null;
+  }
+
+  // Show skeleton while loading
+  if (loading) {
+    return (
+      <View style={styles.main}>
+        {/* Product name skeleton */}
+        <Skeleton width="70%" height={27} style={{ marginTop: 6 }} />
+        
+        {/* Description skeleton */}
+        <View style={{ marginTop: 13 }}>
+          <Skeleton width="100%" height={18} style={{ marginBottom: 10 }} />
+          <Skeleton width="90%" height={18} style={{ marginBottom: 10 }} />
+          <Skeleton width="80%" height={18} />
+        </View>
+        
+        {/* Price skeleton */}
+        <Skeleton width="40%" height={27} style={{ marginTop: 20 }} />
+        
+        {/* Note box skeleton */}
+        <Skeleton width="100%" height={56} style={{ marginTop: 30, borderRadius: 10 }} />
+        
+        {/* Quantity selector skeleton */}
+        <View style={styles.incc}>
+          <Skeleton width={45} height={40} style={{ borderRadius: 5 }} />
+          <Skeleton width={80} height={20} />
+          <Skeleton width={45} height={40} style={{ borderRadius: 5 }} />
+        </View>
+        
+        {/* Add to cart button skeleton */}
+        <View style={styles.addtoc}>
+          <Skeleton width="100%" height={55} style={{ borderRadius: 10 }} />
+        </View>
+      </View>
+    );
   }
 
   if (!product) {

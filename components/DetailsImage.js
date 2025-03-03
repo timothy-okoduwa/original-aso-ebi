@@ -1,12 +1,14 @@
 /** @format */
 
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import Swiper from "react-native-swiper";
+ // Update this path
+ import {Skeleton} from "./Spinner"
 
-export default function DetailsImage({ product }) {
+export default function DetailsImage({ product, loading = false }) {
   const router = useRouter();
 
   const goBackHome = () => {
@@ -23,6 +25,44 @@ export default function DetailsImage({ product }) {
       },
     });
   };
+
+  // Show skeleton while loading
+  if (loading) {
+    return (
+      <View style={styles.main}>
+        <View style={styles.abs}>
+          <TouchableOpacity style={styles.backButton} onPress={goBackHome}>
+            <MaterialIcons
+              name="keyboard-arrow-left"
+              size={37}
+              color="#0F172A"
+            />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.skeletonContainer}>
+          {/* Main image skeleton */}
+          <Skeleton 
+            width="100%" 
+            height={400} 
+            style={styles.imageSkeleton} 
+          />
+          
+          {/* Dots skeleton */}
+          <View style={styles.dotContainer}>
+            {[...Array(3)].map((_, index) => (
+              <View key={index} style={styles.dotSkeleton}>
+                <Skeleton 
+                  width={10} 
+                  height={10} 
+                  style={styles.dot} 
+                />
+              </View>
+            ))}
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   // Check if product and images exist
   if (!product || !product.image || !product.image.length) {
@@ -137,4 +177,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#f5f5f5",
   },
+  skeletonContainer: {
+    height: 440,
+    width: "100%",
+    backgroundColor: "#f5f5f5",
+    borderBottomRightRadius: 20,
+    borderBottomLeftRadius: 20,
+  },
+  imageSkeleton: {
+    borderRadius: 0,
+    borderBottomRightRadius: 20,
+    borderBottomLeftRadius: 20,
+  },
+  dotContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    position: "absolute",
+    bottom: 40,
+    width: "100%",
+  },
+  dotSkeleton: {
+    marginLeft: 3,
+    marginRight: 3,
+  }
 });

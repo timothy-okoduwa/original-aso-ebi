@@ -5,7 +5,6 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  ActivityIndicator,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import DetailsImage from "../../components/DetailsImage";
@@ -18,8 +17,6 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const BASE_URL = "https://oae-be.onrender.com/api/oae";
-// const TOKEN =
-//   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IlRpbW15bGVlb2tvZHV3YTdAZ21haWwuY29tIiwiaWQiOiI2NzY1OTY1Yjc5NWE4ZDA1Mjc5ZWYwNjMiLCJpYXQiOjE3MzgyMzA4MzYsImV4cCI6MTc0MDgyMjgzNn0.XL6zUHtFJjLrW4lSH-ivzTIoK7p88WZkJOrOt-862q4";
 
 export default function detailspage() {
   const pathname = usePathname();
@@ -63,13 +60,25 @@ export default function detailspage() {
       fetchProduct();
     }
   }, [productId]);
-  console.log(product);
-  console.log(productId);
-  console.log(pathname);
+
+  // Show skeleton loading UI while data is loading
   if (loading) {
     return (
-      <View style={[styles.container, styles.centerContent]}>
-        <ActivityIndicator />
+      <View style={styles.container}>
+        <ScrollView
+          contentContainerStyle={styles.scrollViewContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View>
+            <DetailsImage loading={true} />
+            <View style={styles.main}>
+              <Colors loading={true} />
+              <DetailsDescription loading={true} />
+            </View>
+          </View>
+        </ScrollView>
+        <BottomNav />
+        <StatusBar style="dark" />
       </View>
     );
   }
