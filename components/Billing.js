@@ -194,13 +194,13 @@ const setDeliveryFeeByArea = (address) => {
   
   // Other specific areas with known rates
   const areaRates = [
-    { keywords: ['victoria island', 'vi', 'oniru', 'lekki phase 1'], fee: 1500 },
-    { keywords: ['lekki', 'chevron', 'ajah', 'ikate', 'osapa london'], fee: 2000 },
+    { keywords: ['victoria island', 'vi', 'oniru', 'lekki phase 1', 'maruwa'], fee: 1500 },
+    { keywords: ['lekki', 'chevron', 'ajah', 'ikate', 'osapa london', 'ologorlor'], fee: 2500 },
     { keywords: ['ikoyi', 'obalende'], fee: 1500 },
-    { keywords: ['surulere', 'yaba', 'ebute metta', 'oyingbo'], fee: 2000 },
-    { keywords: ['ikeja', 'maryland', 'ojota', 'magodo', 'gbagada', 'anthony'], fee: 2500 },
+    { keywords: ['surulere', 'yaba', "Abule ijesha", 'ebute metta', 'oyingbo', 'coker', 'aguda', 'orile', 'alaba suru', 'mosafejor', 'ajegunle', 'ojo road', 'mile 2', 'boundry', 'ijora', 'ijora badia', 'apapa'], fee: 2000 },
+    { keywords: ['ikeja', 'maryland', 'ojota', 'magodo', 'gbagada', 'anthony','mile 12'], fee: 2500 },
     { keywords: ['festac', 'satellite', 'ojo', 'alaba'], fee: 3000 },
-    { keywords: ['ikorodu', 'epe', 'badagry'], fee: 3500 }
+    { keywords: ['ikorodu', 'epe', 'badagry', 'agbara', 'yanaba'], fee: 3500 }
   ];
   
   // Check each area
