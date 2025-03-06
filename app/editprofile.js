@@ -1,5 +1,3 @@
-/** @format */
-
 import {
   View,
   Text,
@@ -7,11 +5,14 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useRouter } from "expo-router";
 import { AntDesign } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import {
   useFonts,
@@ -41,9 +42,126 @@ import {
 
 export default function editprofile() {
   const router = useRouter();
+  const [name, setName] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const [token, setToken] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  // Get user ID and token from AsyncStorage and fetch user data on component mount
+  useEffect(() => {
+    const getUserDataAndFetch = async () => {
+      try {
+        const id = await AsyncStorage.getItem("userId");
+        const userToken = await AsyncStorage.getItem("token");
+        
+        setUserId(id);
+        setToken(userToken);
+        
+        if (id && userToken) {
+          await fetchUserData(id, userToken);
+        } else {
+          setErrorMessage("User credentials not found. Please log in again.");
+        }
+      } catch (error) {
+        console.error("Error getting user credentials:", error);
+        setErrorMessage("Could not retrieve user information");
+      }
+    };
+    
+    getUserDataAndFetch();
+  }, []);
+  
+  // Function to fetch current user data
+  const fetchUserData = async (id, userToken) => {
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch(
+        `https://oae-be.onrender.com/api/oae/auth/${id}/user`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${userToken}`,
+          },
+        }
+      );
+
+      const responseData = await response.json();
+      console.log("API Response:", responseData); // Log the entire response for debugging
+
+      if (response.ok) {
+        // Check if responseData and responseData.data exist
+        if (responseData && responseData.data) {
+          const fetchedName = responseData.data.name || "";
+          setName(fetchedName); // Update state with user name
+        } else {
+          console.error("Error: User data is missing in the response.");
+          setErrorMessage("Could not retrieve user data");
+        }
+      } else {
+        console.error(
+          "Error fetching user data:",
+          responseData.message || "Failed to fetch user"
+        );
+        setErrorMessage(responseData.message || "Failed to fetch user data");
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      setErrorMessage("Network error. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Function to update user profile
+  const updateProfile = async () => {
+    if (!name.trim()) {
+      setErrorMessage("Please enter your name");
+      return;
+    }
+    
+    if (!userId || !token) {
+      setErrorMessage("User credentials not found. Please log in again.");
+      return;
+    }
+    
+    setIsLoading(true);
+    setErrorMessage("");
+    
+    try {
+      const response = await fetch(`https://oae-be.onrender.com/api/oae/auth/${userId}/update`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: name
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to update profile");
+      }
+      
+      Alert.alert("Success", "Profile updated successfully!");
+      router.back();
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      setErrorMessage(error.message || "Failed to update profile. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const back = () => {
     router.back();
   };
+  
   const [fontsLoaded, fontError] = useFonts({
     LexendDeca_400Regular,
     KumbhSans_100Thin,
@@ -68,6 +186,7 @@ export default function editprofile() {
   if (!fontsLoaded || fontError) {
     return null;
   }
+  
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
       <StatusBar style="dark" />
@@ -87,20 +206,32 @@ export default function editprofile() {
 
           <View style={styles.inputs}>
             <View style={{ marginTop: 20 }}>
-              <Text style={styles.labell}>full name</Text>
+              <Text style={styles.labell}>name</Text>
               <View style={{ marginTop: 16 }}>
                 <TextInput
                   style={styles.inputt}
-                  placeholder="Timothy okoduwa"
-                  keyboardType="email-address" // Change this to 'password' or 'default' for different types
-                  placeholderTextColor="#999" // Change placeholder text color here
+                  placeholder="Enter your name"
+                  value={name}
+                  onChangeText={setName}
+                  placeholderTextColor="#999"
                 />
               </View>
+              {errorMessage ? (
+                <Text style={styles.error}>{errorMessage}</Text>
+              ) : null}
             </View>
 
             <View style={{ marginBottom: 30, marginTop: 40 }}>
-              <TouchableOpacity style={styles.create}>
-                <Text style={{ color: "white" }}>Done</Text>
+              <TouchableOpacity 
+                style={[styles.create, isLoading && styles.disabledButton]} 
+                onPress={updateProfile}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <Text style={{ color: "white" }}>Done</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>
@@ -120,7 +251,7 @@ const styles = StyleSheet.create({
   flex: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: "80",
+    marginTop: 80,
   },
   testx: {
     marginLeft: 10,
@@ -135,7 +266,6 @@ const styles = StyleSheet.create({
   enadp: {
     fontFamily: "Lora_500Medium",
     fontSize: 20,
-
     lineHeight: 24,
     textAlign: "left",
     color: "#1D1D1D",
@@ -143,7 +273,6 @@ const styles = StyleSheet.create({
   greetings: {
     fontFamily: "KumbhSans_400Regular",
     fontSize: 18,
-
     lineHeight: 24,
     textAlign: "left",
     color: "#6B6B6B",
@@ -152,10 +281,8 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   labell: {
-    // marginBottom: ,
     fontFamily: "LexendDeca_400Regular",
     fontSize: 16,
-
     lineHeight: 20,
     textAlign: "left",
     color: "#6B6B6B",
@@ -173,25 +300,20 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    // backgroundColor: 'red',
     width: "100%",
     backgroundColor: "#ffffff",
     borderColor: "gray",
     borderWidth: 1,
     height: 50,
     borderRadius: 8,
-
     paddingRight: 20,
   },
   inputContainer: {
-    flex: 1, // Make the container flex to fill the available space
+    flex: 1,
   },
   inpu2: {
-    borderColor: "transparent", // Set border color to transparent
-    borderWidth: 0, // Set border width to 0
-    outlineColor: "transparent", // Set outline color to transparent
-    outlineWidth: 0, // Set outline width to 0
-
+    borderColor: "transparent",
+    borderWidth: 0,
     height: 50,
     width: "auto",
     paddingLeft: 20,
@@ -210,21 +332,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   checked: {
-    backgroundColor: "blue", // Adjust color as needed
+    backgroundColor: "blue",
   },
   label: {
     marginLeft: 15,
     width: "80%",
     fontFamily: "KumbhSans_400Regular",
     fontSize: 14,
-
     lineHeight: 18,
     textAlign: "left",
     color: "#1D1D1D",
   },
   others: {
     fontFamily: "KumbhSans_500Medium",
-
     color: "#007F5F",
   },
   create: {
@@ -239,12 +359,13 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     fontSize: 16,
   },
-
+  disabledButton: {
+    backgroundColor: "#666666",
+  },
   error: {
     color: "red",
     fontFamily: "KumbhSans_400Regular",
     fontSize: 14,
-
     marginTop: 9,
   },
   forget: {
@@ -254,13 +375,13 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     width: "100%",
     marginTop: 17,
-    marginBottom: "80px",
+    marginBottom: 80,
   },
   clckforget: {
     fontFamily: "KumbhSans_500Medium",
     fontSize: 16,
-
     lineHeight: 18,
+    textAlign: "left",
     color: "#1D1D1D",
   },
 });

@@ -1,5 +1,3 @@
-/** @format */
-
 import {
   View,
   Text,
@@ -7,13 +5,15 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import { Link, useRouter } from "expo-router";
 import { AntDesign } from "@expo/vector-icons";
-// import { Feather } from '@expo/vector-icons';
-// import { Feather } from '@expo/vector-icons';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import {
   useFonts,
   LexendDeca_400Regular,
@@ -42,34 +42,18 @@ import {
 
 export default function forgetpassword() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
   const back = () => {
     router.back();
   };
-  // State variables to store input values and corresponding error messages
 
-  const [email, setEmail] = useState("");
-  const [emailError, setEmailError] = useState("");
-  // Validation functions
-  // const gotoresetlink = () => {
-  //   router.push('/resetlinksent');
-  // };
-
+  // Validate email format
   const validateEmail = () => {
     if (email.trim() === "") {
       setEmailError("Email is required");
-      return false;
-    }
-
-    const hasAtSymbol = email.includes("@");
-    const hasDotCom = email.endsWith(".com");
-
-    if (!hasAtSymbol) {
-      setEmailError('Email is missing "@" symbol');
-      return false;
-    }
-
-    if (!hasDotCom) {
-      setEmailError('Email is missing ".com"');
       return false;
     }
 
@@ -84,14 +68,54 @@ export default function forgetpassword() {
   };
 
   // Handle submit button press
-  const handleCreateAccount = () => {
+  const handleForgetPassword = async () => {
+    // First validate the email
     const isEmailValid = validateEmail();
+    
+    if (!isEmailValid) return;
+    
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch(
+        "https://oae-be.onrender.com/api/oae/auth/forget-password",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        }
+      );
 
-    // If all fields are valid, submit the form
-    if (isEmailValid) {
-      // Submit the form or navigate to the next screen
-      console.log("Form submitted successfully");
-      router.push("/resetlinksent");
+      const responseData = await response.json();
+      
+      if (response.ok) {
+        console.log("Password reset OTP sent successfully");
+        
+        // Store the email to be used in the next screens
+        await AsyncStorage.setItem("resetEmail", email);
+        
+        // Navigate to OTP verification screen
+        router.push("/resetlinksent");
+      } else {
+        console.error(
+          "Error sending reset OTP:",
+          responseData.message || "Failed to send reset OTP"
+        );
+        Alert.alert(
+          "Error", 
+          responseData.message || "Failed to send reset OTP. Please try again."
+        );
+      }
+    } catch (error) {
+      console.error("Network error:", error);
+      Alert.alert(
+        "Network Error", 
+        "Unable to connect to the server. Please check your internet connection and try again."
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -119,6 +143,7 @@ export default function forgetpassword() {
   if (!fontsLoaded || fontError) {
     return null;
   }
+  
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
       <StatusBar style="dark" />
@@ -137,7 +162,7 @@ export default function forgetpassword() {
           </View>
           <View style={{ marginTop: 20 }}>
             <Text style={styles.greetings}>
-              Enter your email address to receive instructions for resetting
+              Enter your email address to receive a verification code for resetting
               your password.
             </Text>
           </View>
@@ -150,21 +175,27 @@ export default function forgetpassword() {
                   value={email}
                   onChangeText={(text) => setEmail(text)}
                   placeholder="youremail@here.com"
-                  keyboardType="email-address" // Change this to 'password' or 'default' for different types
-                  placeholderTextColor="#999" // Change placeholder text color here
+                  keyboardType="email-address"
+                  placeholderTextColor="#999"
+                  autoCapitalize="none"
                 />
               </View>
-              <View style={{ marginTop: "10", marginBottom: "10" }}>
+              <View style={{ marginTop: 10, marginBottom: 10 }}>
                 <Text style={styles.error}>{emailError}</Text>
               </View>
             </View>
 
-            <View style={{ marginBottom: 30 }}>
+            <View style={{ marginBottom: 30, marginTop: 20 }}>
               <TouchableOpacity
-                style={styles.create}
-                onPress={handleCreateAccount}
+                style={[styles.create, isLoading && styles.disabledButton]}
+                onPress={handleForgetPassword}
+                disabled={isLoading}
               >
-                <Text style={{ color: "white" }}>Done</Text>
+                {isLoading ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <Text style={{ color: "white", fontFamily: "LexendDeca_400Regular" }}>Send Reset Code</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>
@@ -184,7 +215,7 @@ const styles = StyleSheet.create({
   flex: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: "80",
+    marginTop: 80, // Fixed from string to number
   },
   testx: {
     marginLeft: 10,
@@ -199,7 +230,6 @@ const styles = StyleSheet.create({
   enadp: {
     fontFamily: "Lora_500Medium",
     fontSize: 20,
-
     lineHeight: 24,
     textAlign: "left",
     color: "#1D1D1D",
@@ -207,7 +237,6 @@ const styles = StyleSheet.create({
   greetings: {
     fontFamily: "KumbhSans_400Regular",
     fontSize: 18,
-
     lineHeight: 24,
     textAlign: "left",
     color: "#6B6B6B",
@@ -216,10 +245,8 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   labell: {
-    // marginBottom: ,
     fontFamily: "LexendDeca_400Regular",
     fontSize: 16,
-
     lineHeight: 20,
     textAlign: "left",
     color: "#6B6B6B",
@@ -233,64 +260,6 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     paddingRight: 20,
   },
-  scares: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    // backgroundColor: 'red',
-    width: "100%",
-    backgroundColor: "#ffffff",
-    borderColor: "gray",
-    borderWidth: 1,
-    height: 50,
-    borderRadius: 8,
-
-    paddingRight: 20,
-  },
-  inputContainer: {
-    flex: 1, // Make the container flex to fill the available space
-  },
-  inpu2: {
-    borderColor: "transparent", // Set border color to transparent
-    borderWidth: 0, // Set border width to 0
-    outlineColor: "transparent", // Set outline color to transparent
-    outlineWidth: 0, // Set outline width to 0
-
-    height: 50,
-    width: "auto",
-    paddingLeft: 20,
-  },
-  checkboxContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: "#999",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  checked: {
-    backgroundColor: "blue", // Adjust color as needed
-  },
-  label: {
-    marginLeft: 15,
-    width: "80%",
-    fontFamily: "KumbhSans_400Regular",
-    fontSize: 14,
-
-    lineHeight: 18,
-    textAlign: "left",
-    color: "#1D1D1D",
-  },
-  others: {
-    fontFamily: "KumbhSans_500Medium",
-
-    color: "#007F5F",
-  },
   create: {
     fontFamily: "LexendDeca_400Regular",
     width: "100%",
@@ -303,27 +272,13 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     fontSize: 16,
   },
+  disabledButton: {
+    backgroundColor: "#666666",
+  },
   error: {
     color: "red",
     fontFamily: "KumbhSans_400Regular",
     fontSize: 14,
-
     marginTop: 9,
-  },
-  forget: {
-    flex: 1,
-    flexDirection: "column",
-    alignItems: "flex-end",
-    justifyContent: "flex-end",
-    width: "100%",
-    marginTop: 17,
-    marginBottom: "80px",
-  },
-  clckforget: {
-    fontFamily: "KumbhSans_500Medium",
-    fontSize: 16,
-
-    lineHeight: 18,
-    color: "#1D1D1D",
   },
 });
