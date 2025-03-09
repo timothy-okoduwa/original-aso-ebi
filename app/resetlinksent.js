@@ -1,5 +1,3 @@
-/** @format */
-
 import {
   View,
   Text,
@@ -7,15 +5,15 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
-import React from "react";
-import { Link, useRouter } from "expo-router";
+import React, { useState, useEffect } from "react";
+import { Link, useRouter, useLocalSearchParams } from "expo-router";
 import { Image } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import a from "../constants/image/check.png";
 import { StatusBar } from "expo-status-bar";
-// import { Feather } from '@expo/vector-icons';
-// import { Feather } from '@expo/vector-icons';
 import {
   useFonts,
   LexendDeca_400Regular,
@@ -41,11 +39,128 @@ import {
   Lora_600SemiBold_Italic,
   Lora_700Bold_Italic,
 } from "@expo-google-fonts/lora";
-export default function resetlinksent() {
+
+export default function ResetLinkSent() {
   const router = useRouter();
-  const gotoreresetpassword = () => {
-    router.push("/resetpassword");
+  const params = useLocalSearchParams();
+  const email = params.email || "";
+  
+  // Initialize otp as a number (null instead of empty string)
+  const [otp, setOtp] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  
+  // Resend timer state
+  const [countdown, setCountdown] = useState(0);
+  const [resendLoading, setResendLoading] = useState(false);
+
+  // Set up countdown timer
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
+
+  const verifyOtp = async () => {
+    // Check if otp is a valid 4-digit number
+    if (!otp || otp < 1000 || otp > 9999) {
+      setError("Please enter a valid 4-digit OTP");
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(
+        "https://oae-be.onrender.com/api/oae/auth/confirm-otp",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            otp, // This will now be a number
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // OTP verified successfully
+        Alert.alert("Success", "OTP verified successfully");
+        router.push({
+          pathname: "/resetpassword",
+          params: { email, token: data.token || "" },
+        });
+      } else {
+        // OTP verification failed
+        setError(data.message || "Failed to verify OTP. Please try again.");
+      }
+    } catch (err) {
+      setError("An error occurred. Please check your connection and try again.");
+      console.error("OTP verification error:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  // Handle OTP input change - convert string to number
+  const handleOtpChange = (text) => {
+    // If input is empty, set to null
+    if (text === '') {
+      setOtp(null);
+      return;
+    }
+    
+    // Remove any non-numeric characters
+    const numericValue = text.replace(/[^0-9]/g, '');
+    
+    // Convert to number and update state
+    if (numericValue) {
+      setOtp(parseInt(numericValue, 10));
+    }
+  };
+
+  // Resend OTP function
+  const resendOtp = async () => {
+    if (countdown > 0 || !email) return;
+    
+    setResendLoading(true);
+    setError("");
+    
+    try {
+      const response = await fetch(
+        "https://oae-be.onrender.com/api/oae/auth/forget-password",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        }
+      );
+
+      const responseData = await response.json();
+      
+      if (response.ok) {
+        Alert.alert("Success", "OTP has been resent to your email");
+        // Start countdown timer
+        setCountdown(30);
+      } else {
+        setError(responseData.message || "Failed to resend OTP. Please try again.");
+      }
+    } catch (error) {
+      setError("Network error. Please check your connection and try again.");
+      console.error("Resend OTP error:", error);
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
   const [fontsLoaded, fontError] = useFonts({
     LexendDeca_400Regular,
     KumbhSans_100Thin,
@@ -70,6 +185,7 @@ export default function resetlinksent() {
   if (!fontsLoaded || fontError) {
     return null;
   }
+
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
       <StatusBar style="dark" />
@@ -80,33 +196,66 @@ export default function resetlinksent() {
               <Image style={styles.image} source={a} resizeMode="cover" />
             </View>
           </View>
-          <View style={{ marginTop: "20px" }}>
+          <View style={{ marginTop: 20 }}>
             <Text style={styles.reserr}>Reset Code Sent</Text>
             <Text style={styles.password}>
-              A password reset code has been sent to your email. Check your
+              A password reset code has been sent to {email ? email : "your email"}. Check your
               mailbox and type it here.
             </Text>
           </View>
           <View style={{ marginTop: 30 }}>
-            <Text style={styles.labell}>Last name</Text>
+            <Text style={styles.labell}>Enter OTP Code</Text>
             <View style={{ marginTop: 16 }}>
               <TextInput
                 style={styles.inputt}
-                placeholder="987647"
-                keyboardType="phone-pad"
-                maxLength={6} // Change this to 'password' or 'default' for different types
-                placeholderTextColor="#999" // Change placeholder text color here
+                placeholder="Enter 4-digit code"
+                keyboardType="number-pad"
+                maxLength={4}
+                value={otp !== null ? otp.toString() : ''}
+                onChangeText={handleOtpChange}
+                placeholderTextColor="#999"
               />
             </View>
+            {error ? <Text style={styles.error}>{error}</Text> : null}
           </View>
-          <View style={{ marginTop: 50, marginBottom: "30px" }}>
+          <View style={{ marginTop: 50, marginBottom: 30 }}>
             <TouchableOpacity
-              style={styles.create}
-              onPress={gotoreresetpassword}
+              style={[styles.create, isLoading && styles.createDisabled]}
+              onPress={verifyOtp}
+              disabled={isLoading}
             >
-              <Text style={{ color: "white" }}>Done</Text>
+              {isLoading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text style={{ color: "white", fontFamily: "LexendDeca_400Regular" }}>
+                  Verify OTP
+                </Text>
+              )}
             </TouchableOpacity>
           </View>
+          <TouchableOpacity
+            style={styles.resendContainer}
+            onPress={resendOtp}
+            disabled={countdown > 0 || resendLoading}
+          >
+            {resendLoading ? (
+              <ActivityIndicator size="small" color="#007F5F" />
+            ) : (
+              <Text style={styles.resendText}>
+                Didn't receive the code?{" "}
+                <Text 
+                  style={[
+                    styles.resendLink, 
+                    countdown > 0 && styles.resendLinkDisabled
+                  ]}
+                >
+                  {countdown > 0 
+                    ? `Resend in ${countdown}s` 
+                    : "Resend"}
+                </Text>
+              </Text>
+            )}
+          </TouchableOpacity>
         </View>
       </View>
     </ScrollView>
@@ -123,7 +272,7 @@ const styles = StyleSheet.create({
   flex: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: "30px",
+    marginTop: 30,
   },
   testx: {
     marginLeft: 10,
@@ -131,16 +280,14 @@ const styles = StyleSheet.create({
   reegister: {
     fontFamily: "KumbhSans_500Medium",
     fontSize: 20,
-
     lineHeight: 24,
   },
   createups: {
     marginTop: 50,
   },
   enadp: {
-    fontFamily: "ora_500Medium",
+    fontFamily: "Lora_500Medium",
     fontSize: 20,
-
     lineHeight: 24,
     textAlign: "left",
     color: "#1D1D1D",
@@ -148,7 +295,6 @@ const styles = StyleSheet.create({
   greetings: {
     fontFamily: "KumbhSans_400Regular",
     fontSize: 18,
-
     lineHeight: 24,
     textAlign: "left",
     color: "#6B6B6B",
@@ -161,10 +307,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   labell: {
-    // marginBottom: ,
     fontFamily: "LexendDeca_400Regular",
     fontSize: 16,
-
     lineHeight: 20,
     textAlign: "left",
     color: "#6B6B6B",
@@ -178,64 +322,6 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     paddingRight: 20,
   },
-  scares: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    // backgroundColor: 'red',
-    width: "100%",
-    backgroundColor: "#ffffff",
-    borderColor: "gray",
-    borderWidth: 1,
-    height: 50,
-    borderRadius: 8,
-
-    paddingRight: 20,
-  },
-  inputContainer: {
-    flex: 1, // Make the container flex to fill the available space
-  },
-  inpu2: {
-    borderColor: "transparent", // Set border color to transparent
-    borderWidth: 0, // Set border width to 0
-    outlineColor: "transparent", // Set outline color to transparent
-    outlineWidth: 0, // Set outline width to 0
-
-    height: 50,
-    width: "auto",
-    paddingLeft: 20,
-  },
-  checkboxContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: "#999",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  checked: {
-    backgroundColor: "blue", // Adjust color as needed
-  },
-  label: {
-    marginLeft: 15,
-    width: "80%",
-    fontFamily: "KumbhSans_400Regular",
-    fontSize: 14,
-
-    lineHeight: 18,
-    textAlign: "left",
-    color: "#1D1D1D",
-  },
-  others: {
-    fontFamily: "KumbhSans_500Medium",
-
-    color: "#007F5F",
-  },
   create: {
     fontFamily: "LexendDeca_400Regular",
     width: "100%",
@@ -248,28 +334,14 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     fontSize: 16,
   },
+  createDisabled: {
+    backgroundColor: "#666666",
+  },
   error: {
     color: "red",
     fontFamily: "KumbhSans_400Regular",
     fontSize: 14,
-
     marginTop: 9,
-  },
-  forget: {
-    flex: 1,
-    flexDirection: "column",
-    alignItems: "flex-end",
-    justifyContent: "flex-end",
-    width: "100%",
-    marginTop: 17,
-    marginBottom: "80px",
-  },
-  clckforget: {
-    fontFamily: "KumbhSans_500Medium",
-    fontSize: 16,
-
-    lineHeight: 18,
-    color: "#1D1D1D",
   },
   ccircle: {
     height: 200,
@@ -280,7 +352,6 @@ const styles = StyleSheet.create({
   reserr: {
     fontFamily: "KumbhSans_500Medium",
     fontSize: 20,
-
     lineHeight: 24.8,
     color: "#000000",
     textAlign: "center",
@@ -288,13 +359,29 @@ const styles = StyleSheet.create({
   password: {
     fontFamily: "KumbhSans_400Regular",
     fontSize: 16,
-
     marginTop: 17,
-
     textAlign: "center",
   },
   image: {
     width: "100%",
     flex: 1,
+  },
+  resendContainer: {
+    alignItems: "center",
+    marginBottom: 20,
+    height: 30,
+    justifyContent: "center",
+  },
+  resendText: {
+    fontFamily: "KumbhSans_400Regular",
+    fontSize: 14,
+    color: "#6B6B6B",
+  },
+  resendLink: {
+    fontFamily: "KumbhSans_500Medium",
+    color: "#007F5F",
+  },
+  resendLinkDisabled: {
+    color: "#AAAAAA",
   },
 });

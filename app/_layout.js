@@ -1,12 +1,12 @@
 /** @format */
 
 import React, { useEffect } from "react";
-import { Slot, useRouter } from "expo-router";
+import { Slot, usePathname, useRouter } from "expo-router";
 import { CartProvider } from "./CartContext";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet } from "react-native";
-import { Provider, useDispatch } from "react-redux";
+import { Provider, useDispatch, useSelector } from "react-redux";
 import { setUser } from "../components/features/auth/authSlice";
 import { store } from "./store";
 import { setToken } from "../components/features/auth/authSlice"; // Import setToken action
@@ -18,25 +18,74 @@ import { OrderProvider } from "./OrderContext";
 const MainComponent = () => {
   const router = useRouter();
   const dispatch = useDispatch();
-
+  const currentPath = usePathname();
+  
+  // This function handles forced logout separately
+  const checkForceLogout = async () => {
+    try {
+      const forceLogout = await AsyncStorage.getItem("forceLogout");
+      if (forceLogout === "true") {
+        console.log("Force logout detected, redirecting to login");
+        await AsyncStorage.removeItem("forceLogout");
+        
+        // Force navigation regardless of current path
+        if (currentPath !== '/login') {
+          router.replace("/login");
+          return true; // Indicate we're handling forced logout
+        }
+      }
+      return false; // No forced logout
+    } catch (error) {
+      console.error("Error checking force logout:", error);
+      return false;
+    }
+  };
+  
   useEffect(() => {
-    const checkUserId = async () => {
+    const checkAuthStatus = async () => {
+      // First check for forced logout - do this before anything else
+      const isForceLogout = await checkForceLogout();
+      if (isForceLogout) return;
+      
+      // Skip auth check for login-related paths
+      if (
+        currentPath === '/login' || 
+        currentPath === '/createaccount' || 
+        currentPath === '/forgetpassword' ||
+        currentPath === '/resetlinksent' ||
+        currentPath === '/resetpassword' ||
+        currentPath === '/passwordresetsuccessful' ||
+        currentPath === '/onboarding'
+      ) {
+        return;
+      }
+      
       try {
+        const token = await AsyncStorage.getItem("token");
+        
+        // If no token, redirect to login immediately
+        if (!token) {
+          console.log("No token found, redirecting to login");
+          router.replace("/login");
+          return;
+        }
+        
+        // Otherwise, normal auth flow continues...
         const userId = await AsyncStorage.getItem("userId");
         if (userId) {
           dispatch(setUser({ _id: userId }));
-          router.replace("/mainhome");
-        } else {
-          router.replace("/"); // Ensure this matches the logout redirection
+          if (currentPath === '/') {
+            router.replace("/mainhome");
+          }
         }
       } catch (error) {
-        console.error("Error loading userId:", error);
+        console.error("Error checking auth status:", error);
         router.replace("/login");
       }
     };
-
-    checkUserId();
-  }, [dispatch, router]);
+    
+    checkAuthStatus();
+  }, [dispatch, router, currentPath]);
 
   return (
     <>

@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import React, { useState } from "react";
 import { Link, useRouter } from "expo-router";
@@ -38,20 +40,23 @@ import {
   Lora_600SemiBold_Italic,
   Lora_700Bold_Italic,
 } from "@expo-google-fonts/lora";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function resetpassword() {
   const router = useRouter();
   const back = () => {
-    router.push("/forgetpassword");
+    router.push('/settings');
   };
   const [showPassword, setShowPassword] = useState(false);
   const [showPassword2, setShowPassword2] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isInputFocused2, setIsInputFocused2] = useState(false);
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [checkPassword, setcheckPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
-  const [confirmPasswordError, setConfirmPasswordError] = useState("");
+  const [checkPasswordError, setcheckPasswordError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleFocus = () => {
     setIsInputFocused(true);
   };
@@ -65,10 +70,6 @@ export default function resetpassword() {
 
   const handleBlur2 = () => {
     setIsInputFocused2(false);
-  };
-
-  const toggleCheckbox = () => {
-    setIsChecked(!isChecked);
   };
 
   const validatePassword = () => {
@@ -94,29 +95,74 @@ export default function resetpassword() {
     return true;
   };
 
-  const validateConfirmPassword = () => {
-    if (confirmPassword.trim() === "") {
-      setConfirmPasswordError("confirm password is required");
+  const validatecheckPassword = () => {
+    if (checkPassword.trim() === "") {
+      setcheckPasswordError("Confirm password is required");
       return false;
     }
-    if (confirmPassword !== password) {
-      setConfirmPasswordError("Passwords do not match");
+    if (checkPassword !== password) {
+      setcheckPasswordError("Passwords do not match");
       return false;
     }
-    setConfirmPasswordError("");
+    setcheckPasswordError("");
     return true;
   };
-  const handleCreateAccount = () => {
-    const isPasswordValid = validatePassword();
-    const isConfirmPasswordValid = validateConfirmPassword();
 
-    // If all fields are valid, submit the form
-    if (isPasswordValid && isConfirmPasswordValid) {
-      // Submit the form or navigate to the next screen
-      console.log("Form submitted successfully");
+  const changePassword = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Get userId from AsyncStorage
+      const userId = await AsyncStorage.getItem("userId");
+      
+      if (!userId) {
+        Alert.alert("Error", "User ID not found. Please log in again.");
+        setIsLoading(false);
+        return;
+      }
+
+      // Make API call to change password
+      const response = await fetch(`https://oae-be.onrender.com/api/oae/auth/${userId}/change-password`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password,
+          checkPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.log("Server response:", data); // Log the full server response
+        throw new Error(data.message || 'Failed to reset password');
+      }
+
+      // Success - navigate to success screen
       router.push("/passwordresetsuccessful");
+    } catch (error) {
+      console.error("Password change error:", error);
+      Alert.alert(
+        "Error",
+        error.message || "Failed to change password. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  const handleCreateAccount = () => {
+    const isPasswordValid = validatePassword();
+    const ischeckPasswordValid = validatecheckPassword();
+
+    // If all fields are valid, proceed with API call
+    if (isPasswordValid && ischeckPasswordValid) {
+      changePassword();
+    }
+  };
+
   const [fontsLoaded, fontError] = useFonts({
     LexendDeca_400Regular,
     KumbhSans_100Thin,
@@ -157,14 +203,13 @@ export default function resetpassword() {
           <View>
             <Text style={styles.enadp}>Create a new password</Text>
           </View>
-          <View style={{ marginTop: "20px" }}>
+          <View style={{ marginTop: 20 }}>
             <Text style={styles.greetings}>
-              Welcome to Original Aso-Ebi! Please provide your email address and
-              create a password to create your account.
+              Welcome to Original Aso-Ebi! Please create a new secure password for your account.
             </Text>
           </View>
           <View style={styles.inputs}>
-            <View style={{ marginTop: "20px" }}>
+            <View style={{ marginTop: 20 }}>
               <Text style={styles.labell}>Password</Text>
               <View style={{ marginTop: 16 }}>
                 <View
@@ -202,11 +247,11 @@ export default function resetpassword() {
                   </View>
                 </View>
               </View>
-              <View style={{ marginBottom: "10" }}>
+              <View style={{ marginBottom: 10 }}>
                 <Text style={styles.error}>{passwordError}</Text>
               </View>
             </View>
-            <View style={{ marginTop: "20px" }}>
+            <View style={{ marginTop: 20 }}>
               <Text style={styles.labell}>Confirm Password</Text>
               <View style={{ marginTop: 16 }}>
                 <View
@@ -225,8 +270,8 @@ export default function resetpassword() {
                       secureTextEntry={!showPassword2}
                       placeholderTextColor="#999"
                       underlineColorAndroid="transparent"
-                      value={confirmPassword}
-                      onChangeText={(text) => setConfirmPassword(text)}
+                      value={checkPassword}
+                      onChangeText={(text) => setcheckPassword(text)}
                       onFocus={handleFocus2}
                       onBlur={handleBlur2}
                     />
@@ -244,17 +289,22 @@ export default function resetpassword() {
                   </View>
                 </View>
               </View>
-              <View style={{ marginBottom: "10" }}>
-                <Text style={styles.error}>{confirmPasswordError}</Text>
+              <View style={{ marginBottom: 10 }}>
+                <Text style={styles.error}>{checkPasswordError}</Text>
               </View>
             </View>
 
-            <View style={{ marginTop: "70px", marginBottom: "30px" }}>
+            <View style={{ marginTop: 70, marginBottom: 30 }}>
               <TouchableOpacity
                 style={styles.create}
                 onPress={handleCreateAccount}
+                disabled={isLoading}
               >
-                <Text style={{ color: "white" }}>Done</Text>
+                {isLoading ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <Text style={{ color: "white", fontFamily: "KumbhSans_500Medium" }}>Done</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>
@@ -274,7 +324,7 @@ const styles = StyleSheet.create({
   flex: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: "80",
+    marginTop: 80,
   },
   testx: {
     marginLeft: 10,
@@ -289,7 +339,6 @@ const styles = StyleSheet.create({
   enadp: {
     fontFamily: "Lora_500Medium",
     fontSize: 20,
-
     lineHeight: 24,
     textAlign: "left",
     color: "#1D1D1D",
@@ -297,7 +346,6 @@ const styles = StyleSheet.create({
   greetings: {
     fontFamily: "KumbhSans_400Regular",
     fontSize: 18,
-
     lineHeight: 24,
     textAlign: "left",
     color: "#6B6B6B",
@@ -306,72 +354,35 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   labell: {
-    // marginBottom: ,
     fontFamily: "LexendDeca_400Regular",
     fontSize: 16,
-
     lineHeight: 20,
     textAlign: "left",
     color: "#6B6B6B",
   },
-
   scares: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    // backgroundColor: 'red',
     width: "100%",
     backgroundColor: "#ffffff",
     borderColor: "gray",
     borderWidth: 1,
     height: 50,
     borderRadius: 8,
-
     paddingRight: 20,
   },
   inputContainer: {
-    flex: 1, // Make the container flex to fill the available space
+    flex: 1,
   },
   inpu2: {
-    borderColor: "transparent", // Set border color to transparent
-    borderWidth: 0, // Set border width to 0
-    outlineColor: "transparent", // Set outline color to transparent
-    outlineWidth: 0, // Set outline width to 0
-
+    borderColor: "transparent",
+    borderWidth: 0,
+    outlineColor: "transparent",
+    outlineWidth: 0,
     height: 50,
     width: "auto",
     paddingLeft: 20,
-  },
-  checkboxContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: "#999",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  checked: {
-    backgroundColor: "blue", // Adjust color as needed
-  },
-  label: {
-    marginLeft: 15,
-    width: "80%",
-    fontFamily: "KumbhSans_400Regular",
-    fontSize: 14,
-
-    lineHeight: 18,
-    textAlign: "left",
-    color: "#1D1D1D",
-  },
-  others: {
-    fontFamily: "KumbhSans_500Medium",
-
-    color: "#007F5F",
   },
   create: {
     fontFamily: "LexendDeca_400Regular",
@@ -385,41 +396,10 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     fontSize: 16,
   },
-  already: {
-    fontFamily: "LexendDeca_400Regular",
-    width: "100%",
-    height: 55,
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: "transparent",
-    color: "#000000",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 10,
-    marginBottom: 13,
-    fontSize: 16,
-  },
   error: {
     color: "red",
     fontFamily: "KumbhSans_400Regular",
     fontSize: 14,
-
     marginTop: 9,
-  },
-  forget: {
-    flex: 1,
-    flexDirection: "column",
-    alignItems: "flex-end",
-    justifyContent: "flex-end",
-    width: "100%",
-    marginTop: 17,
-    marginBottom: "80px",
-  },
-  clckforget: {
-    fontFamily: "KumbhSans_500Medium",
-    fontSize: 16,
-
-    lineHeight: 18,
-    color: "#1D1D1D",
   },
 });

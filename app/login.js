@@ -240,7 +240,7 @@ export default function login() {
   useEffect(() => {
     // If fonts are not loaded, show loading indicator
     if (!fontsLoaded) {
-      showLoading(); // Show loading indicator until fonts are loaded
+      // showLoading(); // Show loading indicator until fonts are loaded
     } else {
       hideLoading(); // Hide loading indicator after fonts are loaded
       setLoading(false); // Set loading to false after fonts are loaded
@@ -310,6 +310,7 @@ export default function login() {
                     placeholder="youremail@here.com"
                     keyboardType="email-address" // Change this to 'password' or 'default' for different types
                     placeholderTextColor="#999" // Change placeholder text color here
+                      autoCapitalize="none"
                   />
                 </View>
                 <Text style={styles.error}>{emailError}</Text>

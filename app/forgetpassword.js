@@ -97,8 +97,10 @@ export default function forgetpassword() {
         await AsyncStorage.setItem("resetEmail", email);
         
         // Navigate to OTP verification screen
-        router.push("/resetlinksent");
-      } else {
+        router.push({
+          pathname: "/resetlinksent",
+          params: { email: email }
+        });      } else {
         console.error(
           "Error sending reset OTP:",
           responseData.message || "Failed to send reset OTP"

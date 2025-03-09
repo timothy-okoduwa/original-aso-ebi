@@ -49,7 +49,7 @@ export default function Index() {
         const userId = await AsyncStorage.getItem("userId");
         if (userId) {
           // If a token is found, navigate to main home page
-          router.push("/mainhome");
+          router.push("/login");
         } else {
           // If no token, navigate to onboarding page
           router.push("/onboarding");

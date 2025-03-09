@@ -21,7 +21,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useDispatch } from "react-redux";
-import { setUser } from "./features/auth/authSlice";
+import { logoutUser, setUser } from "./features/auth/authSlice";
 
 export default function SettingContent({ userName, UserData }) {
   const router = useRouter();
@@ -152,17 +152,43 @@ export default function SettingContent({ userName, UserData }) {
       setIsLoading(false);
     }
   };
+// Direct logout handler that can be added to your SettingContent.jsx
+const forceLogoutAndRedirect = () => {
+  try {
+    // Clear token
+    AsyncStorage.removeItem("token");
+    
+    // Set force logout flag
+    AsyncStorage.setItem("forceLogout", "true");
+    
+    // Clear Redux state
+    dispatch(setUser(null));
+    
+    // Force navigation
+    router.replace({
+      pathname: "/login",
+      // Add a unique query parameter to prevent caching issues
+      query: { logout: Date.now() }
+    });
+    
+    // If Expo Router doesn't support query parameters, use this instead:
+    // router.replace("/login?logout=" + Date.now());
+  } catch (error) {
+    console.error("Force logout failed:", error);
+    
+    // Last resort - display an alert that requires user interaction
+    Alert.alert(
+      "Logout Required",
+      "Please tap OK to complete logout",
+      [{ text: "OK", onPress: () => router.replace("/login") }]
+    );
+  }
+};
 
-  const logout = async () => {
-    try {
-      await AsyncStorage.multiRemove(["userId", "token"]);
-      dispatch(setUser(null));
-      router.push("/login");
-    } catch (error) {
-      console.error("Error during logout:", error);
-      Alert.alert("Error", "Failed to logout. Please try again.");
-    }
-  };
+// Replace your logout function with this direct call
+const logout = async () => {
+  forceLogoutAndRedirect();
+};
   const editprofile = () => {
     router.push("/editprofile");
   };

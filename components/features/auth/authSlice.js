@@ -115,7 +115,22 @@ export const loginUser = createAsyncThunk(
     }
   }
 );
-
+export const logoutUser = createAsyncThunk(
+  'auth/logout',
+  async (_, { dispatch }) => {
+    // Set force logout flag
+    await AsyncStorage.setItem("forceLogout", "true");
+    
+    // Clear token
+    await AsyncStorage.removeItem("token");
+    
+    // Clear Redux state
+    dispatch(setUser(null));
+    dispatch(setToken(null));
+    
+    return true; // Indicate successful logout
+  }
+);
 // Create a slice
 const authSlice = createSlice({
   name: "auth",
@@ -127,6 +142,12 @@ const authSlice = createSlice({
     setToken: (state, action) => {
       state.token = action.payload;
     },
+    resetAuth: (state) => {
+      state.token = null;
+      state.status = 'idle';
+      state.error = null;
+      state.successMessage = null;
+    }
   },
   extraReducers: (builder) => {
     builder
