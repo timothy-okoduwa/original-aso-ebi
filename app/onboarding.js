@@ -68,14 +68,7 @@ export default function Onboarding() {
             </TouchableOpacity>
           </View>
         </View>
-        <View>
-          <TouchableOpacity style={styles.footer} onPress={skip}>
-            <Text style={styles.skip}>Skip</Text>
-            <View style={styles.arrowIcon}>
-              <AntDesign name="arrowright" size={24} color="black" />
-            </View>
-          </TouchableOpacity>
-        </View>
+     
       </View>
     </ScrollView>
   );

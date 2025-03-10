@@ -187,17 +187,14 @@ export default function createaccount() {
     }
 
     const hasAtSymbol = email.includes("@");
-    const hasDotCom = email.endsWith(".com");
+    
 
     if (!hasAtSymbol) {
       setEmailError('Email is missing "@" symbol');
       return false;
     }
 
-    if (!hasDotCom) {
-      setEmailError('Email is missing ".com"');
-      return false;
-    }
+ 
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -295,7 +292,7 @@ export default function createaccount() {
         showToast("Registration successful!", "success");
         router.push({
           pathname: "/otpverification",
-          params: { userId: newUserId },
+          params: { userId: newUserId,email:email },
         });
       } else {
         showToast(response.error.message || "Registration failed", "error");

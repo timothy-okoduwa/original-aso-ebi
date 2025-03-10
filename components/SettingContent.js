@@ -21,9 +21,13 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useDispatch } from "react-redux";
-import { logoutUser, setUser } from "./features/auth/authSlice";
+// import { logoutUser, setUser } from "./features/auth/authSlice";
+import { AuthManager } from "../app/AuthManager";
+import { useLoading } from "../app/LoadingContext";
 
 export default function SettingContent({ userName, UserData }) {
+  const { showLoading, hideLoading } = useLoading();
+
   const router = useRouter();
   const dispatch = useDispatch();
   const [profileImage, setProfileImage] = useState(p);
@@ -153,42 +157,31 @@ export default function SettingContent({ userName, UserData }) {
     }
   };
 // Direct logout handler that can be added to your SettingContent.jsx
-const forceLogoutAndRedirect = () => {
+// In SettingContent.jsx - Update your logout function:
+// In SettingContent.jsx - Updated logout function
+// In SettingContent.jsx - Updated logout function
+
+const handleLogout = async () => {
   try {
-    // Clear token
-    AsyncStorage.removeItem("token");
+    // Start by showing loading if needed
+    showLoading();
     
-    // Set force logout flag
-    AsyncStorage.setItem("forceLogout", "true");
+    // Call the logout method
+    await AuthManager.logout();
     
-    // Clear Redux state
-    dispatch(setUser(null));
-    
-    // Force navigation
-    router.replace({
-      pathname: "/login",
-      // Add a unique query parameter to prevent caching issues
-      query: { logout: Date.now() }
-    });
-    
-    // If Expo Router doesn't support query parameters, use this instead:
-    // router.replace("/login?logout=" + Date.now());
+    // Navigate to login
+    router.replace('/login');
   } catch (error) {
-    console.error("Force logout failed:", error);
-    
-    // Last resort - display an alert that requires user interaction
-    Alert.alert(
-      "Logout Required",
-      "Please tap OK to complete logout",
-      [{ text: "OK", onPress: () => router.replace("/login") }]
-    );
+    console.error("Logout error:", error);
+  } finally {
+    // Hide loading if needed
+    hideLoading();
   }
 };
 
-// Replace your logout function with this direct call
-const logout = async () => {
-  forceLogoutAndRedirect();
-};
+const logout=()=>{
+  handleLogout()
+}
   const editprofile = () => {
     router.push("/editprofile");
   };

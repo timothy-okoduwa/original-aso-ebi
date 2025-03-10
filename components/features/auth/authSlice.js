@@ -2,6 +2,7 @@
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { AuthManager } from "../../../app/AuthManager";
 
 // Define the initial state
 const initialState = {
@@ -98,6 +99,7 @@ export const loginUser = createAsyncThunk(
       try {
         await AsyncStorage.setItem("userId", userId);
         await AsyncStorage.setItem("token", token);
+        await AuthManager.login(token);
         console.log(
           "Token stored successfully:",
           await AsyncStorage.getItem("token")
@@ -115,40 +117,12 @@ export const loginUser = createAsyncThunk(
     }
   }
 );
-export const logoutUser = createAsyncThunk(
-  'auth/logout',
-  async (_, { dispatch }) => {
-    // Set force logout flag
-    await AsyncStorage.setItem("forceLogout", "true");
-    
-    // Clear token
-    await AsyncStorage.removeItem("token");
-    
-    // Clear Redux state
-    dispatch(setUser(null));
-    dispatch(setToken(null));
-    
-    return true; // Indicate successful logout
-  }
-);
+
 // Create a slice
 const authSlice = createSlice({
   name: "auth",
   initialState,
-  reducers: {
-    setUser: (state, action) => {
-      state.user = action.payload;
-    },
-    setToken: (state, action) => {
-      state.token = action.payload;
-    },
-    resetAuth: (state) => {
-      state.token = null;
-      state.status = 'idle';
-      state.error = null;
-      state.successMessage = null;
-    }
-  },
+ 
   extraReducers: (builder) => {
     builder
       // Handle registration cases

@@ -10,13 +10,12 @@ import {
   ScrollView,
   ActivityIndicator,
   Animated,
+  Alert,
 } from "react-native";
 import { Link, useRouter, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { AntDesign } from "@expo/vector-icons";
-import { useDispatch, useSelector } from "react-redux";
-import { verifyOtp } from "../components/features/auth/authSlice";
-import Toast from "react-native-toast-message";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   useFonts,
   LexendDeca_400Regular,
@@ -26,6 +25,8 @@ import {
   KumbhSans_500Medium,
 } from "@expo-google-fonts/kumbh-sans";
 import { Lora_500Medium } from "@expo-google-fonts/lora";
+import { AuthManager } from "./AuthManager";
+
 const CustomToast = ({ visible, message, type }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -59,6 +60,7 @@ const CustomToast = ({ visible, message, type }) => {
     </Animated.View>
   );
 };
+
 const OtpInput = ({ onOtpChange }) => {
   const [otp, setOtp] = useState(["", "", "", ""]);
   const inputRefs = useRef([]);
@@ -100,18 +102,28 @@ const OtpInput = ({ onOtpChange }) => {
 
 export default function OtpVerification() {
   const params = useLocalSearchParams();
-  const { userId } = params;
+  const { userId, email } = params;
+  const userIdentifier = email || userId;
   const router = useRouter();
-  const dispatch = useDispatch();
-  const { status, error, successMessage } = useSelector((state) => state.auth);
   const [otpValue, setOtpValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState({ visible: false, message: "", type: "" });
+  const [countdown, setCountdown] = useState(0);
+  const [resendLoading, setResendLoading] = useState(false);
+  
+  // Set up countdown timer
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
+
   const showToast = (message, type) => {
     setToast({ visible: true, message, type });
     setTimeout(() => {
       setToast({ visible: false, message: "", type: "" });
-    }, 6000); // Hide toast after 3 seconds
+    }, 6000); // Hide toast after 6 seconds
   };
 
   useEffect(() => {
@@ -121,30 +133,93 @@ export default function OtpVerification() {
     };
   }, []);
 
-  const handleVerifyOtp = () => {
-    if (otpValue.length !== 4) {
-      showToast("Please enter a 4-digit OTP", "error");
-      return;
-    }
+  // Function to store auth data in AsyncStorage
+// In OtpVerification.js - Update your handleVerifyOtpFunction
+const handleVerifyOtpFunction = async () => {
+  if (otpValue.length !== 4) {
+    showToast("Please enter a 4-digit OTP", "error");
+    return;
+  }
 
-    setIsLoading(true);
-    dispatch(verifyOtp({ otp: otpValue, userId }))
-      .then((result) => {
-        setIsLoading(false);
-        if (result.meta.requestStatus === "fulfilled") {
-          showToast("OTP verified successfully, proceed to login", "success");
-          // Handle success (e.g., navigate to next screen)
-          router.push("/login");
-        } else {
-          showToast(result.payload?.message || result.error.message, "error");
-        }
-      })
-      .catch((error) => {
-        setIsLoading(false);
-        showToast("An unexpected error occurred", "error");
-        console.error("Error during OTP verification:", error);
-      });
+  setIsLoading(true);
+  
+  try {
+    console.log("Sending OTP verification request for:", userIdentifier);
+    
+    const response = await fetch(
+      "https://oae-be.onrender.com/api/oae/auth/confirm-otp",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: userIdentifier,
+          otp: parseInt(otpValue, 10),
+        }),
+      }
+    );
+
+    const data = await response.json();
+    console.log("OTP verification response:", data);
+
+    if (response.ok) {
+      showToast("OTP verified successfully", "success");
+      
+      setTimeout(() => {
+        // Use AuthManager to handle OTP completion
+        AuthManager.completeOtpVerification();
+      }, 1000);
+    } else {
+      showToast(data.message || "Failed to verify OTP. Please try again.", "error");
+    }
+  } catch (error) {
+    showToast("An unexpected error occurred", "error");
+    console.error("Error during OTP verification:", error);
+  } finally {
+    setIsLoading(false);
+  }
+};
+  const handleVerifyOtp = () => {
+    handleVerifyOtpFunction();
   };
+// Add this near the top of your OTP verification component
+
+  // Resend OTP function
+  const resendOtp = async () => {
+    if (countdown > 0 || !userIdentifier) return;
+    
+    setResendLoading(true);
+    
+    try {
+      const response = await fetch(
+        "https://oae-be.onrender.com/api/oae/auth/forget-password",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: userIdentifier }),
+        }
+      );
+
+      const responseData = await response.json();
+      
+      if (response.ok) {
+        showToast("OTP has been resent to your email", "success");
+        // Start countdown timer
+        setCountdown(30);
+      } else {
+        showToast(responseData.message || "Failed to resend OTP", "error");
+      }
+    } catch (error) {
+      showToast("Network error. Please check your connection", "error");
+      console.error("Resend OTP error:", error);
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
   const [fontsLoaded, fontError] = useFonts({
     LexendDeca_400Regular,
     KumbhSans_400Regular,
@@ -173,12 +248,12 @@ export default function OtpVerification() {
         <View style={styles.createups}>
           <View>
             <Text style={styles.enadp}>Verify your Email Address</Text>
-            <Text style={styles.enadp}>user ID: {userId}</Text>
+            <Text style={styles.enadp}>user ID: {userIdentifier}</Text>
           </View>
           <View style={{ marginTop: 20 }}>
             <Text style={styles.greetings}>
               We have sent a 4 digit OTP to your{" "}
-              <Text style={{ fontWeight: "bold" }}>Email Address</Text> , please
+              <Text style={{ fontWeight: "bold" }}>Email Address</Text>, please
               provide it in the boxes below.
             </Text>
           </View>
@@ -193,10 +268,33 @@ export default function OtpVerification() {
                 {isLoading ? (
                   <ActivityIndicator color="white" />
                 ) : (
-                  <Text style={{ color: "white" }}>Verify OTP</Text>
+                  <Text style={{ color: "white", fontFamily: "LexendDeca_400Regular" }}>Verify OTP</Text>
                 )}
               </TouchableOpacity>
             </View>
+            <TouchableOpacity
+              style={styles.resendContainer}
+              onPress={resendOtp}
+              disabled={countdown > 0 || resendLoading}
+            >
+              {resendLoading ? (
+                <ActivityIndicator size="small" color="#007F5F" />
+              ) : (
+                <Text style={styles.resendText}>
+                  Didn't receive the code?{" "}
+                  <Text 
+                    style={[
+                      styles.resendLink, 
+                      countdown > 0 && styles.resendLinkDisabled
+                    ]}
+                  >
+                    {countdown > 0 
+                      ? `Resend in ${countdown}s` 
+                      : "Resend"}
+                  </Text>
+                </Text>
+              )}
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -296,5 +394,23 @@ const styles = StyleSheet.create({
   toastText: {
     color: "white",
     fontSize: 16,
+  },
+  resendContainer: {
+    alignItems: "center",
+    marginBottom: 20,
+    height: 30,
+    justifyContent: "center",
+  },
+  resendText: {
+    fontFamily: "KumbhSans_400Regular",
+    fontSize: 14,
+    color: "#6B6B6B",
+  },
+  resendLink: {
+    fontFamily: "KumbhSans_500Medium",
+    color: "#007F5F",
+  },
+  resendLinkDisabled: {
+    color: "#AAAAAA",
   },
 });

@@ -1,91 +1,128 @@
 /** @format */
 
-import React, { useEffect } from "react";
-import { Slot, usePathname, useRouter } from "expo-router";
+import React, { useEffect,useState } from "react";
+import { Slot, useRouter, useSegments, usePathname } from "expo-router";
 import { CartProvider } from "./CartContext";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet } from "react-native";
-import { Provider, useDispatch, useSelector } from "react-redux";
-import { setUser } from "../components/features/auth/authSlice";
+import { Provider, useDispatch } from "react-redux";
+import { setUser, setToken } from "../components/features/auth/authSlice";
 import { store } from "./store";
-import { setToken } from "../components/features/auth/authSlice"; // Import setToken action
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LoadingProvider } from "./LoadingContext";
 import LoadingIndicator from "./LoadingIndicator";
 import { OrderProvider } from "./OrderContext";
-// MainComponent that will check for token inside the Provider
-const MainComponent = () => {
+import { AuthManager } from "./AuthManager";
+
+// Auth context to manage protected routes
+const AuthContext = React.createContext(null);
+
+// Use this hook to check if a user is authenticated
+// Update your useProtectedRoute hook
+function useProtectedRoute(shouldProtect) {
+  const segments = useSegments();
   const router = useRouter();
-  const dispatch = useDispatch();
   const currentPath = usePathname();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   
-  // This function handles forced logout separately
-  const checkForceLogout = async () => {
-    try {
-      const forceLogout = await AsyncStorage.getItem("forceLogout");
-      if (forceLogout === "true") {
-        console.log("Force logout detected, redirecting to login");
-        await AsyncStorage.removeItem("forceLogout");
-        
-        // Force navigation regardless of current path
-        if (currentPath !== '/login') {
-          router.replace("/login");
-          return true; // Indicate we're handling forced logout
-        }
-      }
-      return false; // No forced logout
-    } catch (error) {
-      console.error("Error checking force logout:", error);
-      return false;
-    }
-  };
+  // Public routes that don't require authentication
+  const publicPaths = ['/login', '/register', '/onboarding', '/otpverification', '/forgetpassword'];
+  
+  // Check for logout state
+  useEffect(() => {
+    const checkLoggingOut = async () => {
+      const loggingOut = await AuthManager.isLoggingOut();
+      setIsLoggingOut(loggingOut);
+    };
+    
+    checkLoggingOut();
+  }, []);
   
   useEffect(() => {
-    const checkAuthStatus = async () => {
-      // First check for forced logout - do this before anything else
-      const isForceLogout = await checkForceLogout();
-      if (isForceLogout) return;
-      
-      // Skip auth check for login-related paths
-      if (
-        currentPath === '/login' || 
-        currentPath === '/createaccount' || 
-        currentPath === '/forgetpassword' ||
-        currentPath === '/resetlinksent' ||
-        currentPath === '/resetpassword' ||
-        currentPath === '/passwordresetsuccessful' ||
-        currentPath === '/onboarding'
-      ) {
-        return;
-      }
-      
+    // Don't do anything if we're not initialized yet or there are no segments
+    if (!shouldProtect || !segments.length || isLoggingOut) return;
+    
+    const isAuthenticated = shouldProtect; // Since shouldProtect is isInitialized && isAuthenticated
+    
+    // If the route is not in public paths and user is not authenticated
+    if (!publicPaths.includes(currentPath) && !isAuthenticated) {
+      // Redirect to login
+      router.replace('/login');
+    } else if (isAuthenticated && publicPaths.includes(currentPath) && currentPath !== '/forgetpassword') {
+      // If user is authenticated and trying to access a public path (except password reset)
+      // Redirect to home
+      router.replace('/mainhome');
+    }
+  }, [shouldProtect, segments, currentPath, router, isLoggingOut]);
+
+  return null;
+}
+
+// Authentication provider component
+// Authentication provider component
+function AuthProvider({ children }) {
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+  const [isInitialized, setIsInitialized] = React.useState(false);
+  
+  useEffect(() => {
+    // Check authentication status on mount
+    const checkAuth = async () => {
       try {
-        const token = await AsyncStorage.getItem("token");
+        const token = await AsyncStorage.getItem('token');
+        const userId = await AsyncStorage.getItem('userId');
+        const isUserLoggedOut = await AuthManager.isUserLoggedOut();
         
-        // If no token, redirect to login immediately
-        if (!token) {
-          console.log("No token found, redirecting to login");
-          router.replace("/login");
-          return;
-        }
-        
-        // Otherwise, normal auth flow continues...
-        const userId = await AsyncStorage.getItem("userId");
-        if (userId) {
-          dispatch(setUser({ _id: userId }));
-          if (currentPath === '/') {
-            router.replace("/mainhome");
-          }
-        }
+        setIsAuthenticated(!!token && !!userId && !isUserLoggedOut);
       } catch (error) {
-        console.error("Error checking auth status:", error);
-        router.replace("/login");
+        console.error("Auth check error:", error);
+        setIsAuthenticated(false);
+      } finally {
+        setIsInitialized(true);
       }
     };
     
-    checkAuthStatus();
-  }, [dispatch, router, currentPath]);
+    checkAuth();
+  }, []);
+  
+  // Call the hook unconditionally
+  useProtectedRoute(isInitialized && isAuthenticated);
+  
+  if (!isInitialized) {
+    // Return a minimal placeholder until auth is checked
+    return null;
+  }
+  
+  return (
+    <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+// Main component inside Providers
+const MainComponent = () => {
+  const dispatch = useDispatch();
+  
+  // Load user data into Redux store if needed
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        const userId = await AsyncStorage.getItem('userId');
+        
+        if (token && userId) {
+          dispatch(setToken(token));
+          // You might want to fetch user data from API here
+          // and dispatch setUser with the fetched data
+        }
+      } catch (error) {
+        console.error("Error loading user data:", error);
+      }
+    };
+    
+    loadUserData();
+  }, [dispatch]);
 
   return (
     <>
@@ -95,17 +132,7 @@ const MainComponent = () => {
   );
 };
 
-// Layout component remains the same, with Provider wrapping the whole structure
 export default function Layout() {
-  // useEffect(() => {
-  //   const getPermission = async () => {
-  //     const { status } = await Notifications.getPermissionsAsync();
-  //     if (status !== 'granted') {
-  //       await Notifications.requestPermissionsAsync();
-  //     }
-  //   };
-  //   getPermission();
-  // }, []);
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
@@ -113,12 +140,14 @@ export default function Layout() {
           <CartProvider>
             <OrderProvider>
               <LoadingProvider>
-                <StatusBar
-                  style="dark"
-                  backgroundColor="#FFFFFF"
-                  translucent={false}
-                />
-                <MainComponent />
+                <AuthProvider>
+                  <StatusBar
+                    style="dark"
+                    backgroundColor="#FFFFFF"
+                    translucent={false}
+                  />
+                  <MainComponent />
+                </AuthProvider>
               </LoadingProvider>
             </OrderProvider>
           </CartProvider>

@@ -35,16 +35,19 @@ export default function HeadAndNotification({userName}) {
   const goToNotifiation = () => {
     router.push('/notification');
   };
+  const goToLogin = () => {
+    router.push('/login');
+  };
   return (
     <View style={styles.mainhold}>
       <View style={styles.flexes}>
         <View>
           <Text style={styles.oae}>OAE</Text>
-            <Link href="/login">
-                      <View >
+          
+                      <TouchableOpacity onPress={goToLogin} >
                         <Text> Welcome, {userName ? userName : "Guest"}</Text>
-                      </View>
-                    </Link>
+                      </TouchableOpacity>
+                   
         </View>
         <View>
           {/* <Text>

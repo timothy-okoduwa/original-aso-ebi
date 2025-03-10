@@ -16,7 +16,8 @@ import FabricData from "../components/FabricData";
 import ButtomNav from "../components/ButtomNav";
 import { StatusBar } from "expo-status-bar";
 import { useLoading } from "./LoadingContext";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
+import { AuthManager } from "./AuthManager";
 
 export default function mainhome() {
   const [refreshing, setRefreshing] = useState(false);
@@ -24,9 +25,33 @@ export default function mainhome() {
   const [userName, setUserName] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const { showLoading, hideLoading } = useLoading();
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
-  // Removed the filteredData logic since filtering will now be handled in FabricData component
+  // First useEffect - Authentication check
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const isAuthenticated = await AuthManager.isAuthenticated();
+        const isLoggingOut = await AuthManager.isLoggingOut();
+        
+        // Skip redirect if we're in the process of logging out
+        if (!isAuthenticated && !isLoggingOut) {
+          console.log("User not authenticated, redirecting to login");
+          router.replace("/login");
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+        router.replace("/login");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    checkAuth();
+  }, [router]);
 
+  // Second useEffect - Fetch user data
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -85,18 +110,21 @@ export default function mainhome() {
   // Handle search query changes
   const handleSearch = (query) => {
     setSearchQuery(query);
-    // Optionally reset category when searching
-    // if (query) {
-    //   setActiveCategory("All Products");
-    // }
   };
 
   // Handle category changes
   const handleCategoryChange = (category) => {
     setActiveCategory(category);
-    // Optionally clear search when changing categories
-    // setSearchQuery("");
   };
+
+  // Conditional rendering after all hooks have been called
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -108,7 +136,6 @@ export default function mainhome() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-           
             tintColor="#000000"
             title="Pull to refresh..."
             titleColor="#000000"
@@ -116,7 +143,6 @@ export default function mainhome() {
         }
       >
         <View style={styles.main}>
-        
           <HeadAndNotification userName={userName} />
           <SearchCompnent setSearchQuery={handleSearch} />
           <Categories
@@ -145,5 +171,9 @@ const styles = StyleSheet.create({
   main: {
     padding: 15,
     flex: 1,
-  },
+  },  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  }
 });
