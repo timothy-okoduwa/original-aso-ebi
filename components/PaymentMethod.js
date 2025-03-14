@@ -15,7 +15,7 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import PaymentSuccessModal from "../components/PaymentSuccessModal";
-import { useOrder } from "../app/OrderContext";
+import { useOrder } from "../app/contexts/OrderContext";
 import {
   useFonts,
   LexendDeca_400Regular,
@@ -25,7 +25,7 @@ import {
   KumbhSans_500Medium,
 } from "@expo-google-fonts/kumbh-sans";
 import { useContext } from "react";
-import { CartContext } from "../app/CartContext";
+import { CartContext } from "../app/contexts/CartContext";
 export default function PaymentMethod({
   totalAmount,
   numberOfItems,

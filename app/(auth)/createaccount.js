@@ -17,10 +17,10 @@ import { AntDesign } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 // import { Feather } from '@expo/vector-icons';
 import { useDispatch, useSelector } from "react-redux";
-import { registerUser } from "../components/features/auth/authSlice";
+import { registerUser } from "../../components/features/auth/authSlice";
 import { StatusBar } from "expo-status-bar";
 import Toast from "react-native-toast-message";
-import { useLoading } from "./LoadingContext";
+import { useLoading } from "../contexts/LoadingContext";
 
 // ;
 

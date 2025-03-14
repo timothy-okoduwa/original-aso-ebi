@@ -10,16 +10,16 @@ import {
   RefreshControl,
 } from 'react-native';
 import React, { useState } from 'react';
-import ButtomNav from '../components/ButtomNav';
+import ButtomNav from '../../components/ButtomNav';
 import { StatusBar } from 'expo-status-bar';
-import data from '../components/data';
+import data from '../../components/data';
 import {
   useFonts,
   KumbhSans_400Regular,
   KumbhSans_500Medium,
 } from '@expo-google-fonts/kumbh-sans';
 import { useRouter } from 'expo-router';
-import Orders from '../components/Orders';
+import Orders from '../../components/Orders';
 
 export default function order() {
   const [refreshing, setRefreshing] = useState(false);

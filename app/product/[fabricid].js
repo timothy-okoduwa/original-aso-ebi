@@ -31,12 +31,7 @@ export default function detailspage() {
       try {
         setLoading(true);
         // Fetch all products
-        const response = await axios.get(`${BASE_URL}/products/all-products`, {
-          headers: {
-            Authorization: `Bearer ${TOKEN}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await axios.get(`${BASE_URL}/products/all-products`);
 
         // Find the specific product
         const foundProduct = response.data.data.find(

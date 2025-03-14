@@ -1,5 +1,3 @@
-/** @format */
-
 import {
   View,
   Text,
@@ -7,8 +5,9 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
+  Alert,
 } from "react-native";
-import React, { useContext, useMemo } from "react";
+import React, { useContext, useMemo, useEffect, useState } from "react";
 import {
   useFonts,
   KumbhSans_400Regular,
@@ -21,7 +20,8 @@ import {
   MaterialCommunityIcons,
   Ionicons,
 } from "@expo/vector-icons";
-import { CartContext } from "../app/CartContext";
+import { CartContext } from "../app/contexts/CartContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import a from "../constants/image/oo.png";
 
 const EmptyCart = () => (
@@ -124,7 +124,46 @@ export default function CartItems() {
     const newQuantity = Math.max(5, item.quantity - 5);
     updateItemQuantity(item.categoryTitle, newQuantity);
   };
-  const handleCheckOut = () => {
+
+  const checkAuthAndProceed = async () => {
+    try {
+      // Check for userId and token in AsyncStorage
+      const token = await AsyncStorage.getItem('token');
+      
+      if (!token) {
+        // Alert the user they need to login
+        Alert.alert(
+          "Authentication Required",
+          "You need to login to continue with checkout.",
+          [
+            
+            { 
+              text: "Login", 
+              onPress: () => router.push("/login") 
+            }
+          ]
+        );
+        return false;
+      }
+      
+      // User is authenticated, proceed with checkout
+      return true;
+    } catch (error) {
+      console.error("Error checking authentication:", error);
+      Alert.alert("Error", "Something went wrong. Please try again.");
+      return false;
+    }
+  };
+
+  const handleCheckOut = async () => {
+    // First check if user is authenticated
+    const isAuthenticated = await checkAuthAndProceed();
+    
+    if (!isAuthenticated) {
+      return; // Stop if not authenticated
+    }
+    
+    // Continue with checkout process if authenticated
     const totalAmount = getTotalAmount();
     const orderedItems = cartItems.map((item) => ({
       name: item.categoryTitle, // Use categoryTitle instead of name
@@ -188,7 +227,6 @@ export default function CartItems() {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

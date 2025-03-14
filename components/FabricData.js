@@ -57,24 +57,14 @@ export default function FabricData({ activeCategory, searchQuery }) {
         // Fetch categories first
         const categoriesResponse = await axios.get(
           `${BASE_URL}/categories/all-categories`,
-          {
-            headers: {
-              Authorization: `Bearer ${TOKEN}`,
-              "Content-Type": "application/json",
-            },
-          }
+        
         );
         setCategories(categoriesResponse.data.data);
 
         // Then fetch products
         const productsResponse = await axios.get(
           `${BASE_URL}/products/all-products`,
-          {
-            headers: {
-              Authorization: `Bearer ${TOKEN}`,
-              "Content-Type": "application/json",
-            },
-          }
+       
         );
 
         setProducts(productsResponse.data.data);

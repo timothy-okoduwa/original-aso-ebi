@@ -17,10 +17,10 @@ import {
 } from "@expo-google-fonts/kumbh-sans";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import moment from "moment";
-import BottomNav from "../../../components/ButtomNav";
-import OrderDetails from "../../../components/OrderDetails";
-import OrderDetailsForProgress from "../../../components/OrderDetailsForProgress";
-import { useOrder } from "../../OrderContext";
+import BottomNav from "../../../../components/ButtomNav";
+import OrderDetails from "../../../../components/OrderDetails";
+import OrderDetailsForProgress from "../../../../components/OrderDetailsForProgress";
+import { useOrder } from "../../../contexts/OrderContext";
 export default function orderId() {
   const router = useRouter();
   const { orders } = useOrder(); // Fetch orders from context

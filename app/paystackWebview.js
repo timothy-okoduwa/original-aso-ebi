@@ -6,9 +6,9 @@ import { View, StyleSheet } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as Notifications from "expo-notifications";
-import { useOrder } from "./OrderContext";
+import { useOrder } from "./contexts/OrderContext";
 import { useContext } from "react";
-import { CartContext } from "./CartContext";
+import { CartContext } from "./contexts/CartContext";
 
 import PaymentSuccessModal from "../components/PaymentSuccessModal";
 

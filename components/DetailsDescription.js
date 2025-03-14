@@ -8,7 +8,7 @@ import {
   KumbhSans_500Medium,
 } from "@expo-google-fonts/kumbh-sans";
 import { Octicons, Entypo } from "@expo/vector-icons";
-import { CartContext } from "../app/CartContext";
+import { CartContext } from "../app/contexts/CartContext";
 import { Skeleton } from "./Spinner"; // Update this path
 
 export default function DetailsDescription({ product, loading = false }) {

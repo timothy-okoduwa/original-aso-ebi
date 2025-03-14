@@ -8,7 +8,7 @@ import {
   Image,
   Alert,
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   useFonts,
   KumbhSans_400Regular,
@@ -21,48 +21,51 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useDispatch } from "react-redux";
-// import { logoutUser, setUser } from "./features/auth/authSlice";
-import { AuthManager } from "../app/AuthManager";
-import { useLoading } from "../app/LoadingContext";
+import { useLoading } from "../app/contexts/LoadingContext";
+import { AuthContext } from "../app/_layout";
 
 export default function SettingContent({ userName, UserData }) {
+  // All hook calls must be at the top level and in the same order every render
+  // 1. Get all the context values first
   const { showLoading, hideLoading } = useLoading();
-
+  const { setIsAuthenticated } = useContext(AuthContext);
+  
+  // 2. Then all the React hooks
   const router = useRouter();
   const dispatch = useDispatch();
   const [profileImage, setProfileImage] = useState(p);
   const [isLoading, setIsLoading] = useState(false);
   const [userId, setUserId] = useState(null);
   const [token, setToken] = useState(null);
+  
+  // 3. Hook for fonts
+  const [fontsLoaded, fontError] = useFonts({
+    KumbhSans_400Regular,
+    KumbhSans_500Medium,
+  });
+  
   console.log(UserData);
+  
+  // 4. Effects
   useEffect(() => {
     const getStoredData = async () => {
       try {
-        const [storedToken, id] = await Promise.all([
-          AsyncStorage.getItem("token"),
-          AsyncStorage.getItem("userId"),
-        ]);
+        const storedToken = await AsyncStorage.getItem("token");
 
-        if (!storedToken || !id) {
+        if (!storedToken) {
           Alert.alert("Session Expired", "Please login again");
           router.push("/login");
           return;
         }
 
         setToken(storedToken);
-        setUserId(id);
       } catch (error) {
         console.error("Error retrieving stored data:", error);
         Alert.alert("Error", "Failed to load user data");
       }
     };
     getStoredData();
-  }, []);
-
-  const [fontsLoaded, fontError] = useFonts({
-    KumbhSans_400Regular,
-    KumbhSans_500Medium,
-  });
+  }, [router]);
 
   if (!fontsLoaded || fontError) {
     return null;
@@ -147,7 +150,7 @@ export default function SettingContent({ userName, UserData }) {
         Alert.alert("Success", "Profile image updated successfully");
       } catch (error) {
         console.error("Upload failed:", error);
-        handleUploadError(error);
+        Alert.alert("Error", "Failed to upload image. Please try again.");
       }
     } catch (error) {
       console.error("Image picker error:", error);
@@ -156,39 +159,39 @@ export default function SettingContent({ userName, UserData }) {
       setIsLoading(false);
     }
   };
-// Direct logout handler that can be added to your SettingContent.jsx
-// In SettingContent.jsx - Update your logout function:
-// In SettingContent.jsx - Updated logout function
-// In SettingContent.jsx - Updated logout function
 
-const handleLogout = async () => {
-  try {
-    // Start by showing loading if needed
-    showLoading();
+  const handleLogout = async () => {
+    try {
+      // Start by showing loading indicator
+      showLoading();
+      
+      // Remove the token from AsyncStorage
+      await AsyncStorage.removeItem('token');
     
-    // Call the logout method
-    await AuthManager.logout();
-    
-    // Navigate to login
-    router.replace('/login');
-  } catch (error) {
-    console.error("Logout error:", error);
-  } finally {
-    // Hide loading if needed
-    hideLoading();
-  }
-};
+      // Update auth context
+      setIsAuthenticated(false);
+      
+      // Hide loading and let the router handle redirection
+      hideLoading();
+    } catch (error) {
+      console.error("Logout error:", error);
+      Alert.alert("Error", "Failed to logout. Please try again.");
+      hideLoading();
+    }
+  };
 
-const logout=()=>{
-  handleLogout()
-}
+  const logout = () => {
+    handleLogout();
+  };
+  
   const editprofile = () => {
     router.push("/editprofile");
   };
+  
   const forgetpassword = () => {
     router.push("/forgetpassword");
   };
-  // console.log("user id:", userId);
+
   return (
     <View>
       <View style={styles.imagestuff}>

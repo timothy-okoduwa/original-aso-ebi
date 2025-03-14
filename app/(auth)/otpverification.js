@@ -25,7 +25,6 @@ import {
   KumbhSans_500Medium,
 } from "@expo-google-fonts/kumbh-sans";
 import { Lora_500Medium } from "@expo-google-fonts/lora";
-import { AuthManager } from "./AuthManager";
 
 const CustomToast = ({ visible, message, type }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -166,10 +165,7 @@ const handleVerifyOtpFunction = async () => {
     if (response.ok) {
       showToast("OTP verified successfully", "success");
       
-      setTimeout(() => {
-        // Use AuthManager to handle OTP completion
-        AuthManager.completeOtpVerification();
-      }, 1000);
+   
     } else {
       showToast(data.message || "Failed to verify OTP. Please try again.", "error");
     }

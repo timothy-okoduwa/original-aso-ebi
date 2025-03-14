@@ -11,9 +11,9 @@ import {
 import React, { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import ButtomNav from "../components/ButtomNav";
+import ButtomNav from "../../components/ButtomNav";
 import { StatusBar } from "expo-status-bar";
-import a from "../constants/image/oo.png";
+import a from "../../constants/image/oo.png";
 
 import {
   useFonts,
@@ -22,7 +22,7 @@ import {
 } from "@expo-google-fonts/kumbh-sans";
 import { useRouter } from "expo-router";
 import { Ionicons, Feather } from "@expo/vector-icons";
-import { Skeleton } from "../components/Spinner";
+import { Skeleton } from "../../components/Spinner";
 const BASE_URL = "https://oae-be.onrender.com/api/oae";
 // const TOKEN =
 //   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IlRpbW15bGVlb2tvZHV3YTdAZ21haWwuY29tIiwiaWQiOiI2NzY1OTY1Yjc5NWE4ZDA1Mjc5ZWYwNjMiLCJpYXQiOjE3MzgyMzA4MzYsImV4cCI6MTc0MDgyMjgzNn0.XL6zUHtFJjLrW4lSH-ivzTIoK7p88WZkJOrOt-862q4";

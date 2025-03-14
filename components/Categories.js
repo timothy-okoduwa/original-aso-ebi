@@ -73,11 +73,7 @@ export default function Categories({ setActiveCategory, activeCategory }) {
       const TOKEN = await AsyncStorage.getItem("token");
       const response = await axios.get(
         `${BASE_URL}/categories/all-categories/`,
-        {
-          headers: {
-            Authorization: `Bearer ${TOKEN}`,
-          },
-        }
+       
       );
       // Add "All Products" as the first category
       const allProductsCategory = {

@@ -1,7 +1,5 @@
-/** @format */
-
 // app/LoadingContext.js
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useState, useContext, useMemo } from "react";
 
 // Create a Context for the loading state
 const LoadingContext = createContext();
@@ -10,11 +8,17 @@ const LoadingContext = createContext();
 export const LoadingProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
 
+  // Define these functions outside of the useMemo to avoid recreation
   const showLoading = () => setLoading(true);
   const hideLoading = () => setLoading(false);
 
+  // Memoize the context value to prevent unnecessary re-renders
+  const value = useMemo(() => {
+    return { loading, showLoading, hideLoading };
+  }, [loading]);
+
   return (
-    <LoadingContext.Provider value={{ loading, showLoading, hideLoading }}>
+    <LoadingContext.Provider value={value}>
       {children}
     </LoadingContext.Provider>
   );

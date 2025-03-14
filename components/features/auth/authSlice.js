@@ -2,7 +2,6 @@
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { AuthManager } from "../../../app/AuthManager";
 
 // Define the initial state
 const initialState = {
@@ -99,7 +98,7 @@ export const loginUser = createAsyncThunk(
       try {
         await AsyncStorage.setItem("userId", userId);
         await AsyncStorage.setItem("token", token);
-        await AuthManager.login(token);
+        
         console.log(
           "Token stored successfully:",
           await AsyncStorage.getItem("token")

@@ -1,7 +1,7 @@
 // app/LoadingIndicator.js
 import React from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { useLoading } from './LoadingContext';
+import { useLoading } from '../contexts/LoadingContext';
 
 const LoadingIndicator = () => {
   const { loading } = useLoading();

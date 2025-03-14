@@ -35,18 +35,16 @@ export default function HeadAndNotification({userName}) {
   const goToNotifiation = () => {
     router.push('/notification');
   };
-  const goToLogin = () => {
-    router.push('/login');
-  };
+ 
   return (
     <View style={styles.mainhold}>
       <View style={styles.flexes}>
         <View>
           <Text style={styles.oae}>OAE</Text>
           
-                      <TouchableOpacity onPress={goToLogin} >
+                      <View >
                         <Text> Welcome, {userName ? userName : "Guest"}</Text>
-                      </TouchableOpacity>
+                      </View>
                    
         </View>
         <View>
@@ -70,6 +68,7 @@ export default function HeadAndNotification({userName}) {
 const styles = StyleSheet.create({
   mainhold: {
     marginTop: 0,
+   
   },
   flexes: {
     flexDirection: 'row',

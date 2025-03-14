@@ -18,7 +18,7 @@ import {
   KumbhSans_400Regular,
   KumbhSans_500Medium,
 } from "@expo-google-fonts/kumbh-sans";
-import { CartContext } from "../app/CartContext";
+import { CartContext } from "../app/contexts/CartContext";
 
 export default function BottomNav() {
   const pathname = usePathname();

@@ -52,12 +52,7 @@ export default function StoreResult() {
       
       const response = await axios.get(
         `${BASE_URL}/categories/all-categories`,
-        {
-          headers: {
-            Authorization: `Bearer ${TOKEN}`,
-            "Content-Type": "application/json",
-          },
-        }
+      
       );
       const category = response.data.data.find((cat) => cat._id === categoryId);
       setCategoryName(category ? category.categoryName : "");
@@ -72,12 +67,7 @@ export default function StoreResult() {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`${BASE_URL}/products/all-products`, {
-        headers: {
-          Authorization: `Bearer ${TOKEN}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await axios.get(`${BASE_URL}/products/all-products`);
 
       // Filter products by category
       const filteredProducts = response.data.data.filter(

@@ -12,7 +12,7 @@ import React from "react";
 import { Link, useRouter } from "expo-router";
 import { Image } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
-import a from "../constants/image/phonev.png";
+import a from "../../constants/image/phonev.png";
 import { StatusBar } from "expo-status-bar";
 // import { Feather } from '@expo/vector-icons';
 // import { Feather } from '@expo/vector-icons';
@@ -42,7 +42,7 @@ import {
   Lora_600SemiBold_Italic,
   Lora_700Bold_Italic,
 } from "@expo-google-fonts/lora";
-export default function passwordresetsuccessful() {
+export default function passwordresetsuccessfulauth() {
   const router = useRouter();
   const gotoreresetpassword = () => {
     router.push("/login");

@@ -1,5 +1,3 @@
-/** @format */
-
 import {
   View,
   Text,
@@ -16,18 +14,16 @@ import {
 } from "@expo-google-fonts/kumbh-sans";
 import a from "../constants/image/sen2.png";
 import { useRouter } from "expo-router";
-import { useOrder } from "../app/OrderContext";
+import { useOrder } from "../app/contexts/OrderContext";
+
 export default function OnGoingOrders() {
   const router = useRouter();
   const { orders } = useOrder();
 
   const moveToOrderDetails = (orderId) => {
-    // Remove the first character (#) from the orderId
     const sanitizedOrderId = orderId.startsWith("#")
       ? orderId.substring(1)
       : orderId;
-
-    // Navigate to order details page with the sanitized orderId
     router.push(`/orderdetails/orderr/${sanitizedOrderId}`);
   };
 
@@ -39,6 +35,7 @@ export default function OnGoingOrders() {
   if (!fontsLoaded || fontError) {
     return null;
   }
+  
   return (
     <View>
       {orders.length === 0 ? (
@@ -47,15 +44,25 @@ export default function OnGoingOrders() {
         </View>
       ) : (
         orders.map((order) => {
-          // Get the first image URL from orderedItems
-          const firstImage =
-            order?.items?.length > 0 ? order?.items[0].image : null;
-
-          // Debugging: Log the items and the first image
-          console.log("Order Items:", order.items); // Log the items in the order
-          console.log("First Image:", firstImage); // Log the first image
-          console.log("order:", order);
-
+          console.log("Full Order:", order);
+          
+          let firstImageUrl = null;
+          let parsedItems = [];
+          
+          // Parse the items if they're stored as a JSON string
+          if (order.items && typeof order.items === 'string') {
+            try {
+              parsedItems = JSON.parse(order.items);
+              if (parsedItems.length > 0 && parsedItems[0].image && parsedItems[0].image.length > 0) {
+                firstImageUrl = parsedItems[0].image[0];
+              }
+            } catch (e) {
+              console.error("Error parsing items:", e);
+            }
+          }
+          
+          console.log("First Image URL:", firstImageUrl);
+          
           return (
             <TouchableOpacity
               key={order.id}
@@ -66,7 +73,7 @@ export default function OnGoingOrders() {
                 <View style={styles.imageHolder}>
                   <Image
                     style={styles.image}
-                    source={firstImage || a} // Use fallback if firstImage is not available
+                    source={firstImageUrl ? { uri: firstImageUrl } : a}
                     resizeMode="cover"
                   />
                 </View>

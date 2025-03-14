@@ -8,16 +8,16 @@ import {
   RefreshControl,
 } from "react-native";
 import React, { useState, useEffect } from "react";
-import HeadAndNotification from "../components/HeadAndNotification";
+import HeadAndNotification from "../../components/HeadAndNotification";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import SearchCompnent from "../components/SearchCompnent";
-import Categories from "../components/Categories";
-import FabricData from "../components/FabricData";
-import ButtomNav from "../components/ButtomNav";
+import SearchCompnent from "../../components/SearchCompnent";
+import Categories from "../../components/Categories";
+import FabricData from "../../components/FabricData";
+import ButtomNav from "../../components/ButtomNav";
 import { StatusBar } from "expo-status-bar";
-import { useLoading } from "./LoadingContext";
+import { useLoading } from "../contexts/LoadingContext";
 import { Link, useRouter } from "expo-router";
-import { AuthManager } from "./AuthManager";
+
 
 export default function mainhome() {
   const [refreshing, setRefreshing] = useState(false);
@@ -28,70 +28,70 @@ export default function mainhome() {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
+  // Define fetchUserData outside of useEffect so it can be called from multiple places
+  const fetchUserData = async () => {
+    try {
+      const userId = await AsyncStorage.getItem("userId");
+      const token = await AsyncStorage.getItem("token");
+      console.log(token)
+      console.log(userId)
+      
+      if (userId && token) {
+        const response = await fetch(
+          `https://oae-be.onrender.com/api/oae/auth/${userId}/user`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const responseData = await response.json();
+
+        if (response.ok && responseData?.data) {
+          const fetchedUserName = responseData.data.name || "John Doe";
+          setUserName(fetchedUserName);
+        } else {
+          console.error(
+            "Error fetching user data:",
+            responseData.message || "Failed to fetch user"
+          );
+          setUserName("John Doe");
+        }
+      } else {
+        console.log("No userId or token found");
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
   // First useEffect - Authentication check
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const isAuthenticated = await AuthManager.isAuthenticated();
-        const isLoggingOut = await AuthManager.isLoggingOut();
-        
-        // Skip redirect if we're in the process of logging out
-        if (!isAuthenticated && !isLoggingOut) {
-          console.log("User not authenticated, redirecting to login");
+        const token = await AsyncStorage.getItem("token");
+        if (!token) {
+          // If no token found, redirect to login
           router.replace("/login");
+          return;
         }
+        
+        // Now fetchUserData is accessible here
+        fetchUserData();
       } catch (error) {
         console.error("Auth check error:", error);
         router.replace("/login");
-      } finally {
-        setIsLoading(false);
       }
     };
-    
+  
     checkAuth();
-  }, [router]);
+  }, []);
 
-  // Second useEffect - Fetch user data
+  // Second useEffect - Loading indicator
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const userId = await AsyncStorage.getItem("userId");
-        const token = await AsyncStorage.getItem("token");
-
-        if (userId && token) {
-          const response = await fetch(
-            `https://oae-be.onrender.com/api/oae/auth/${userId}/user`,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-
-          const responseData = await response.json();
-
-          if (response.ok && responseData?.data) {
-            const fetchedUserName = responseData.data.name || "John Doe";
-            setUserName(fetchedUserName);
-          } else {
-            console.error(
-              "Error fetching user data:",
-              responseData.message || "Failed to fetch user"
-            );
-            setUserName("John Doe");
-          }
-        } else {
-          console.log("No userId or token found");
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
-
-    fetchUserData();
-
     showLoading();
     const timeout = setTimeout(() => {
       hideLoading();
@@ -100,6 +100,7 @@ export default function mainhome() {
     return () => clearTimeout(timeout);
   }, []);
 
+  // Rest of your component remains the same
   const onRefresh = () => {
     setRefreshing(true);
     setTimeout(() => {
@@ -117,18 +118,14 @@ export default function mainhome() {
     setActiveCategory(category);
   };
 
-  // Conditional rendering after all hooks have been called
-  if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text>Loading...</Text>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
+      <View style={styles.main2}>
+      <HeadAndNotification userName={userName} />
+      </View>
+      
       <ScrollView
         contentContainerStyle={styles.scrollViewContent}
         showsVerticalScrollIndicator={false}
@@ -143,7 +140,7 @@ export default function mainhome() {
         }
       >
         <View style={styles.main}>
-          <HeadAndNotification userName={userName} />
+         
           <SearchCompnent setSearchQuery={handleSearch} />
           <Categories
             setActiveCategory={handleCategoryChange}
@@ -175,5 +172,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  }
+  },
+  main2: {
+    padding: 15,
+
+  }, 
 });

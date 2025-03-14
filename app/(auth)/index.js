@@ -11,7 +11,6 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { CartProvider } from "./CartContext";
 import {
   useFonts,
   LexendDeca_400Regular,
@@ -123,7 +122,7 @@ export default function Index() {
   };
 
   return (
-    <CartProvider>
+
       <View style={styles.container}>
         <TouchableOpacity style={styles.textContainer}>
           <Animated.Text style={[styles.text, animatedStyles.O]}>
@@ -136,10 +135,10 @@ export default function Index() {
             E
           </Animated.Text>
         </TouchableOpacity>
-        <StatusBar style="light" backgroundColor="#000" />
+        <StatusBar style="dark" backgroundColor="#000" />
         <Text style={styles.small}>By Idera Oluwa</Text>
       </View>
-    </CartProvider>
+  
   );
 }
 

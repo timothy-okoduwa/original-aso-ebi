@@ -12,7 +12,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useRouter, useLocalSearchParams } from "expo-router";
 import { Image } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
-import a from "../constants/image/check.png";
+import a from "../../constants/image/check.png";
 import { StatusBar } from "expo-status-bar";
 import {
   useFonts,

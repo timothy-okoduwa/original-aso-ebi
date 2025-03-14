@@ -44,12 +44,7 @@ export default function Shop() {
       setError(null);
       const response = await axios.get(
         `${BASE_URL}/categories/all-categories`,
-        {
-          headers: {
-            Authorization: `Bearer ${TOKEN}`,
-            "Content-Type": "application/json",
-          },
-        }
+      
       );
       setCategories(response.data.data);
     } catch (err) {

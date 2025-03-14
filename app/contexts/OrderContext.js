@@ -19,3 +19,8 @@ export function OrderProvider({ children }) {
 }
 
 export const useOrder = () => useContext(OrderContext);
+
+// Add the default export to satisfy Expo Router requirements
+export default function OrderContextRoute() {
+  return null; // This route component doesn't render anything
+}

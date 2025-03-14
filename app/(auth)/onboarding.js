@@ -7,12 +7,12 @@ import {
 } from 'react-native';
 import React from 'react';
 import { Image } from 'react-native'; // Import Image from 'react-native' instead of 'expo-image'
-import a from '../constants/image/oo.png';
+import a from '../../constants/image/oo.png';
 import { useFonts, Ledger_400Regular } from '@expo-google-fonts/ledger';
 import { LexendDeca_400Regular } from '@expo-google-fonts/lexend-deca';
 import { AntDesign } from '@expo/vector-icons';
 import { Link, useRouter } from 'expo-router';
-import data from '../components/data';
+import data from '../../components/data';
 import { StatusBar } from 'expo-status-bar';
 export default function Onboarding() {
   const router = useRouter();
@@ -68,7 +68,9 @@ export default function Onboarding() {
             </TouchableOpacity>
           </View>
         </View>
-     
+     <TouchableOpacity style={{justifyContent:'flex-end',width:'100%', marginTop:20}} onPress={skip}>
+      <Text style={styles.skip}>Skip <AntDesign name="arrowright" size={24} color="black" /></Text> 
+     </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -141,7 +143,7 @@ const styles = StyleSheet.create({
   },
   skip: {
     fontSize: 18,
-
+textAlign:'right',
     // marginLeft: 'auto',
     fontFamily: 'LexendDeca_400Regular',
   },

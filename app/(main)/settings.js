@@ -10,7 +10,7 @@ import {
   RefreshControl,
 } from "react-native";
 import React, { useState, useEffect } from "react";
-import ButtomNav from "../components/ButtomNav";
+import ButtomNav from "../../components/ButtomNav";
 import { StatusBar } from "expo-status-bar";
 
 import {
@@ -19,8 +19,8 @@ import {
   KumbhSans_500Medium,
 } from "@expo-google-fonts/kumbh-sans";
 import { useRouter } from "expo-router";
-import SettingContent from "../components/SettingContent";
-import { useLoading } from "./LoadingContext";
+import SettingContent from "../../components/SettingContent";
+import { useLoading } from "../contexts/LoadingContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function settings() {

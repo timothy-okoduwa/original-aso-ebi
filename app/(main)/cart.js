@@ -6,8 +6,8 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import React, { useContext } from 'react';
-import { CartContext } from './CartContext';
-import ButtomNav from '../components/ButtomNav';
+import { CartContext } from '../contexts/CartContext';
+import ButtomNav from '../../components/ButtomNav';
 import { StatusBar } from 'expo-status-bar';
 import { AntDesign } from '@expo/vector-icons';
 import {
@@ -17,7 +17,7 @@ import {
 } from '@expo-google-fonts/kumbh-sans';
 import { useRouter } from 'expo-router';
 import moment from 'moment';
-import CartItems from '../components/CartItems';
+import CartItems from '../../components/CartItems';
 
 export default function cart() {
   const { cartItems } = useContext(CartContext);

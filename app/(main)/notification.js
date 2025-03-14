@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import React from 'react';
-import ButtomNav from '../components/ButtomNav';
+import ButtomNav from '../../components/ButtomNav';
 import { StatusBar } from 'expo-status-bar';
 import {
   AntDesign,

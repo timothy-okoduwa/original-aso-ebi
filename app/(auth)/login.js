@@ -18,9 +18,10 @@ import { AntDesign } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "../components/features/auth/authSlice";
+import { loginUser } from "../../components/features/auth/authSlice";
 import Toast from "react-native-toast-message";
-import { useLoading } from "./LoadingContext";
+import { useLoading } from "../contexts/LoadingContext";
+import { AuthContext } from "../_layout";
 // import { Feather } from '@expo/vector-icons';
 import {
   useFonts,
@@ -49,7 +50,6 @@ import {
 } from "@expo-google-fonts/lora";
 const CustomToast = ({ visible, message, type }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
-
   useEffect(() => {
     if (visible) {
       Animated.timing(fadeAnim, {
@@ -101,11 +101,13 @@ export default function login() {
   const [passwordError, setPasswordError] = useState("");
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const { setIsAuthenticated } = React.useContext(AuthContext);
+
   const gotocreateaccount = () => {
     router.push("/createaccount");
   };
   const gotoforgetpassword = () => {
-    router.push("/forgetpassword");
+    router.push("/forttt");
   };
 
   const handleFocus = () => {
@@ -205,12 +207,14 @@ export default function login() {
 
   useEffect(() => {
     if (authStatus === "succeeded") {
-      showToast(successMessage || "Registration successful!", "success");
+      showToast(successMessage || "Login successful!", "success");
       setLoading(false);
       hideLoading();
-      router.push("/mainhome");
+      setIsAuthenticated(true);
+      // Don't navigate here - let the AuthProvider handle it
+      // The AuthProvider will detect the token in AsyncStorage and redirect
     } else if (authStatus === "failed") {
-      showToast(authError || "Registration failed. Please try again.", "error");
+      showToast(authError || "Login failed. Please try again.", "error");
       setLoading(false);
       hideLoading();
     }
@@ -414,6 +418,8 @@ const styles = StyleSheet.create({
   },
   testx: {
     marginLeft: 10,
+
+    width:300
   },
   reegister: {
     fontFamily: "KumbhSans_500Medium",
