@@ -1,6 +1,6 @@
 /** @format */
 
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet } from "react-native";
 import React, { useState } from "react";
 import Billing from "./Billing";
 import PaymentMethod from "./PaymentMethod";
@@ -12,11 +12,13 @@ export default function CheckOutStep({
   numberOfItems,
   orderedItems,
 }) {
-  const [calculatedTotalAmount, setCalculatedTotalAmount] = useState(0);
+  const [orderDetails, setOrderDetails] = useState(null);
+  
   // Function to move to the next step
-  const handleNext = (amount) => {
+  const handleNext = (orderData) => {
     if (currentStep === "Billing") {
-      setCalculatedTotalAmount(amount); // Set the calculated amount
+      // Store the entire order data object
+      setOrderDetails(orderData);
       onStepChange("PaymentMethod");
     } else if (currentStep === "PaymentMethod") {
       onStepChange("Review");
@@ -36,13 +38,13 @@ export default function CheckOutStep({
       )}
       {currentStep === "PaymentMethod" && (
         <PaymentMethod
-          onNext={handleNext}
-          totalAmount={calculatedTotalAmount}
+          orderDetails={orderDetails}
+          totalAmount={orderDetails?.totalAmount || 0}
           numberOfItems={numberOfItems}
-          orderedItems={orderedItems}
+          orderedItems={orderDetails?.items || orderedItems}
+          totalQuantity={orderDetails?.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0}
         />
       )}
-      {/* Add more steps if necessary */}
     </View>
   );
 }

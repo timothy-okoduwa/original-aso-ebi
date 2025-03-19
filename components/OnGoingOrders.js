@@ -4,8 +4,9 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Image } from "react-native";
 import {
   useFonts,
@@ -14,17 +15,81 @@ import {
 } from "@expo-google-fonts/kumbh-sans";
 import a from "../constants/image/sen2.png";
 import { useRouter } from "expo-router";
-import { useOrder } from "../app/contexts/OrderContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function OnGoingOrders() {
   const router = useRouter();
-  const { orders } = useOrder();
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const moveToOrderDetails = (orderId) => {
-    const sanitizedOrderId = orderId.startsWith("#")
-      ? orderId.substring(1)
-      : orderId;
+    const sanitizedOrderId = orderId
+     
+  
+      console.log("orderid:",sanitizedOrderId)
     router.push(`/orderdetails/orderr/${sanitizedOrderId}`);
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      // Get userId and token from AsyncStorage
+      const userId = await AsyncStorage.getItem("userId");
+      const token = await AsyncStorage.getItem("token");
+
+      if (!userId || !token) {
+        setError("User not authenticated");
+        setLoading(false);
+        return;
+      }
+
+      // Make API request
+      const response = await fetch(
+        `https://oae-be.onrender.com/api/oae/orders/orders/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      setOrders(result.data.orders);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      setError(error.message);
+      setLoading(false);
+    }
+  };
+
+  const getStatusStyle = (status) => {
+    switch (status.toLowerCase()) {
+      case "confirmed":
+        return styles.pills;
+      case "shipped":
+        return styles.pillsShipped;
+      case "pending":
+        return styles.pillsPending;
+      case "processing":
+        return styles.processingPills;
+      case "delivered":
+        return styles.pillsDelivered;
+      case "cancelled":
+        return styles.pillsCancled;
+      default:
+        return styles.pills;
+    }
   };
 
   const [fontsLoaded, fontError] = useFonts({
@@ -35,80 +100,77 @@ export default function OnGoingOrders() {
   if (!fontsLoaded || fontError) {
     return null;
   }
-  
-  return (
-    <View>
-      {orders.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No ongoing orders yet!</Text>
+
+  if (loading) {
+    return (
+      <View style={styles.emptyContainer}>
+        <ActivityIndicator size="large" color="#000000" />
+        <Text style={styles.emptyText}>Loading orders...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>Error loading orders: {error}</Text>
+      </View>
+    );
+  }
+
+  if (orders.length === 0) {
+    return (
+      <View style={styles.cartt}>
+        <View style={styles.circle}>
+          <Text style={styles.cartc}>🛒</Text>
         </View>
-      ) : (
-        orders.map((order) => {
-          console.log("Full Order:", order);
-          
-          let firstImageUrl = null;
-          let parsedItems = [];
-          
-          // Parse the items if they're stored as a JSON string
-          if (order.items && typeof order.items === 'string') {
-            try {
-              parsedItems = JSON.parse(order.items);
-              if (parsedItems.length > 0 && parsedItems[0].image && parsedItems[0].image.length > 0) {
-                firstImageUrl = parsedItems[0].image[0];
-              }
-            } catch (e) {
-              console.error("Error parsing items:", e);
-            }
-          }
-          
-          console.log("First Image URL:", firstImageUrl);
-          
-          return (
-            <TouchableOpacity
-              key={order.id}
-              style={styles.holderr}
-              onPress={() => moveToOrderDetails(order.id)}
-            >
+        <Text style={styles.empty}>No Orders Yet</Text>
+        <Text style={styles.once}>Once you place an order, it will appear here</Text>
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView style={styles.container}>
+      {orders.map((order) => (
+        <TouchableOpacity
+          key={order._id}
+          style={styles.holderr}
+          onPress={() => moveToOrderDetails(order.orderid)}
+        >
+          <View>
+            <View style={styles.imageHolder}>
+              <Image style={styles.image} source={a} resizeMode="cover" />
+            </View>
+          </View>
+          <View style={styles.prices}>
+            <View>
               <View>
-                <View style={styles.imageHolder}>
-                  <Image
-                    style={styles.image}
-                    source={firstImageUrl ? { uri: firstImageUrl } : a}
-                    resizeMode="cover"
-                  />
-                </View>
+                <Text style={styles.namez}>Order ID: {order.orderid}</Text>
               </View>
-              <View style={styles.prices}>
-                <View>
-                  <View>
-                    <Text style={styles.namez}>
-                      Order ID: {order.id || "N/A"}
-                    </Text>
-                  </View>
-                  <View>
-                    <Text style={styles.amont}>
-                      ₦
-                      {Number(order.total).toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                      })}
-                    </Text>
-                  </View>
-                  <View>
-                    <Text style={styles.qty}>Qty: {order.qty} item(s)</Text>
-                  </View>
-                </View>
-                <View style={styles.pills}>
-                  <Text style={styles.cnf}>Confirmed</Text>
-                </View>
+              <View>
+                <Text style={styles.amont}>₦ {order.totalAmount.toLocaleString()}</Text>
               </View>
-            </TouchableOpacity>
-          );
-        })
-      )}
-    </View>
+              <View>
+                <Text style={styles.qty}>Qty: {order.totalQty} item(s)</Text>
+              </View>
+            </View>
+            <View style={getStatusStyle(order.orderStatus)}>
+              <Text style={styles.cnf}>{order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1)}</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
   );
 }
+
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 15,
+    backgroundColor: "#FFFFFF",
+  },
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
@@ -118,6 +180,8 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     color: "#888",
+    fontFamily: "KumbhSans_400Regular",
+    marginTop: 10,
   },
   pop: {
     justifyContent: "flex-end",
@@ -138,9 +202,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 10,
     marginBottom: 15,
-
-    borderWidth: 1, // Add border width
-    borderColor: "#767676", // Add border color
+    borderWidth: 1, 
+    borderColor: "#767676", 
   },
   first: {
     color: "white",
@@ -168,7 +231,6 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     marginTop: 50,
   },
-
   summary: {
     marginTop: 30,
     fontFamily: "KumbhSans_400Regular",
@@ -178,17 +240,14 @@ const styles = StyleSheet.create({
     color: "#000000",
   },
   holderr: {
-    // backgroundColor: 'green',
     flexDirection: "row",
-    // justifyContent: 'space-between',
-    marginBottom: 50,
+    marginBottom: 30,
   },
   imageHolder: {
-    height: 100, // Adjust card height as needed
-    width: 100, // Set width to 48% to accommodate two cards in a row with some space between them
+    height: 100,
+    width: 100,
     borderRadius: 3.12,
     overflow: "hidden",
-    // backgroundColor: 'red',
   },
   image: {
     width: "100%",
@@ -196,7 +255,7 @@ const styles = StyleSheet.create({
   },
   prices: {
     marginLeft: 20,
-    width: "40%",
+    width: "70%",
     flexDirection: "column",
     justifyContent: "space-between",
   },
@@ -241,8 +300,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5F5F5",
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 1, // Add border width
-    borderColor: "#DCDCDC", // Add border color
+    borderWidth: 1,
+    borderColor: "#DCDCDC",
   },
   gaddle: {
     width: 32,
@@ -251,8 +310,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#D2D2D233",
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 1, // Add border width
-    borderColor: "#DCDCDC", // Add border color
+    borderWidth: 1,
+    borderColor: "#DCDCDC",
   },
   mount: {
     fontFamily: "KumbhSans_500Medium",
@@ -260,9 +319,7 @@ const styles = StyleSheet.create({
     color: "#000000",
   },
   delete: {
-    // marginLeft: 80,
     flex: 1,
-
     alignItems: "flex-end",
   },
   cartt: {
@@ -315,7 +372,58 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 10,
   },
+  pillsPending: {
+    width: 90,
+    height: 30,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFB020",
+    borderRadius: 4,
+    fontFamily: "KumbhSans_400Regular",
+    fontSize: 12,
+    marginTop: 10,
+  },
+  pillsDelivered: {
+    width: 90,
+    height: 30,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#14B8A6",
+    borderRadius: 4,
+    fontFamily: "KumbhSans_400Regular",
+    fontSize: 12,
+    marginTop: 10,
+  },
+  processingPills:{
+    width: 90,
+    height: 30,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "purple",
+    borderRadius: 4,
+    fontFamily: "KumbhSans_400Regular",
+    fontSize: 12,
+    marginTop: 10,
+  },
+  pillsCancled:{
+    width: 90,
+    height: 30,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F1451B",
+    borderRadius: 4,
+    fontFamily: "KumbhSans_400Regular",
+    fontSize: 12,
+    marginTop: 10,
+  },
   cnf: {
     color: "#FFFFFF",
   },
+  cartc:{
+    fontSize:90
+      },
 });

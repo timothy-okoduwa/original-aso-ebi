@@ -1,19 +1,18 @@
-/** @format */
-
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
 } from "react-native";
-import React, { useState } from "react";
-import { useRouter } from "expo-router"; // Import useRouter
+import React, { useState, useEffect } from "react";
+import { useRouter } from "expo-router";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import PaymentSuccessModal from "../components/PaymentSuccessModal";
 import { useOrder } from "../app/contexts/OrderContext";
 import {
@@ -26,59 +25,246 @@ import {
 } from "@expo-google-fonts/kumbh-sans";
 import { useContext } from "react";
 import { CartContext } from "../app/contexts/CartContext";
+
 export default function PaymentMethod({
   totalAmount,
   numberOfItems,
   orderedItems,
+  totalQuantity,
+  orderDetails // Add this new prop
 }) {
-  const [isModalVisible, setModalVisible] = useState(false); // Modal state
-  const [loading, setLoading] = useState(false); // Loading state
-  const [selectedMethod, setSelectedMethod] = useState(null); // Track selected method
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [selectedMethod, setSelectedMethod] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [token, setToken] = useState(null);
+  const [transactionRef, setTransactionRef] = useState(null);
+  const [transactionId, setTransactionId] = useState(null);
+  
   const [fontsLoaded, fontError] = useFonts({
     LexendDeca_400Regular,
     KumbhSans_400Regular,
     KumbhSans_500Medium,
   });
 
-  const router = useRouter(); // Initialize the router
+  const router = useRouter();
   const { addOrder } = useOrder();
   const { clearCart } = useContext(CartContext);
+
+  // Fetch userId and token from AsyncStorage when component mounts
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        const storedUserId = await AsyncStorage.getItem('userId');
+        const storedToken = await AsyncStorage.getItem('token');
+        
+        if (storedUserId && storedToken) {
+          setUserId(storedUserId);
+          setToken(storedToken);
+        } else {
+          Alert.alert("Error", "User data not found. Please login again.");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        Alert.alert("Error", "Failed to fetch user data");
+      }
+    };
+    
+    getUserData();
+  }, []);
 
   if (!fontsLoaded || fontError) {
     return null;
   }
 
-  const handlePaymentSelection = (paymentType) => {
-    setTimeout(() => {
-      router.push({
-        pathname: "/paystackWebview", // Your WebView route
-        params: { paymentType, totalAmount, orderedItems, numberOfItems }, // Pass the paymentType to the next page
-      });
-      setLoading(false); // Stop loading after navigation
-    }, 5000); // 5 seconds delay
+  const initiateTransaction = async (selectedMethod) => {
+    if (!userId || !token) {
+      Alert.alert("Error", "User data not available. Please login again.");
+      return null;
+    }
+    
+    try {
+      const response = await fetch(
+        `https://oae-be.onrender.com/api/oae/payments/transaction/${userId}`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization':`Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            amount: Number(totalAmount),
+            orderQty: String(totalQuantity),
+            paymentChannel: selectedMethod
+          })
+        }
+      );
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        // Store transaction reference and ID
+        const ref = result.data.transactionData.reference;
+        const id = result.data.createTransaction._id;
+        
+        console.log("Received transaction data:", { ref, id });
+        
+        // Set state variables
+        setTransactionRef(ref);
+        setTransactionId(id);
+        
+        // Return the URL for navigation
+        return result.data.transactionData.authorization_url;
+      } else {
+        Alert.alert("Payment Error", result.message || "Failed to initiate payment");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error initiating transaction:", error);
+      Alert.alert("Error", "Failed to connect to payment service");
+      return null;
+    }
   };
+
+  const updateTransactionStatus = async (reference) => {
+    if (!userId || !token || !transactionId) {
+      Alert.alert("Error", "Transaction data not available");
+      return false;
+    }
+    
+    try {
+      const response = await fetch(
+        `https://oae-be.onrender.com/api/oae/payments/transaction/${transactionId}/${userId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization':`Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            reference: reference
+          })
+        }
+      );
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        return true;
+      } else {
+        Alert.alert("Update Error", result.message || "Failed to update transaction status");
+        return false;
+      }
+    } catch (error) {
+      console.error("Error updating transaction:", error);
+      Alert.alert("Error", "Failed to update transaction status");
+      return false;
+    }
+  };
+  console.log("Order details received:", orderDetails);
+  console.log("Ordered items:", orderedItems);
+
+  const handlePaymentSelection = async (paymentType) => {
+    setLoading(true);
+    setSelectedMethod(paymentType);
+    
+    try {
+      // Instead of calling initiateTransaction, put the logic directly here
+      if (!userId || !token) {
+        Alert.alert("Error", "User data not available. Please login again.");
+        setLoading(false);
+        return;
+      }
+      
+      const response = await fetch(
+        `https://oae-be.onrender.com/api/oae/payments/transaction/${userId}`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization':`Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            amount: Number(totalAmount),
+            orderQty: String(totalQuantity),
+            paymentChannel: paymentType
+          })
+        }
+      );
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        // Get the transaction data directly from the response
+        const authorizationUrl = result.data.transactionData.authorization_url;
+        const reference = result.data.transactionData.reference;
+        const transactionId = result.data.createTransaction._id;
+        console.log(transactionId)
+        // Log the data for debugging
+        console.log("Transaction data before navigation:", {
+          authorizationUrl: !!authorizationUrl,
+          reference: !!reference,
+          transactionId: !!transactionId
+        });
+        
+        // Navigate with the local variables, not state variables
+        router.push({
+          pathname: "/paystackWebview",
+          params: { 
+            authorizationUrl,
+            reference,
+            transactionId,
+            paymentType, 
+            totalAmount, 
+             orderedItems: JSON.stringify(orderedItems), 
+            numberOfItems,
+            totalQuantity,
+            // Include complete order details if needed by the webview
+            orderDetails: JSON.stringify(orderDetails)
+          },
+        });
+      } else {
+        Alert.alert("Payment Error", result.message || "Failed to initiate payment");
+      }
+    } catch (error) {
+      console.error("Error initiating transaction:", error);
+      Alert.alert("Error", "Failed to connect to payment service");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const generateOrderId = () => {
     const randomNumber = Math.floor(100000 + Math.random() * 900000);
     return `#${randomNumber}`;
   };
+  
   const orderId = generateOrderId();
+  
   const payOnDelivery = () => {
-    setLoading(true); // Start loading
-    setSelectedMethod("delivery"); // Track selected method
+    setLoading(true);
+    setSelectedMethod("delivery");
+    
+    // No need to call API for pay-on-delivery, just create local order
     setTimeout(() => {
-      setModalVisible(true); // Show the modal after 5 seconds
-      setLoading(false); // Stop loading
-    }, 5000);
-    addOrder({
-      id: orderId,
-      items: orderedItems, // Use actual cart items
-      total: totalAmount,
-      qty: numberOfItems,
-      PaymentMethod: "delivery",
-      date: new Date().toISOString(),
-    });
-    // Clear the cart
-    clearCart();
+      addOrder({
+        id: orderId,
+        items: orderedItems,
+        total: totalAmount,
+        qty: totalQuantity,
+        PaymentMethod: "delivery",
+        date: new Date().toISOString(),
+        // Include additional order details from Billing
+        address: orderDetails?.address,
+        phoneNumber: orderDetails?.phoneNumber,
+        deliveryFee: orderDetails?.deliveryFee,
+        serviceFee: orderDetails?.serviceFee
+      });
+      
+      clearCart();
+      setModalVisible(true);
+      setLoading(false);
+    }, 2000); // Reduced to 2 seconds for better UX
   };
 
   const closeModal = () => {
@@ -86,11 +272,9 @@ export default function PaymentMethod({
   };
 
   const handlePress = (paymentType) => {
-    setLoading(true); // Start loading
-    setSelectedMethod(paymentType); // Track selected method
-    handlePaymentSelection(paymentType); // Delay before handling payment selection
+    handlePaymentSelection(paymentType);
   };
-
+console.log(orderedItems)
   return (
     <View>
       <View style={styles.mainn}>
@@ -106,14 +290,14 @@ export default function PaymentMethod({
       </View>
 
       <View style={styles.pushh}>
-        {/* Pay with Card */}
+        {/* Payment options remain the same */}
         <TouchableOpacity
           style={[
             styles.pettt,
             loading && selectedMethod === "card" && styles.disabledButton,
-          ]} // Disable the button when loading
+          ]}
           onPress={() => handlePress("card")}
-          disabled={loading && selectedMethod === "card"} // Disable the button while loading
+          disabled={loading}
         >
           <View>
             <Text style={styles.plat}>Pay with Card</Text>
@@ -122,12 +306,13 @@ export default function PaymentMethod({
             </View>
           </View>
           {loading && selectedMethod === "card" ? (
-            <ActivityIndicator size="small" color="black" /> // Show loader while waiting
+            <ActivityIndicator size="small" color="black" />
           ) : (
             <AntDesign name="right" size={24} color="black" />
           )}
         </TouchableOpacity>
 
+        {/* Remaining payment options... */}
         {/* Bank Transfer */}
         <TouchableOpacity
           style={[
@@ -135,9 +320,9 @@ export default function PaymentMethod({
             loading &&
               selectedMethod === "bank_transfer" &&
               styles.disabledButton,
-          ]} // Disable the button when loading
+          ]}
           onPress={() => handlePress("bank_transfer")}
-          disabled={loading && selectedMethod === "bank_transfer"} // Disable the button while loading
+          disabled={loading}
         >
           <View>
             <Text style={styles.plat}>Bank Transfer</Text>
@@ -150,7 +335,7 @@ export default function PaymentMethod({
             </View>
           </View>
           {loading && selectedMethod === "bank_transfer" ? (
-            <ActivityIndicator size="small" color="black" /> // Show loader while waiting
+            <ActivityIndicator size="small" color="black" />
           ) : (
             <AntDesign name="right" size={24} color="black" />
           )}
@@ -161,9 +346,9 @@ export default function PaymentMethod({
           style={[
             styles.pettt,
             loading && selectedMethod === "bank" && styles.disabledButton,
-          ]} // Disable the button when loading
+          ]}
           onPress={() => handlePress("bank")}
-          disabled={loading && selectedMethod === "bank"} // Disable the button while loading
+          disabled={loading}
         >
           <View>
             <Text style={styles.plat}>Bank</Text>
@@ -172,7 +357,7 @@ export default function PaymentMethod({
             </View>
           </View>
           {loading && selectedMethod === "bank" ? (
-            <ActivityIndicator size="small" color="black" /> // Show loader while waiting
+            <ActivityIndicator size="small" color="black" />
           ) : (
             <AntDesign name="right" size={24} color="black" />
           )}
@@ -183,9 +368,9 @@ export default function PaymentMethod({
           style={[
             styles.pettt,
             loading && selectedMethod === "ussd" && styles.disabledButton,
-          ]} // Disable the button when loading
+          ]}
           onPress={() => handlePress("ussd")}
-          disabled={loading && selectedMethod === "ussd"} // Disable the button while loading
+          disabled={loading}
         >
           <View>
             <Text style={styles.plat}>USSD</Text>
@@ -194,7 +379,7 @@ export default function PaymentMethod({
             </View>
           </View>
           {loading && selectedMethod === "ussd" ? (
-            <ActivityIndicator size="small" color="black" /> // Show loader while waiting
+            <ActivityIndicator size="small" color="black" />
           ) : (
             <AntDesign name="right" size={24} color="black" />
           )}
@@ -205,9 +390,9 @@ export default function PaymentMethod({
           style={[
             styles.pettt,
             loading && selectedMethod === "qr" && styles.disabledButton,
-          ]} // Disable the button when loading
+          ]}
           onPress={() => handlePress("qr")}
-          disabled={loading && selectedMethod === "qr"} // Disable the button while loading
+          disabled={loading}
         >
           <View>
             <Text style={styles.plat}>QR Code</Text>
@@ -216,7 +401,7 @@ export default function PaymentMethod({
             </View>
           </View>
           {loading && selectedMethod === "qr" ? (
-            <ActivityIndicator size="small" color="black" /> // Show loader while waiting
+            <ActivityIndicator size="small" color="black" />
           ) : (
             <AntDesign name="right" size={24} color="black" />
           )}
@@ -227,9 +412,9 @@ export default function PaymentMethod({
           style={[
             styles.pettt,
             loading && selectedMethod === "delivery" && styles.disabledButton,
-          ]} // Disable the button when loading
+          ]}
           onPress={payOnDelivery}
-          disabled={loading && selectedMethod === "delivery"} // Disable the button while loading
+          disabled={loading}
         >
           <View>
             <Text style={styles.plat}>Pay on Delivery</Text>
@@ -240,7 +425,7 @@ export default function PaymentMethod({
             </View>
           </View>
           {loading && selectedMethod === "delivery" ? (
-            <ActivityIndicator size="small" color="black" /> // Show loader while waiting
+            <ActivityIndicator size="small" color="black" />
           ) : (
             <AntDesign name="right" size={24} color="black" />
           )}
@@ -252,6 +437,7 @@ export default function PaymentMethod({
 }
 
 const styles = StyleSheet.create({
+  // Styles remain the same
   store: {
     fontFamily: "KumbhSans_400Regular",
     color: "#000000",
@@ -296,6 +482,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   disabledButton: {
-    opacity: 0.5, // Make the button appear disabled
+    opacity: 0.5,
   },
 });

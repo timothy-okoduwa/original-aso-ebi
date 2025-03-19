@@ -9,7 +9,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { Image } from "react-native";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import Icon from "react-native-vector-icons/MaterialIcons"; // Install this using `npm install react-native-vector-icons`
+import Icon from "react-native-vector-icons/MaterialIcons";
 import moment from "moment";
 import {
   useFonts,
@@ -19,35 +19,49 @@ import {
 import a from "../constants/image/sen2.png";
 import { useRouter } from "expo-router";
 
-export default function OrderDetailsForProgress({ order }) {
+export default function OrderDetailsForProgress({ order, deliveryAddress, orderStatus }) {
+  // Destructure order object for easier access
+  const { id, totalAmount, createdAt, paymentMethod, items, deliveryFee, serviceFee } = order;
+  
   const [lineHeight, setLineHeight] = useState(0);
+  
+  // Define order statuses and their progression order
+  const statusOrder = ["pending", "confirmed", "processing", "shipped", "delivered"];
+  
+  // Find the current status index
+  const currentStatusIndex = statusOrder.findIndex(
+    status => status.toLowerCase() === orderStatus?.toLowerCase()
+  );
+  
+  // Define the steps for order progress tracking with dynamic completion status
   const steps = [
     {
-      title: "Confirm Order",
-      description: "Your order has been confirmed.",
-      completed: true,
+      title: "Pending Order",
+      description: "Got your order! Just waiting to be processed. ⏳",
+      completed: currentStatusIndex >= 0,
     },
     {
-      title: "Preparing Order",
-      description: "Your order is being prepared.",
-      completed: false,
+      title: "Confirm Order",
+      description: "Your order is confirmed! We’re on it. ✅",
+      completed: currentStatusIndex >= 1,
+    },
+    {
+      title: "Processing Order",
+      description: "We’re prepping your order. Almost there! 🔄",
+      completed: currentStatusIndex >= 2,
     },
     {
       title: "Shipped",
-      description: "Your order has been given to our rider.",
-      completed: false,
+      description: "Your order is on the move! 🚚",
+      completed: currentStatusIndex >= 3,
     },
     {
-      title: "In Transit",
-      description: "Your order is en route to you.",
-      completed: false,
-    },
-    {
-      title: "Package is here!",
-      description: "Yay! Your package is here.",
-      completed: false,
+      title: "Delivered",
+      description: "It’s here! Hope you love it. 🎉",
+      completed: currentStatusIndex >= 4,
     },
   ];
+  
 
   const handleLayout = (event) => {
     const { height } = event.nativeEvent.layout;
@@ -55,9 +69,7 @@ export default function OrderDetailsForProgress({ order }) {
   };
 
   const router = useRouter();
-  const move = () => {
-    router.push("/orderdetails/ordernumber");
-  };
+  
   const [fontsLoaded, fontError] = useFonts({
     KumbhSans_400Regular,
     KumbhSans_500Medium,
@@ -66,16 +78,42 @@ export default function OrderDetailsForProgress({ order }) {
   if (!fontsLoaded || fontError) {
     return null;
   }
-  const items = JSON.parse(order.items);
+  
+  // Calculate total sub-total (no need to parse items since we're passing the actual object)
+  const subTotal = Array.isArray(items) 
+    ? items.reduce((sum, item) => sum + (item.price * item.quantity), 0) 
+    : 0;
+  
+  // Use provided fees or default to 0 if not available
+  const orderDeliveryFee = deliveryFee || 0;
+  const orderServiceFee = serviceFee || 0;
+  
+  // Fixed getStatusStyle function
+  const getStatusStyle = (status) => {
+    if (!status) return styles.pills;
+    
+    switch (status.toLowerCase()) {
+      case "confirmed":
+        return styles.pills;
+      case "shipped":
+        return styles.pillsShipped;
+      case "pending":
+        return styles.pillsPending;
+      case "processing":
+        return styles.processingPills;
+      case "delivered":
+        return styles.pillsDelivered;
+      case "cancelled":
+        return styles.pillsCancled;
+      default:
+        return styles.pills;
+    }
+  };
+  const paymentText = `You paid with ${paymentMethod ? `${paymentMethod} via Paystack` : "Delivery"}.`;
 
-  // Example delivery and service fees
-  const deliveryFee = 1000;
-  const serviceFee = 500;
-
-  // Calculate total sub-total
-  const subTotal = items.reduce((sum, item) => sum + item.price, 0);
   return (
     <View style={styles.pushmain}>
+      {/* Order ID and amount section */}
       <View style={styles.holderr}>
         <View>
           <View style={styles.imageHolder}>
@@ -85,23 +123,21 @@ export default function OrderDetailsForProgress({ order }) {
         <View style={styles.prices}>
           <View>
             <View>
-              <Text style={styles.namez}>{order.id}</Text>
+              <Text style={styles.namez}>{id}</Text>
             </View>
             <View>
               <Text style={styles.amont}>
-                ₦{" "}
-                {Number(order.total).toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                })}
+                ₦ {totalAmount?.toLocaleString() || '0'}
               </Text>
             </View>
           </View>
-          <View style={styles.pills}>
-            <Text style={styles.cnf}>Confirmed</Text>
+          <View style={getStatusStyle(orderStatus)}>
+            <Text style={styles.cnf}>{orderStatus}</Text>
           </View>
         </View>
       </View>
 
+      {/* Tracking and progress section */}
       <View>
         <View style={{ marginTop: 10 }}>
           <Text style={styles.shish3}>Track Order</Text>
@@ -115,7 +151,13 @@ export default function OrderDetailsForProgress({ order }) {
           <Text style={styles.header}>Order Progress</Text>
 
           {steps.map((step, index) => (
-            <View key={index} style={styles.stepContainer}>
+            <View 
+              key={index} 
+              style={[
+                styles.stepContainer,
+                !step.completed && !step.active && { opacity: 0.4 } // Apply opacity to incomplete steps
+              ]}
+            >
               {/* Left Icon + Line */}
               <View style={styles.iconWrapper}>
                 <Icon
@@ -123,22 +165,43 @@ export default function OrderDetailsForProgress({ order }) {
                     step.completed ? "check-circle" : "radio-button-unchecked"
                   }
                   size={24}
-                  color={step.completed ? "green" : "gray"}
+                  color={step.completed ? "green" : step.active ? "blue" : "gray"}
                 />
-                {index < steps.length - 1 && <View style={styles.dashedLine} />}
+                {index < steps.length - 1 && (
+                  <View 
+                    style={[
+                      styles.dashedLine,
+                      !step.completed && { borderColor: "#d0d0d0" } // Lighter border for incomplete steps
+                    ]} 
+                  />
+                )}
               </View>
               {/* Text Content */}
               <View style={styles.textWrapper}>
                 <Text
-                  style={[styles.title, step.completed && styles.completedText]}
+                  style={[
+                    styles.title, 
+                    step.completed && styles.completedText,
+                    step.active && styles.activeText,
+                    !step.completed && !step.active && styles.incompleteText
+                  ]}
                 >
                   {step.title}
                 </Text>
-                <Text style={styles.description}>{step.description}</Text>
+                <Text 
+                  style={[
+                    styles.description,
+                    !step.completed && !step.active && styles.incompleteText
+                  ]}
+                >
+                  {step.description}
+                </Text>
               </View>
             </View>
           ))}
         </View>
+        
+        {/* Delivery addresses section */}
         <View style={styles.addview}>
           <View style={styles.center}>
             <View style={styles.dott}></View>
@@ -155,30 +218,26 @@ export default function OrderDetailsForProgress({ order }) {
                 </View>
                 <View style={{ marginTop: 5 }}>
                   <Text style={styles.addyTime}>
-                    {" "}
-                    {moment(order.date).format("h:mma")}
+                    {moment(createdAt).format("h:mma")}
                   </Text>
                 </View>
               </View>
               <View>
-                <Text> {moment(order.date).format("ddd, Do MMM, YYYY")}</Text>
+                <Text>{moment(createdAt).format("ddd, Do MMM, YYYY")}</Text>
               </View>
             </View>
             <View style={styles.colasp} onLayout={handleLayout}>
               <View>
                 <View style={{ width: "73%" }}>
                   <Text style={styles.addyName}>
-                    117, Adeladun Street, via Onado Bus-stop, Magodo, Lagos
+                    {deliveryAddress}
                   </Text>
                 </View>
-                {/* <View style={{ marginTop: 5 }}>
-                  <Text style={styles.addyTime}>6:30pm</Text>
-                </View> */}
               </View>
               <View>
                 <View style={{ marginTop: 5 }}>
-                  <View style={styles.pills}>
-                    <Text style={styles.cnf}>Confirmed</Text>
+                  <View style={getStatusStyle(orderStatus)}>
+                    <Text style={styles.cnf}>{orderStatus}</Text>
                   </View>
                 </View>
               </View>
@@ -186,9 +245,11 @@ export default function OrderDetailsForProgress({ order }) {
           </View>
         </View>
       </View>
+      
+      {/* Order items and pricing breakdown */}
       <View>
         <View style={styles.fki2}>
-          {items.map((item, index) => (
+          {Array.isArray(items) && items.map((item, index) => (
             <View key={index} style={styles.sponner}>
               <View>
                 <Text style={styles.shish2}>{item.name}</Text>
@@ -196,25 +257,25 @@ export default function OrderDetailsForProgress({ order }) {
               <View>
                 <Text style={styles.shish2}>
                   {item.quantity} {item.quantity > 1 ? "yards" : "yard"} ( ₦{" "}
-                  {item.price.toLocaleString(undefined, {
+                  {item.price?.toLocaleString(undefined, {
                     minimumFractionDigits: 2,
-                  })}{" "}
+                  }) || '0.00'}{" "}
                   )
                 </Text>
               </View>
             </View>
           ))}
 
-          <View style={styles.sponner2}>
+          {/* <View style={styles.sponner2}>
             <View>
               <Text style={styles.shish2}>
-                Sub-total ({items.length} {items.length > 1 ? "items" : "item"})
+                Sub-total ({items?.length || 0} {(items?.length || 0) > 1 ? "items" : "item"})
               </Text>
             </View>
             <View>
-              <Text style={styles.shish2}>₦ {subTotal.toLocaleString()}</Text>
+              <Text style={styles.shish2}>₦ {subTotal?.toLocaleString() || '0'}</Text>
             </View>
-          </View>
+          </View> */}
         </View>
         <View>
           <View style={styles.sponner}>
@@ -224,9 +285,9 @@ export default function OrderDetailsForProgress({ order }) {
             <View>
               <Text style={styles.shish2}>
                 ₦{" "}
-                {deliveryFee.toLocaleString(undefined, {
+                {orderDeliveryFee?.toLocaleString(undefined, {
                   minimumFractionDigits: 2,
-                })}
+                }) || '0.00'}
               </Text>
             </View>
           </View>
@@ -237,9 +298,9 @@ export default function OrderDetailsForProgress({ order }) {
             <View>
               <Text style={styles.shish2}>
                 ₦{" "}
-                {serviceFee.toLocaleString(undefined, {
+                {orderServiceFee?.toLocaleString(undefined, {
                   minimumFractionDigits: 2,
-                })}
+                }) || '0.00'}
               </Text>
             </View>
           </View>
@@ -251,33 +312,27 @@ export default function OrderDetailsForProgress({ order }) {
             <View>
               <Text style={styles.shish3}>
                 ₦{" "}
-                {(subTotal + deliveryFee + serviceFee).toLocaleString(
-                  undefined,
-                  { minimumFractionDigits: 2 }
-                )}
+                {totalAmount?.toLocaleString(undefined, { 
+                  minimumFractionDigits: 2 
+                }) || '0.00'}
               </Text>
             </View>
           </View>
         </View>
       </View>
-      <View
-        style={styles.pettt} // Disable the button when loading
-      >
+      
+      {/* Payment method section */}
+      <View style={styles.pettt}>
         <View>
           <Text style={styles.plat}>
-            Pay with {order?.PaymentMethod || "Delivery"}
+            Paid with {paymentMethod || "Delivery"}
           </Text>
           <View style={styles.dealss}>
             <Text style={styles.pori}>
-              Pay with {order?.PaymentMethod || "Delivery"}
+           {paymentText}
             </Text>
           </View>
-          <View style={{ marginTop: 10 }}>
-            <Text>
-              Transaction Refrence:{" "}
-              {order?.paymentResponse?.reference || "Pay on Delivery"}
-            </Text>
-          </View>
+          
         </View>
       </View>
     </View>
@@ -636,5 +691,88 @@ const styles = StyleSheet.create({
 
   cnf: {
     color: "#FFFFFF",
+  },
+  pills: {
+    width: 90,
+    height: 30,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#3F70CF",
+    borderRadius: 4,
+    fontFamily: "KumbhSans_400Regular",
+    fontSize: 12,
+    marginTop: 10,
+  },
+  pillsShipped: {
+    width: 90,
+    height: 30,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F79E1B",
+    borderRadius: 4,
+    fontFamily: "KumbhSans_400Regular",
+    fontSize: 12,
+    marginTop: 10,
+  },
+  pillsPending: {
+    width: 90,
+    height: 30,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFB020",
+    borderRadius: 4,
+    fontFamily: "KumbhSans_400Regular",
+    fontSize: 12,
+    marginTop: 10,
+  },
+  pillsDelivered: {
+    width: 90,
+    height: 30,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#14B8A6",
+    borderRadius: 4,
+    fontFamily: "KumbhSans_400Regular",
+    fontSize: 12,
+    marginTop: 10,
+  },
+  processingPills:{
+    width: 90,
+    height: 30,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "purple",
+    borderRadius: 4,
+    fontFamily: "KumbhSans_400Regular",
+    fontSize: 12,
+    marginTop: 10,
+  },
+  pillsCancled:{
+    width: 90,
+    height: 30,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F1451B",
+    borderRadius: 4,
+    fontFamily: "KumbhSans_400Regular",
+    fontSize: 12,
+    marginTop: 10,
+  },
+  incompleteText: {
+    color: '#a0a0a0', // Light gray color for incomplete steps
+  },
+  activeText: {
+    color: '#0066cc', // Blue color for the active step
+    fontWeight: '500',
+  },
+  completedText: {
+    color: '#006400', // Dark green for completed steps
+    fontWeight: '500',
   },
 });

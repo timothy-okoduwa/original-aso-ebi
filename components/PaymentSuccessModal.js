@@ -27,6 +27,7 @@ import {
 const { height } = Dimensions.get("window"); // Get the screen height
 
 const PaymentSuccessModal = ({ visible, onClose }) => {
+  console.log("PaymentSuccessModal rendered with visible:", visible);
   const router = useRouter();
   const move = () => {
     router.push("/order");

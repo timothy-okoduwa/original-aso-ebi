@@ -1,13 +1,12 @@
-/** @format */
-
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Image } from "react-native";
 import {
   useFonts,
@@ -16,9 +15,65 @@ import {
 } from "@expo-google-fonts/kumbh-sans";
 import a from "../constants/image/sen2.png";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function CompletedOrders() {
   const router = useRouter();
+  const [completedOrders, setCompletedOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchCompletedOrders();
+  }, []);
+
+  const fetchCompletedOrders = async () => {
+    try {
+      // Get userId and token from AsyncStorage
+      const userId = await AsyncStorage.getItem("userId");
+      const token = await AsyncStorage.getItem("token");
+
+      if (!userId || !token) {
+        setError("User not authenticated");
+        setLoading(false);
+        return;
+      }
+
+      // Make API request
+      const response = await fetch(
+        `https://oae-be.onrender.com/api/oae/orders/orders/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      // Filter for only completed/delivered orders
+      const delivered = result.data.orders.filter(
+        (order) => order.orderStatus.toLowerCase() === "delivered"
+      );
+      
+      setCompletedOrders(delivered);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching completed orders:", error);
+      setError(error.message);
+      setLoading(false);
+    }
+  };
+
+  const moveToOrderDetails = (orderId) => {
+    router.push(`/orderdetails/orderr/${orderId}`);
+  };
 
   const [fontsLoaded, fontError] = useFonts({
     KumbhSans_400Regular,
@@ -28,62 +83,89 @@ export default function CompletedOrders() {
   if (!fontsLoaded || fontError) {
     return null;
   }
-  const move = () => {
-    router.push("/orderdetails/ordernumber");
-  };
+
+  if (loading) {
+    return (
+      <View style={styles.emptyContainer}>
+        <ActivityIndicator size="large" color="#000000" />
+        <Text style={styles.emptyText}>Loading completed orders...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>Error loading orders: {error}</Text>
+      </View>
+    );
+  }
+
+  if (completedOrders.length === 0) {
+    return (
+      <View style={styles.cartt}>
+        <View style={styles.circle}>
+          <Text style={styles.cartc}>🛒</Text>
+        </View>
+        <Text style={styles.empty}>No Completed Orders</Text>
+        <Text style={styles.once}>Your completed orders will appear here</Text>
+      </View>
+    );
+  }
+
   return (
-    <View>
-      <TouchableOpacity style={styles.holderr} onPress={move}>
-        <View>
-          <View style={styles.imageHolder}>
-            <Image style={styles.image} source={a} resizeMode="cover" />
-          </View>
-        </View>
-        <View style={styles.prices}>
+    <ScrollView style={styles.container}>
+      {completedOrders.map((order) => (
+        <TouchableOpacity
+          key={order._id}
+          style={styles.holderr}
+          onPress={() => moveToOrderDetails(order.orderid)}
+        >
           <View>
-            <View>
-              <Text style={styles.namez}>Brown Striped Fabric</Text>
-            </View>
-            <View>
-              <Text style={styles.amont}>₦ 20,000</Text>
-            </View>
-            <View>
-              <Text style={styles.qty}>Qty: 5 yards</Text>
+            <View style={styles.imageHolder}>
+              <Image style={styles.image} source={a} resizeMode="cover" />
             </View>
           </View>
-          <View style={styles.pillsCompleted}>
-            <Text style={styles.cnf}>Delivered</Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.holderr} onPress={move}>
-        <View>
-          <View style={styles.imageHolder}>
-            <Image style={styles.image} source={a} resizeMode="cover" />
-          </View>
-        </View>
-        <View style={styles.prices}>
-          <View>
+          <View style={styles.prices}>
             <View>
-              <Text style={styles.namez}>Brown Striped Fabric</Text>
+              <View>
+                <Text style={styles.namez}>Order ID: {order.orderid}</Text>
+              </View>
+              <View>
+                <Text style={styles.amont}>₦ {order.totalAmount.toLocaleString()}</Text>
+              </View>
+              <View>
+                <Text style={styles.qty}>Qty: {order.totalQty} item(s)</Text>
+              </View>
             </View>
-            <View>
-              <Text style={styles.amont}>₦ 20,000</Text>
-            </View>
-            <View>
-              <Text style={styles.qty}>Qty: 5 yards</Text>
+            <View style={styles.pillsCompleted}>
+              <Text style={styles.cnf}>Delivered</Text>
             </View>
           </View>
-          <View style={styles.pillsCompleted}>
-            <Text style={styles.cnf}>Delivered</Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-    </View>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 15,
+    backgroundColor: "#FFFFFF",
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 50,
+  },
+  emptyText: {
+    fontSize: 18,
+    color: "#888",
+    fontFamily: "KumbhSans_400Regular",
+    marginTop: 10,
+  },
   pop: {
     justifyContent: "flex-end",
     alignItems: "flex-end",
@@ -119,7 +201,6 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     marginTop: 50,
   },
-
   summary: {
     marginTop: 30,
     fontFamily: "KumbhSans_400Regular",
@@ -129,17 +210,14 @@ const styles = StyleSheet.create({
     color: "#000000",
   },
   holderr: {
-    // backgroundColor: 'green',
     flexDirection: "row",
-    // justifyContent: 'space-between',
-    marginBottom: 50,
+    marginBottom: 30,
   },
   imageHolder: {
-    height: 100, // Adjust card height as needed
-    width: 100, // Set width to 48% to accommodate two cards in a row with some space between them
+    height: 100,
+    width: 100,
     borderRadius: 3.12,
     overflow: "hidden",
-    // backgroundColor: 'red',
   },
   image: {
     width: "100%",
@@ -147,7 +225,7 @@ const styles = StyleSheet.create({
   },
   prices: {
     marginLeft: 20,
-    width: "40%",
+    width: "70%",
     flexDirection: "column",
     justifyContent: "space-between",
   },
@@ -192,8 +270,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5F5F5",
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 1, // Add border width
-    borderColor: "#DCDCDC", // Add border color
+    borderWidth: 1,
+    borderColor: "#DCDCDC",
   },
   gaddle: {
     width: 32,
@@ -202,8 +280,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#D2D2D233",
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 1, // Add border width
-    borderColor: "#DCDCDC", // Add border color
+    borderWidth: 1,
+    borderColor: "#DCDCDC",
   },
   mount: {
     fontFamily: "KumbhSans_500Medium",
@@ -211,9 +289,7 @@ const styles = StyleSheet.create({
     color: "#000000",
   },
   delete: {
-    // marginLeft: 80,
     flex: 1,
-
     alignItems: "flex-end",
   },
   cartt: {
@@ -254,8 +330,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 10,
   },
-
   cnf: {
     color: "#FFFFFF",
+  },
+  cartc:{
+fontSize:90
   },
 });
