@@ -8,13 +8,13 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "androidStatusBar": {
-      "backgroundColor": "#ffffff",
+      "backgroundColor": "#000000",
       "translucent": false
     },
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#000000"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -26,10 +26,11 @@
     "android": {
        "adaptiveIcon": {
            "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff",
+        "backgroundColor": "#000000",
         "monochromeImage": "./assets/images/adaptive-icon.png"
       },
       "package": "original.aso.ebi",
+      "googleServicesFile":"./android/app/google-services.json",
        "icon": "./assets/images/icon.png"
   
     },
