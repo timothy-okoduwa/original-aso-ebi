@@ -21,7 +21,7 @@ import { useRouter } from "expo-router";
 
 export default function OrderDetailsForProgress({ order, deliveryAddress, orderStatus }) {
   // Destructure order object for easier access
-  const { id, totalAmount, createdAt, paymentMethod, items, deliveryFee, serviceFee } = order;
+  const { id, totalAmount, createdAt, paymentMethod, items, deliveryFee, serviceFee,transactionRef } = order;
   
   const [lineHeight, setLineHeight] = useState(0);
   
@@ -117,7 +117,12 @@ export default function OrderDetailsForProgress({ order, deliveryAddress, orderS
       <View style={styles.holderr}>
         <View>
           <View style={styles.imageHolder}>
-            <Image style={styles.image} source={a} resizeMode="cover" />
+            <Image style={styles.image} source={
+                            items[0]?.image && 
+                            items[0].image.length > 0 
+                              ? { uri: items[0].image[0] } 
+                              : a // fallback image
+                          } resizeMode="cover" />
           </View>
         </View>
         <View style={styles.prices}>
@@ -330,6 +335,11 @@ export default function OrderDetailsForProgress({ order, deliveryAddress, orderS
           <View style={styles.dealss}>
             <Text style={styles.pori}>
            {paymentText}
+            </Text>
+          </View>
+          <View style={styles.dealss}>
+            <Text style={styles.pori}>
+           Transaction Reference: {transactionRef}
             </Text>
           </View>
           

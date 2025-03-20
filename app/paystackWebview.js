@@ -154,7 +154,8 @@ export default function PaystackWebview() {
             phoneNumber: parsedItems.phoneNumber,
             deliveryFee: parsedItems.deliveryFee,
             serviceFee: parsedItems.serviceFee,
-            totalAmount: parsedItems.totalAmount
+            totalAmount: parsedItems.totalAmount,
+            transactionRef:reference
           };
           console.log("Complete order request body:", JSON.stringify(orderRequestBody));          
           // Create order using the backend API

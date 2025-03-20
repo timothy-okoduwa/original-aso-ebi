@@ -123,7 +123,12 @@ export default function CompletedOrders() {
         >
           <View>
             <View style={styles.imageHolder}>
-              <Image style={styles.image} source={a} resizeMode="cover" />
+              <Image style={styles.image} source={
+                              order.items[0]?.image && 
+                              order.items[0].image.length > 0 
+                                ? { uri: order.items[0].image[0] } 
+                                : a // fallback image
+                            }  resizeMode="cover" />
             </View>
           </View>
           <View style={styles.prices}>

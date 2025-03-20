@@ -408,7 +408,7 @@ console.log(orderedItems)
         </TouchableOpacity>
 
         {/* Pay on Delivery */}
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={[
             styles.pettt,
             loading && selectedMethod === "delivery" && styles.disabledButton,
@@ -429,7 +429,7 @@ console.log(orderedItems)
           ) : (
             <AntDesign name="right" size={24} color="black" />
           )}
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
       <PaymentSuccessModal visible={isModalVisible} onClose={closeModal} />
     </View>

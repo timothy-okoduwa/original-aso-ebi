@@ -163,6 +163,7 @@ export default function OrderId() {
               createdAt: order.createdAt,
               paymentMethod: order.paymentMethod,
               items: order.items,
+              transactionRef:order.transactionRef,
               deliveryFee: order.deliveryFee,
               serviceFee: order.serviceFee,
               paymentResponse: order.paymentResponse || {}

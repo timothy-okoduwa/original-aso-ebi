@@ -25,9 +25,7 @@ export default function OnGoingOrders() {
 
   const moveToOrderDetails = (orderId) => {
     const sanitizedOrderId = orderId
-     
-  
-      console.log("orderid:",sanitizedOrderId)
+    console.log("orderid:", sanitizedOrderId)
     router.push(`/orderdetails/orderr/${sanitizedOrderId}`);
   };
 
@@ -64,7 +62,13 @@ export default function OnGoingOrders() {
       }
 
       const result = await response.json();
-      setOrders(result.data.orders);
+      
+      // Filter out orders with "delivered" status
+      const filteredOrders = result.data.orders.filter(
+        order => order.orderStatus.toLowerCase() !== "delivered"
+      );
+      
+      setOrders(filteredOrders);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -140,7 +144,16 @@ export default function OnGoingOrders() {
         >
           <View>
             <View style={styles.imageHolder}>
-              <Image style={styles.image} source={a} resizeMode="cover" />
+              <Image 
+                style={styles.image}  
+                source={
+                  order.items[0]?.image && 
+                  order.items[0].image.length > 0 
+                    ? { uri: order.items[0].image[0] } 
+                    : a // fallback image
+                }  
+                resizeMode="cover" 
+              />
             </View>
           </View>
           <View style={styles.prices}>
@@ -164,7 +177,6 @@ export default function OnGoingOrders() {
     </ScrollView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
