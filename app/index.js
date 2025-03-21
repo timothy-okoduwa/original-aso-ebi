@@ -20,6 +20,7 @@ import {usePushNotifications} from './usePushNotification'
 export default function Index() {
   const {expoPushToken, notification}= usePushNotifications()
   const data =JSON.stringify(notification,undefined,2)
+  console.log(expoPushToken?.data ?? "")
   const [fontsLoaded, fontError] = useFonts({
     LexendDeca_400Regular,
   });
@@ -67,12 +68,12 @@ export default function Index() {
       return Animated.parallel([
         Animated.timing(scale, {
           toValue: 1,
-          duration: 7000, // Adjust duration as needed
+          duration: 500, // Adjust duration as needed
           useNativeDriver: true,
         }),
         Animated.timing(translateY, {
           toValue: 0,
-          duration: 7000, // Adjust duration as needed
+          duration: 500, // Adjust duration as needed
           useNativeDriver: true,
         }),
       ]);
@@ -94,7 +95,7 @@ export default function Index() {
     // After 10 seconds, check for the user token
     const timer = setTimeout(() => {
       checkUserToken(); // Check token after 10 seconds
-    }, 50000);
+    }, 5000);
 
     return () => clearTimeout(timer); // Clear timeout if component unmounts
   }, [fontsLoaded, fontError, router]);
@@ -140,8 +141,8 @@ export default function Index() {
         </TouchableOpacity>
         <StatusBar style="dark" backgroundColor="#000" />
         <Text style={styles.small}>By Idera Oluwa</Text>
-        <Text style={styles.small}>Token:{expoPushToken?.data ?? ""}</Text>
-        <Text style={styles.small}>{data}</Text>
+        {/* <Text style={styles.small}>Token:{expoPushToken?.data ?? ""}</Text>
+        <Text style={styles.small}>{data}</Text> */}
       </View>
   
   );

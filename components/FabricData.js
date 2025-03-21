@@ -264,7 +264,7 @@ const FabricCard = ({ fabric, toggleFavorite }) => {
       <View style={styles.imageHolder}>
         <Image
           style={styles.image}
-          source={fabric.image}
+          source={fabric?.image||a}
           resizeMode="cover"
           defaultSource={a}
         />
