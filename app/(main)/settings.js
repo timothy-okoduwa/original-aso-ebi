@@ -19,9 +19,9 @@ import {
   KumbhSans_500Medium,
 } from "@expo-google-fonts/kumbh-sans";
 import { useRouter } from "expo-router";
-import SettingContent from "../../components/SettingContent";
 import { useLoading } from "../contexts/LoadingContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import SettingContent from "../../components/SettingContent"
 
 export default function settings() {
   const [refreshing, setRefreshing] = useState(false);
@@ -29,53 +29,52 @@ export default function settings() {
   const { showLoading, hideLoading } = useLoading();
   const [UserData, setUserData] = useState("");
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const userId = await AsyncStorage.getItem("userId");
-        const token = await AsyncStorage.getItem("token");
+  // In settings.js
+const fetchUserData = async () => {
+  try {
+    showLoading();
+    const userId = await AsyncStorage.getItem("userId");
+    const token = await AsyncStorage.getItem("token");
 
-        if (userId && token) {
-          // Fetch the user data from the API using the userId and token
-          const response = await fetch(
-            `https://oae-be.onrender.com/api/oae/auth/${userId}/user`,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
+    console.log("Fetching user data with userId:", userId?.substring(0, 5) + "...");
+    
+    if (!userId || !token) {
+      console.error("Missing userId or token");
+      hideLoading();
+      return;
+    }
 
-          const responseData = await response.json();
+    const url = `https://oae-be.onrender.com/api/oae/auth/${userId}/user`;
+    console.log("Making API request to:", url);
+    
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-          console.log("API Response:", responseData); // Log the entire response for debugging
-
-          if (response.ok) {
-            // Check if responseData and responseData.data exist
-            if (responseData && responseData.data) {
-              const fetchedUserName = responseData.data.name || "John Doe"; // Get the name from the response
-              const fetchedUserPics =
-                responseData.data.profilePic || "John Doe"; // Get the name from the response
-              setUserName(fetchedUserName); // Update state with user data
-              setUserData(fetchedUserPics);
-            } else {
-              console.error("Error: User data is missing in the response.");
-              setUserName("John Doe"); // Provide fallback value
-            }
-          } else {
-            console.error(
-              "Error fetching user data:",
-              responseData.message || "Failed to fetch user"
-            );
-          }
-        } else {
-          console.log("No userId or token found");
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
+    const responseData = await response.json();
+    console.log("API Response status:", response.status);
+    
+    if (response.ok) {
+      if (responseData && responseData.data) {
+        setUserName(responseData.data.name || "John Doe");
+        setUserData(responseData.data.profilePic || null);
+        console.log("Successfully set user data");
+      } else {
+        console.error("Error: User data missing in response", responseData);
       }
-    };
+    } else {
+      console.error("Error fetching user data:", responseData.message);
+    }
+  } catch (error) {
+    console.error("Error in fetchUserData:", error.message);
+  } finally {
+    hideLoading();
+  }
+};
 
     fetchUserData();
 
@@ -94,7 +93,7 @@ export default function settings() {
   });
 
   if (!fontsLoaded || fontError) {
-    return null;
+    return <Text>Loading...</Text>;
   }
   const onRefresh = () => {
     setRefreshing(true);

@@ -21,6 +21,7 @@ import { registerUser } from "../../components/features/auth/authSlice";
 import { StatusBar } from "expo-status-bar";
 import Toast from "react-native-toast-message";
 import { useLoading } from "../contexts/LoadingContext";
+import { registerIndieID } from 'native-notify';
 
 // ;
 
@@ -115,7 +116,8 @@ export default function createaccount() {
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [checkError, setCheckError] = useState("");
-
+  const nativeNotifyAppId = 28536;
+  const nativeNotifyAppToken = 'd6slDjhY9zuXZa6B5mRRLR';
   const handlePhoneChange = (text) => {
     let formattedPhone = text;
 
@@ -254,6 +256,61 @@ export default function createaccount() {
       setToast({ visible: false, message: "", type: "" });
     };
   }, []);
+
+  // Register user with Native Notify
+  const registerUserWithNativeNotify = (userId) => {
+    try {
+      registerIndieID(userId, nativeNotifyAppId, nativeNotifyAppToken);
+      console.log(`Registered user with Native Notify: ${userId}`);
+      return true;
+    } catch (error) {
+      console.error('Failed to register with Native Notify:', error);
+      return false;
+    }
+  };
+
+  // Function to update FCM token on the backend
+const updateFCMToken = async (userId) => {
+  if (!userId) {
+    console.log("Missing userId for FCM token update");
+    return;
+  }
+  
+  try {
+    console.log(`Updating FCM token for user ${userId}: ${userId}`);
+    const response = await fetch(`https://oae-be.onrender.com/api/oae/auth/${userId}/update-fcm-token`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ fcmToken: userId }),
+    });
+    
+    if (response.ok) {
+      console.log('FCM token updated successfully');
+    } else {
+      const errorText = await response.text();
+      console.error('Failed to update FCM token:', errorText);
+    }
+  } catch (error) {
+    console.error('Error updating FCM token:', error);
+  }
+};
+
+// Function to handle both registration with Native Notify and updating FCM token
+const setupNotifications = async (userId) => {
+  try {
+    // First register with Native Notify
+    registerUserWithNativeNotify(userId);
+    
+    // Then update FCM token on the backend
+    await updateFCMToken(userId);
+  } catch (error) {
+    console.error('Error setting up notifications:', error);
+  }
+};
+
+
   // Handle submit button press
   const handleCreateAccount = async () => {
     // Run all validations
@@ -288,6 +345,9 @@ export default function createaccount() {
       if (response.meta.requestStatus === "fulfilled") {
         const newUserId = response.payload.data._id;
         setUserId(newUserId);
+             // Set up notifications with the new user ID
+  await setupNotifications(newUserId);
+
         console.log(response);
         showToast("Registration successful!", "success");
         router.push({
@@ -429,6 +489,7 @@ export default function createaccount() {
                     placeholder="youremail@here.com"
                     keyboardType="email-address" // Change this to 'password' or 'default' for different types
                     placeholderTextColor="#999" // Change placeholder text color here
+                    autoCapitalize="none"
                   />
                 </View>
                 <Text style={styles.error}>{emailError}</Text>

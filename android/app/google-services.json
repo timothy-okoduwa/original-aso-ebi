@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "426623425195",
-    "project_id": "expopushnotifications-2ae13",
-    "storage_bucket": "expopushnotifications-2ae13.firebasestorage.app"
+    "project_number": "1055092161500",
+    "project_id": "originalasoebi",
+    "storage_bucket": "originalasoebi.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:426623425195:android:85cbdfa1b6f84d3127f5ee",
+        "mobilesdk_app_id": "1:1055092161500:android:e96189caa2c49a12dfad19",
         "android_client_info": {
           "package_name": "original.aso.ebi"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBZ5jBKgZ9e1E-xincay5nwpDvWRqUR1LI"
+          "current_key": "AIzaSyCuZqzPhuRebww6qw3bhP-YXKaNi8hxixg"
         }
       ],
       "services": {

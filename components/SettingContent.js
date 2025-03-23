@@ -51,14 +51,16 @@ export default function SettingContent({ userName, UserData }) {
     const getStoredData = async () => {
       try {
         const storedToken = await AsyncStorage.getItem("token");
-
-        if (!storedToken) {
+        const storedUserId = await AsyncStorage.getItem("userId"); // Fetch userId
+  
+        if (!storedToken || !storedUserId) {
           Alert.alert("Session Expired", "Please login again");
           router.push("/login");
           return;
         }
-
+  
         setToken(storedToken);
+        setUserId(storedUserId); // Set userId
       } catch (error) {
         console.error("Error retrieving stored data:", error);
         Alert.alert("Error", "Failed to load user data");
@@ -66,10 +68,12 @@ export default function SettingContent({ userName, UserData }) {
     };
     getStoredData();
   }, [router]);
-
+  
+  useEffect(() => {
+    console.log("SettingContent received:", { userName, UserData });
+  }, [userName, UserData]);
   if (!fontsLoaded || fontError) {
-    return null;
-  }
+    return <Text>Loading...</Text>;  }
 
   const createFormData = async (uri) => {
     const filename = uri.split("/").pop();
@@ -87,8 +91,9 @@ export default function SettingContent({ userName, UserData }) {
 
   const uploadImage = async (formData) => {
     if (!token || !userId) {
-      throw new Error("No authentication credentials");
-    }
+      Alert.alert("Authentication Error", "You are not logged in. Please log in again.");
+      router.push("/login");
+      return;    }
 
     const url = `https://oae-be.onrender.com/api/oae/auth/${userId}/update-image`;
 
@@ -191,30 +196,46 @@ export default function SettingContent({ userName, UserData }) {
   const forgetpassword = () => {
     router.push("/forgetpassword");
   };
-
+  if (!userName && !UserData) {
+    console.log("SettingContent: No user data available");
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>Unable to load user data</Text>
+        <TouchableOpacity 
+          style={styles.retryButton}
+          onPress={() => {
+            console.log("Retry button pressed");
+            // Add a retry mechanism
+          }}
+        >
+          <Text style={styles.retryText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
   return (
     <View>
       <View style={styles.imagestuff}>
         <View style={styles.flexer}>
           <View style={styles.setimage}>
-            <Image
-              source={
-                UserData
-                  ? { uri: UserData } // Remote image URL
-                  : profileImage.uri
-                  ? profileImage // Remote/local image already in correct format
-                  : p // Fallback to default local image
-              }
-              style={styles.image}
-              resizeMode="cover"
-            />
+          <Image
+  source={
+    UserData && typeof UserData === 'string' && UserData.startsWith('http')
+      ? { uri: UserData }
+      : profileImage && profileImage.uri
+      ? profileImage
+      : p
+  }
+  style={styles.image}
+  resizeMode="cover"
+/>
           </View>
-          <View style={{ marginTop: "14" }}>
+          <View style={{ marginTop: 14 }}>
             <Text style={styles.names}>
               {userName ? userName : "Demi Bankole"}
             </Text>
           </View>
-          <View style={{ marginTop: "14" }}>
+          <View style={{ marginTop: 14 }}>
             <TouchableOpacity
               style={[styles.update, isLoading && { opacity: 0.7 }]}
               onPress={chooseImage}
@@ -228,13 +249,13 @@ export default function SettingContent({ userName, UserData }) {
           </View>
         </View>
       </View>
-      <View style={{ marginTop: "30" }}>
+      <View style={{ marginTop: 30 }}>
         <View>
           <Text style={styles.othset}>Settings</Text>
           {/* <Text>user id{userId}</Text> */}
         </View>
         <TouchableOpacity
-          style={{ marginTop: "50", width: "100%" }}
+          style={{ marginTop: 50, width: "100%" }}
           onPress={editprofile}
         >
           <View style={styles.flexer2}>
@@ -259,7 +280,7 @@ export default function SettingContent({ userName, UserData }) {
           </View>
         </TouchableOpacity>
         <TouchableOpacity
-          style={{ marginTop: "50", width: "100%" }}
+          style={{ marginTop: 50, width: "100%" }}
           onPress={forgetpassword}
         >
           <View style={styles.flexer2}>
@@ -284,7 +305,7 @@ export default function SettingContent({ userName, UserData }) {
           </View>
         </TouchableOpacity>
         <TouchableOpacity
-          style={{ marginTop: "50", width: "100%" }}
+          style={{ marginTop: 50, width: "100%" }}
           onPress={logout}
         >
           <View style={styles.flexer2}>
@@ -328,8 +349,8 @@ const styles = StyleSheet.create({
     padding: 10, // Add padding to better fit the content
   },
   setimage: {
-    width: "100",
-    height: "100",
+    width: 100,
+    height: 100,
     borderRadius: 50,
   },
   image: {
@@ -343,9 +364,9 @@ const styles = StyleSheet.create({
     color: "#2E2E2E",
   },
   update: {
-    width: "123",
-    height: "41",
-    borderRadius: "9",
+    width: 123,
+    height: 41,
+    borderRadius: 9,
     backgroundColor: "#F5F5F5",
     justifyContent: "center",
     alignItems: "center",
@@ -364,7 +385,7 @@ const styles = StyleSheet.create({
   fiue: {
     flexDirection: "row",
     alignItems: "center",
-    gap: "10",
+    gap: 10,
   },
   flexer2: {
     flexDirection: "row",
@@ -372,9 +393,9 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   roundz: {
-    width: "37.56",
-    height: "37.56",
-    borderRadius: "50%",
+    width: 37.56,
+    height: 37.56,
+    borderRadius: 50,
     backgroundColor: "#F5F5F5",
     justifyContent: "center",
     alignItems: "center",

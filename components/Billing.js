@@ -38,9 +38,10 @@ import {
   Lora_700Bold_Italic,
 } from "@expo-google-fonts/lora";
 import EvilIcons from "@expo/vector-icons/EvilIcons";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
+// import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+// import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 export default function Billing({
   onNext,
@@ -591,18 +592,18 @@ return (
                 onPress={() => deleteAddress(address._id)}
                 style={styles.deleteButton}
               >
-                <MaterialIcons name="delete-outline" size={20} color="#FF0000" />
+                <AntDesign name="delete" size={20} color="#FF0000" />
               </TouchableOpacity>
               <Text style={styles.radioContainer}>
                 {selectedAddress === index ? (
-                  <MaterialIcons
-                    name="radio-button-checked"
+                  <Ionicons
+                    name="radio-button-on"
                     size={24}
                     color="black"
                   />
                 ) : (
-                  <MaterialIcons
-                    name="radio-button-unchecked"
+                  <Ionicons
+                    name="radio-button-off-sharp"
                     size={24}
                     color="black"
                   />

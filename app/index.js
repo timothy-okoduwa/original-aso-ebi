@@ -1,5 +1,3 @@
-/** @format */
-
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -16,11 +14,17 @@ import {
   LexendDeca_400Regular,
 } from "@expo-google-fonts/lexend-deca";
 import {usePushNotifications} from './usePushNotification'
+import registerNNPushToken, { registerIndieID } from 'native-notify';
 
 export default function Index() {
-  const {expoPushToken, notification}= usePushNotifications()
-  const data =JSON.stringify(notification,undefined,2)
-  console.log(expoPushToken?.data ?? "")
+  // Initialize Native Notify
+  registerNNPushToken(28536, 'd6slDjhY9zuXZa6B5mRRLR');
+
+  const {expoPushToken, notification} = usePushNotifications()
+  const data = JSON.stringify(notification, undefined, 2)
+  const [userId, setUserId] = useState(null);
+  const [tokenUpdateStatus, setTokenUpdateStatus] = useState('');
+  
   const [fontsLoaded, fontError] = useFonts({
     LexendDeca_400Regular,
   });
@@ -43,6 +47,63 @@ export default function Index() {
     },
   });
 
+  // Function to update user ID as FCM token
+  const updateFCMToken = async (uid) => {
+    if (!uid) {
+      console.log("Missing userId");
+      return;
+    }
+    
+    try {
+      console.log(`Updating FCM token for user ${uid}: ${uid}`);
+      const response = await fetch(`https://oae-be.onrender.com/api/oae/auth/${uid}/update-fcm-token`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ fcmToken: uid }),
+      });
+      
+      if (response.ok) {
+        console.log('FCM token updated successfully');
+        setTokenUpdateStatus('Token updated successfully');
+      } else {
+        const errorText = await response.text();
+        console.error('Failed to update FCM token:', errorText);
+        setTokenUpdateStatus('Failed to update token: ' + errorText);
+      }
+    } catch (error) {
+      console.error('Error updating FCM token:', error);
+      setTokenUpdateStatus('Error: ' + error.message);
+    }
+  };
+
+  useEffect(() => {
+    // Fetch userId from AsyncStorage
+    const getUserId = async () => {
+      try {
+        const id = await AsyncStorage.getItem("userId");
+        if (id) {
+          setUserId(id);
+          
+          // Register the userId with Native Notify
+          registerIndieID(id, 28536, 'd6slDjhY9zuXZa6B5mRRLR');
+          console.log(`Registered IndieID: ${id}`);
+          
+          // Update the backend with userId as FCM token
+          updateFCMToken(id);
+          
+          return id;
+        }
+      } catch (error) {
+        console.error("Error fetching userId from AsyncStorage", error);
+      }
+      return null;
+    };
+
+    getUserId();
+  }, []);
+console.log(tokenUpdateStatus)
   useEffect(() => {
     if (!fontsLoaded || fontError) return;
 
@@ -92,9 +153,9 @@ export default function Index() {
     // Start the letter animation
     animateLetters();
 
-    // After 10 seconds, check for the user token
+    // After 5 seconds, check for the user token
     const timer = setTimeout(() => {
-      checkUserToken(); // Check token after 10 seconds
+      checkUserToken(); // Check token after 5 seconds
     }, 5000);
 
     return () => clearTimeout(timer); // Clear timeout if component unmounts
@@ -126,25 +187,24 @@ export default function Index() {
   };
 
   return (
-
-      <View style={styles.container}>
-        <TouchableOpacity style={styles.textContainer}>
-          <Animated.Text style={[styles.text, animatedStyles.O]}>
-            O
-          </Animated.Text>
-          <Animated.Text style={[styles.text, animatedStyles.A]}>
-            A
-          </Animated.Text>
-          <Animated.Text style={[styles.text, animatedStyles.E]}>
-            E
-          </Animated.Text>
-        </TouchableOpacity>
-        <StatusBar style="dark" backgroundColor="#000" />
-        <Text style={styles.small}>By Idera Oluwa</Text>
-        {/* <Text style={styles.small}>Token:{expoPushToken?.data ?? ""}</Text>
-        <Text style={styles.small}>{data}</Text> */}
-      </View>
-  
+    <View style={styles.container}>
+      <TouchableOpacity style={styles.textContainer}>
+        <Animated.Text style={[styles.text, animatedStyles.O]}>
+          O
+        </Animated.Text>
+        <Animated.Text style={[styles.text, animatedStyles.A]}>
+          A
+        </Animated.Text>
+        <Animated.Text style={[styles.text, animatedStyles.E]}>
+          E
+        </Animated.Text>
+      </TouchableOpacity>
+      <StatusBar style="dark" backgroundColor="#000" />
+      <Text style={styles.small}>By Idera Oluwa</Text>
+      {/* Uncomment for debugging */}
+      {/* <Text style={styles.small}>User ID: {userId || 'Loading...'}</Text>
+      <Text style={styles.small}>Status: {tokenUpdateStatus}</Text> */}
+    </View>
   );
 }
 

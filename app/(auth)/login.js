@@ -22,6 +22,8 @@ import { loginUser } from "../../components/features/auth/authSlice";
 import Toast from "react-native-toast-message";
 import { useLoading } from "../contexts/LoadingContext";
 import { AuthContext } from "../_layout";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { registerIndieID } from 'native-notify';
 // import { Feather } from '@expo/vector-icons';
 import {
   useFonts,
@@ -48,6 +50,7 @@ import {
   Lora_600SemiBold_Italic,
   Lora_700Bold_Italic,
 } from "@expo-google-fonts/lora";
+
 const CustomToast = ({ visible, message, type }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   useEffect(() => {
@@ -102,6 +105,48 @@ export default function login() {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const { setIsAuthenticated } = React.useContext(AuthContext);
+
+  // Function to update FCM token
+  const updateFCMToken = async (uid) => {
+    if (!uid) {
+      console.log("Missing userId for FCM token update");
+      return;
+    }
+    
+    try {
+      console.log(`Updating FCM token for user ${uid}: ${uid}`);
+      const response = await fetch(`https://oae-be.onrender.com/api/oae/auth/${uid}/update-fcm-token`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ fcmToken: uid }),
+      });
+      
+      if (response.ok) {
+        console.log('FCM token updated successfully');
+      } else {
+        const errorText = await response.text();
+        console.error('Failed to update FCM token:', errorText);
+      }
+    } catch (error) {
+      console.error('Error updating FCM token:', error);
+    }
+  };
+
+  // Function to register with Native Notify
+  const registerForPushNotifications = async (userId) => {
+    try {
+      // Register the userId with Native Notify
+      registerIndieID(userId, 28536, 'd6slDjhY9zuXZa6B5mRRLR');
+      console.log(`Registered IndieID with Native Notify: ${userId}`);
+      
+      // Update the backend with userId as FCM token
+      await updateFCMToken(userId);
+    } catch (error) {
+      console.error('Error registering for push notifications:', error);
+    }
+  };
 
   const gotocreateaccount = () => {
     router.push("/createaccount");
@@ -207,6 +252,21 @@ export default function login() {
 
   useEffect(() => {
     if (authStatus === "succeeded") {
+      // Get userId from AsyncStorage after successful login
+      const setupNotifications = async () => {
+        try {
+          const userId = await AsyncStorage.getItem("userId");
+          if (userId) {
+            // Register for push notifications with the userId
+            await registerForPushNotifications(userId);
+          }
+        } catch (error) {
+          console.error("Error setting up notifications:", error);
+        }
+      };
+      
+      setupNotifications();
+      
       showToast(successMessage || "Login successful!", "success");
       setLoading(false);
       hideLoading();
@@ -314,7 +374,7 @@ export default function login() {
                     placeholder="youremail@here.com"
                     keyboardType="email-address" // Change this to 'password' or 'default' for different types
                     placeholderTextColor="#999" // Change placeholder text color here
-                      autoCapitalize="none"
+                    autoCapitalize="none"
                   />
                 </View>
                 <Text style={styles.error}>{emailError}</Text>
@@ -384,7 +444,7 @@ export default function login() {
                   style={styles.already}
                   onPress={gotocreateaccount}
                 >
-                  <Text>Don’t have an account? Sign up</Text>
+                  <Text>Don't have an account? Sign up</Text>
                 </TouchableOpacity>
               </View>
             </View>

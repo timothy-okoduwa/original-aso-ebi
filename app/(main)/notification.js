@@ -4,15 +4,18 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ButtomNav from '../../components/ButtomNav';
 import { StatusBar } from 'expo-status-bar';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   AntDesign,
   Ionicons,
   MaterialCommunityIcons,
   Feather,
+  MaterialIcons,
 } from '@expo/vector-icons';
 import {
   useFonts,
@@ -24,86 +27,96 @@ import moment from 'moment';
 
 export default function Notification() {
   const router = useRouter();
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
   const [fontsLoaded, fontError] = useFonts({
     KumbhSans_400Regular,
     KumbhSans_500Medium,
   });
 
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const fetchNotifications = async () => {
+    try {
+      const userId = await AsyncStorage.getItem('userId');
+      const token = await AsyncStorage.getItem('token');
+      
+      if (!userId || !token) {
+        setError('User not authenticated');
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch(
+        `https://oae-be.onrender.com/api/oae/notification/notifications/${userId}`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Format notifications to match the expected structure
+        const formattedNotifications = result.data.notifications.map(notification => ({
+          type: getNotificationType(notification.title),
+          title: notification.title,
+          message: notification.message,
+          date: moment(notification.createdAt).format('YYYY-MM-DD'),
+        }));
+        setNotifications(formattedNotifications);
+      } else {
+        setError(result.message || 'Failed to fetch notifications');
+      }
+    } catch (err) {
+      setError('Error fetching notifications: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getNotificationType = (title) => {
+    const titleLower = title.toLowerCase();
+    if (titleLower.includes('pending')) return 'pending';
+    if (titleLower.includes('confirmed')) return 'confirmed';
+    if (titleLower.includes('processing') || titleLower.includes('processed')) return 'processing';
+    if (titleLower.includes('shipped') || titleLower.includes('on the way')) return 'shipped';
+    if (titleLower.includes('delivered')) return 'delivered';
+    return 'other'; // Default type
+  };
+
   if (!fontsLoaded || fontError) {
     return null;
   }
 
-  const notifications = [
-    {
-      type: 'package',
-      title: 'Package delivered',
-      message:
-        'Items from your order 1234531 have been shipped and are expected to arrive.',
-      date: '2024-06-16',
-    },
-    {
-      type: 'delivery',
-      title: 'Delivery is here',
-      message:
-        'Items from your order Senitor have been shipped and are expected to arrive.',
-      date: '2024-06-16',
-    },
-    {
-      type: 'delivery',
-      title: 'Delivery is here!',
-      message:
-        'Items from your order 1234531 have been shipped and are expected to arrive.',
-      date: '2024-06-15',
-    },
-    {
-      type: 'shipped',
-      title: 'Shipped',
-      message:
-        'Items from your order 1234531 have been shipped and are expected to arrive.',
-      date: '2024-06-15',
-    },
-    {
-      type: 'confirmed',
-      title: 'Confirmed',
-      message: 'Your order 1234531 has been confirmed.',
-      date: '2024-06-14',
-    },
-    {
-      type: 'new_arrival',
-      title: 'New Arrivals are here!',
-      message: 'Check out our latest design.',
-      date: '2024-06-13',
-    },
-  ];
-
   const getIcon = (type) => {
     switch (type) {
-      case 'package':
-        return (
-          <Ionicons name="calendar-number-outline" size={24} color="black" />
-        );
-      case 'delivery':
-        return (
-          <MaterialCommunityIcons
-            name="truck-delivery-outline"
-            size={24}
-            color="black"
-          />
-        );
-      case 'shipped':
-        return <Feather name="box" size={24} color="black" />;
+      case 'pending':
+        return <MaterialIcons name="pending-actions" size={24} color="black" />;
       case 'confirmed':
         return <Feather name="bookmark" size={24} color="black" />;
-      case 'new_arrival':
-        return <AntDesign name="staro" size={24} color="black" />;
+      case 'processing':
+        return <Ionicons name="calendar-number-outline" size={24} color="black" />;
+      case 'shipped':
+        return <Feather name="box" size={24} color="black" />;
+      case 'delivered':
+        return <MaterialCommunityIcons name="truck-delivery-outline" size={24} color="black" />;
       default:
-        return null;
+        return <AntDesign name="notification" size={24} color="black" />;
     }
   };
 
   const groupNotificationsByDate = (notifications) => {
     return notifications.reduce((groups, notification) => {
-      const date = moment(notification.date).format('YYYY-MM-DD');
+      const date = notification.date;
       if (!groups[date]) {
         groups[date] = [];
       }
@@ -134,28 +147,52 @@ export default function Notification() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.main}>
-          {Object.keys(groupedNotifications).map((date, index) => (
-            <View key={index} style={{ marginTop: 20 }}>
-              <Text style={styles.dates}>
-                {date === today
-                  ? 'Today'
-                  : moment(date).format('MMMM Do, YYYY')}
-              </Text>
-              <View style={{ marginTop: 30 }}>
-                {groupedNotifications[date].map((notification, index) => (
-                  <TouchableOpacity key={index} style={styles.pushs}>
-                    <View style={styles.circles}>
-                      {getIcon(notification.type)}
-                    </View>
-                    <View style={{ width: '80%' }}>
-                      <Text style={styles.notehead}>{notification.title}</Text>
-                      <Text style={styles.rest}>{notification.message}</Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </View>
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#000" />
+              <Text style={styles.loadingText}>Loading notifications...</Text>
             </View>
-          ))}
+          ) : error ? (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+              <TouchableOpacity 
+                style={styles.retryButton}
+                onPress={fetchNotifications}
+              >
+                <Text style={styles.retryText}>Retry</Text>
+              </TouchableOpacity>
+            </View>
+          ) : notifications.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <AntDesign name="inbox" size={50} color="#888888" />
+              <Text style={styles.emptyText}>No notifications yet</Text>
+            </View>
+          ) : (
+            Object.keys(groupedNotifications)
+              .sort((a, b) => moment(b).diff(moment(a))) // Sort dates in descending order
+              .map((date, index) => (
+                <View key={index} style={{ marginTop: 20 }}>
+                  <Text style={styles.dates}>
+                    {date === today
+                      ? 'Today'
+                      : moment(date).format('MMMM Do, YYYY')}
+                  </Text>
+                  <View style={{ marginTop: 30 }}>
+                    {groupedNotifications[date].map((notification, idx) => (
+                      <TouchableOpacity key={idx} style={styles.pushs}>
+                        <View style={styles.circles}>
+                          {getIcon(notification.type)}
+                        </View>
+                        <View style={{ width: '80%' }}>
+                          <Text style={styles.notehead}>{notification.title}</Text>
+                          <Text style={styles.rest}>{notification.message}</Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              ))
+          )}
         </View>
       </ScrollView>
       <ButtomNav />
@@ -232,5 +269,50 @@ const styles = StyleSheet.create({
     fontFamily: 'KumbhSans_400Regular',
     color: '#000000',
     fontSize: 40,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 50,
+  },
+  loadingText: {
+    fontFamily: 'KumbhSans_400Regular',
+    marginTop: 10,
+    color: '#888888',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 50,
+  },
+  errorText: {
+    fontFamily: 'KumbhSans_400Regular',
+    color: 'red',
+    textAlign: 'center',
+    marginBottom: 15,
+  },
+  retryButton: {
+    backgroundColor: '#000',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 5,
+  },
+  retryText: {
+    fontFamily: 'KumbhSans_500Medium',
+    color: 'white',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 100,
+  },
+  emptyText: {
+    fontFamily: 'KumbhSans_400Regular',
+    fontSize: 16,
+    color: '#888888',
+    marginTop: 15,
   },
 });
